@@ -1,0 +1,3 @@
+if [[ $(pidof $1) == "" ]]; then echo "-1"; else echo $(pidof $1); fi;
+
+run with ./fo.sh netcat
