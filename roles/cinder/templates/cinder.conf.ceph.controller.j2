@@ -1,0 +1,56 @@
+[DEFAULT]
+host = {{ inventory_hostname }} 
+rootwrap_config = /etc/cinder/rootwrap.conf
+api_paste_confg = /etc/cinder/api-paste.ini
+iscsi_helper = tgtadm
+volume_name_template = volume-%s
+volume_group = cinder-volumes
+verbose = True
+auth_strategy = keystone
+state_path = /var/lib/cinder
+lock_path = /var/lock/cinder
+volumes_dir = /var/lib/cinder/volumes
+rpc_backend = rabbit 
+my_ip = {{ block_storage_env.MY_IP }}
+enabled_backends = ceph
+glance_api_servers = http://{{ block_storage_env.CONTROLLER_HOST }}:9292
+allow_availability_zone_fallback = True
+glance_api_version = 2
+allowed_direct_url_schemes = cinder
+log_dir = /var/log/cinder
+
+transport_url = {{ block_storage_env.TRANSPORT_URL }}
+
+[database]
+connection = mysql+pymysql://cinder:{{ block_storage_env.CINDER_DBPASS }}@{{ mysql_host }}/cinder
+
+[keystone_authtoken]
+auth_uri = http://{{ block_storage_env.CONTROLLER_HOST }}:5000
+auth_url = http://{{ block_storage_env.CONTROLLER_HOST }}:35357
+auth_type = password
+project_domain_name = default
+user_domain_name = default
+project_name = service
+username = cinder
+password = {{ block_storage_env.CINDER_PASS }}
+memcached_servers = {{ block_storage_env.MEMCACHED_SERVERS }}
+#memcache_security_strategy = ENCRYPT
+#memcache_secret_key = {{ block_storage_env.MEMCACHE_SECRET_KEY }}
+
+[oslo_concurrency]
+lock_path = /var/lib/cinder/tmp
+
+[ceph]
+volume_driver = cinder.volume.drivers.rbd.RBDDriver
+rbd_pool = {{ ceph.cinder.pool }} 
+rbd_ceph_conf = /etc/ceph/ceph.conf
+rbd_flatten_volume_from_snapshot = false
+rbd_max_clone_depth = 5
+rbd_store_chunk_size = 4
+rados_connect_timeout = -1
+glance_api_version = 2
+rbd_user = {{ ceph.cinder.user }}
+rbd_secret_uuid = {{ ceph.cinder.rbd_secret_uuid }}
+
+[oslo_messaging_notifications]
+driver = messagingv2

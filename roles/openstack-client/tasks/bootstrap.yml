@@ -1,0 +1,16 @@
+---
+
+- name: Initializing projects, services, users, roles, endpoints 
+  docker_container:
+    name: openstack-client 
+    image: "{{ docker_reg_host }}:{{ docker_host_port }}/openstack-client:{{ docker_images_tag }}"
+    pull: yes
+    state: started
+    user: root
+    env: "{{ openstack_client_env }}"
+    network_mode: host
+    command: init_services.sh 
+
+- name: Waiting for OpenStack Client container exited
+  shell: |
+    docker wait openstack-client 

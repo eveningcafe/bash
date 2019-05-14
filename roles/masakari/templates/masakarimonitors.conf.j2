@@ -1,0 +1,37 @@
+[DEFAULT]
+[api]
+region = {{ general_env.REGION_NAME }} 
+api_version = {{ masakari.api_version }} 
+interface = public
+auth_url = {{ ops_client_env.OS_AUTH_URL_PUB }} 
+project_name = {{ ops_client_env.OS_PROJECT_NAME }} 
+project_domain_id = {{ ops_client_env.OS_PROJECT_DOMAIN_ID }} 
+username = {{ ops_client_env.OS_USERNAME }} 
+user_domain_id = {{ ops_client_env.OS_USER_DOMAIN_ID }} 
+password = {{ ops_client_env.OS_PASSWORD }} 
+[callback]
+retry_max = 12
+retry_interval = 10
+[cors]
+[healthcheck]
+[host]
+monitoring_driver = default
+monitoring_interval = 60
+api_retry_max = 12
+api_retry_interval = 10
+disable_ipmi_check = True
+ipmi_timeout = 5
+ipmi_retry_max = 3
+ipmi_retry_interval = 10
+stonith_wait = 30
+tcpdump_timeout = 5
+corosync_multicast_interfaces = {{ corosync.multicast_interfaces }} 
+corosync_multicast_ports = {{ corosync.multicast_ports }} 
+[oslo_middleware]
+[process]
+check_interval = 5
+restart_retries = 3
+restart_interval = 5
+api_retry_max = 12
+api_retry_interval = 10
+process_list_path = /etc/masakarimonitors/process_list.yaml

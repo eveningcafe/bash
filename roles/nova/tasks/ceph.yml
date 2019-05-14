@@ -1,0 +1,52 @@
+---
+
+- name: Install ceph dependencies 
+  apt: name={{ item }} state=present update_cache=yes
+  with_items:
+    - python-rbd
+    - python-rados
+    - ceph-common
+
+- name: Config ceph sudoer 
+  template: src=ceph.j2 dest=/etc/sudoers.d/ceph backup=yes
+
+- name: Create ceph secret directory
+  file:
+    path: /etc/ceph/
+    state: directory
+    owner: root
+    group: root
+    mode: 0775
+
+- name: Ceph keyring setting
+  template: src=ceph.keyring.j2 dest="/etc/ceph/{{ ceph.nova.keyring_path }}" backup=yes
+
+- name: Copy ceph base config for nova 
+  template: src=ceph.base.j2 dest="/etc/ceph/ceph.conf" backup=yes
+
+- name: Update ceph config for nova
+  lineinfile:
+    dest: "/etc/ceph/ceph.conf" 
+    regexp: "{{ item.regexp }}"
+    line: "{{ item.line }}"
+  with_items:
+    - { regexp: '^[client.{{ ceph.nova.user }}]', line: '[client.{{ ceph.nova.user }}]' }
+    - { regexp: '^keyring', line: 'keyring = /etc/ceph/{{ ceph.nova.keyring_path }}' }
+
+- file:
+    path: "/etc/ceph/{{ ceph.nova.keyring_path }}"
+    owner: nova 
+    group: nova 
+    mode: 0640
+
+- name: Restart compute services 
+  service: name={{ item }} state=restarted
+  with_items:
+    - libvirtd
+    - nova-compute
+
+- name: Remove logrotate ceph-common
+  file:
+    path: /etc/logrotate.d/ceph-common
+    state: absent
+  ignore_errors: yes

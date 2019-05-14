@@ -1,0 +1,32 @@
+---
+
+- include_role:
+    name: sql
+    tasks_from: drop 
+  vars:
+    db_update:
+      name: neutron 
+
+- include_role:
+    name: openstack-client
+    tasks_from: service_delete
+  vars:
+    domain:
+      name: default
+    service:
+      name: neutron 
+
+- include_role:
+    name: openstack-client
+    tasks_from: user_delete
+  vars:
+    service:
+      user: neutron 
+
+- name: Remove neutron containers
+  docker_container:
+    name: "{{ item }}" 
+    state: absent
+  with_items:
+    - neutron-server 
+  ignore_errors: yes

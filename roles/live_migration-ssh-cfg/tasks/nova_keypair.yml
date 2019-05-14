@@ -1,0 +1,58 @@
+---
+
+- name: Remove nova user
+  local_action:
+    module: user
+    name: nova 
+    state: absent
+    remove: yes
+  ignore_errors: yes
+
+- name: Remove nova group 
+  local_action:
+    module: group
+    name: nova 
+    state: absent 
+  ignore_errors: yes
+
+- name: Clean ssh key for nova
+  local_action:
+    module: file
+    path: /usr/share/.ssh
+    state: absent  
+  ignore_errors: yes
+
+- name: Create nova group on localhost
+  local_action:
+    module: group
+    name: nova
+    state: present
+
+- name: Create nova user on localhost
+  local_action:
+    module: user
+    name: nova 
+    group: nova 
+
+- name: Create directory .ssh for nova user on localhost
+  local_action:
+    module: file
+    path: /usr/share/.ssh
+    state: directory
+    owner: nova
+    group: nova
+    mode: 0775
+
+- name: Create ssh keys for nova user
+  local_action:
+    module: user
+    name: nova 
+    generate_ssh_key: yes
+    ssh_key_bits: 2048
+    ssh_key_file: /usr/share/.ssh/id_rsa
+
+- name: Create authorized_keys
+  local_action:
+    module: copy
+    src: /usr/share/.ssh/id_rsa.pub
+    dest: /usr/share/.ssh/authorized_keys

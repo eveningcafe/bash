@@ -1,0 +1,29 @@
+global_defs {
+}
+vrrp_script chk_service_etcd {
+        script "pidof etcd "
+        interval 2                      # check every 2 seconds
+	weight {{ etcd_process_weight }}
+
+}
+vrrp_instance VI_1 {
+    state {{ keepalived_role }}
+    interface {{ keepalived_iface_vip }}
+    virtual_router_id {{ keepalived_router_id }}
+    {% if keepalived_role.lower() == "master" %}
+    priority {{ keepalived_active_priority }}
+    {% else %}
+    priority {{ keepalived_backup_priority }}
+    {% endif %}   
+    advert_int 1
+    authentication {
+        auth_type PASS
+        auth_pass {{ keepalived_auth_pass }}
+    }
+    virtual_ipaddress {
+        {{ keepalived_virtual_ip }}
+    }
+    track_script {
+        chk_service_etcd
+    }
+}

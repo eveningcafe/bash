@@ -1,0 +1,10 @@
+---
+
+- hosts: controller 
+  tasks:
+    - include_role: 
+        name: openstack-client
+        tasks_from: install 
+      vars:
+        SSL_ENABLED: 1
+  become: true

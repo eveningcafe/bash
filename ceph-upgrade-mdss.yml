@@ -1,0 +1,10 @@
+---
+- hosts: ceph_mds
+  #sudo: yes
+  serial: 1
+  tasks:
+    - include_role: 
+        name: ceph-upgrade
+        tasks_from: upgrade_mdss
+      when: (ceph_new_version is defined) and upgrade_ceph
+  become: true

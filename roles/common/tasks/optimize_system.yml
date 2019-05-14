@@ -1,0 +1,28 @@
+---
+
+- name: Set kernel parameters
+  lineinfile:
+    dest: /etc/sysctl.conf
+    regexp: "{{ item.regexp }}"
+    line: "{{ item.line }}"
+  with_items:
+    - { regexp: 'net.ipv4.tcp_max_syn_backlog', line: 'net.ipv4.tcp_max_syn_backlog = 8192' }
+    - { regexp: 'net.ipv4.tcp_synack_retries', line: 'net.ipv4.tcp_synack_retries = 5' }
+    - { regexp: 'net.ipv4.tcp_fin_timeout', line: 'net.ipv4.tcp_fin_timeout = 5' }
+    - { regexp: 'fs.file-max', line: 'fs.file-max = 2000000' }
+    - { regexp: 'net.ipv4.tcp_tw_reuse', line: 'net.ipv4.tcp_tw_reuse = 1' }
+    - { regexp: 'net.ipv4.tcp_max_tw_buckets', line: 'net.ipv4.tcp_max_tw_buckets = 200000' }
+    - { regexp: 'net.ipv4.tcp_max_syn_backlog', line: 'net.ipv4.tcp_max_syn_backlog = 8192' }
+    - { regexp: 'net.ipv4.ip_local_port_range', line: 'net.ipv4.ip_local_port_range = 20000 65535' }
+
+- name: Check sysctl
+  shell: sysctl -p
+
+- name: Setup security params
+  lineinfile:
+    dest: /etc/security/limits.conf
+    regexp: "{{ item.regexp }}"
+    line: "{{ item.line }}"
+  with_items:
+    - { regexp: 'soft nofile', line: '* soft nofile 65535' }
+    - { regexp: 'hard nofile', line: '* hard nofile 65535' }

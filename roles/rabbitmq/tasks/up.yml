@@ -1,0 +1,28 @@
+---
+
+- name: Get rabbitmq ip list
+  set_fact: rabbit_ips=["{{ groups['rabbitmq'] | map('extract', hostvars, ['ansible_ssh_host']) | join('", "') }}"]
+
+- name: Get rabbitmq hostname
+  set_fact: rabbit_hostnames="{{ groups['rabbitmq'] }}"
+
+- name: Set of rabbitmq hosts
+  set_fact: rabbitmq_hosts="{{ rabbit_hostnames | get_full_of_hosts(rabbit_ips) }}"
+
+- include_tasks: config.yml
+
+- name: Start rabbitmq 
+  docker_container:
+    name: rabbitmq
+    hostname: "{{ inventory_hostname }}"
+    memory: "{{ rabbitmq_env.MEMORY }}"
+    image: "{{ rabbitmq_env.IMAGE }}"
+    pull: yes
+    restart_policy: unless-stopped
+    etc_hosts: "{{ rabbitmq_hosts }}"
+    state: started
+    volumes:
+      - "{{ rabbitmq_env.LOG_DIR }}:{{ rabbitmq_env.LOG_DIR }}" 
+      - /etc/localtime:/etc/localtime
+    env: "{{ rabbitmq_env }}"
+    network_mode: host

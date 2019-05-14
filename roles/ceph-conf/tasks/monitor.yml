@@ -1,0 +1,76 @@
+---
+
+- name: Install ceph-common
+  apt:
+    name: ceph-common
+    state: present
+
+- name: Set permission for ceph lib
+  file:
+    path: /var/lib/ceph/ 
+    state: directory
+    owner: root
+    group: root
+    mode: 0775
+    
+- name: Set permission for ceph log
+  file:
+    path: /var/log/ceph/
+    state: directory
+    owner: 167 
+    group: 167 
+    recurse: yes
+
+- name: Restart ceph-mon
+  docker_container:
+    name: "{{ mon_name }}"
+    state: started
+    restart: yes
+
+- name: Waiting for ceph-mon
+  pause:
+    seconds: 10
+
+- name: Create monitor account for ceph
+  shell: |
+    docker exec -i {{ mon_name }} ceph auth del client.telegraf    
+    docker exec -i {{ mon_name }} ceph auth get-or-create client.telegraf mon 'allow r' osd 'allow r' mgr 'allow r' -o /etc/ceph/ceph.client.telegraf.keyring
+
+- name: Get client key
+  shell: |
+    docker exec -i {{ mon_name }} ceph auth print-key client.telegraf
+  register: result 
+
+- name: Set keyring
+  set_fact: client_key="{{ result.stdout }}"
+
+- name: Set user
+  set_fact: user="telegraf"
+
+- name: Create file keyring for telegraf 
+  template: src=ceph.client.keyring.j2 dest=/etc/ceph/ceph.client.telegraf.keyring backup=yes
+
+- name: Get conf file
+  shell: |
+    docker exec {{ mon_name }} cat /etc/ceph/ceph.conf
+  register: ceph_conf
+
+- name: Remove old ceph base config file
+  file:
+    path: /etc/ceph/ceph.conf 
+    state: absent
+
+- name: Save ceph base conf
+  lineinfile:
+    path: /etc/ceph/ceph.conf
+    line: "\n{{ ceph_conf.stdout }} \n"
+    create: yes
+
+- name: Update ceph config for telegraf 
+  lineinfile:
+    dest: /etc/ceph/ceph.conf
+    regexp: "{{ item.regexp }}"
+    line: "{{ item.line }}"
+  with_items:
+    - { regexp: '^[client.telegraf]', line: '[client.telegraf]' }
+    - { regexp: '^keyring', line: 'keyring = /etc/ceph/ceph.client.telegraf.keyring' }

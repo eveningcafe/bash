@@ -1,0 +1,30 @@
+---
+
+- name: Create shared configuration directory
+  file:
+    path: "{{ item }}"
+    state: directory
+  with_items:
+    - "{{ docker_shared_conf_dir }}/octavia/"
+    - /var/log/octavia/
+    - /var/lib/octavia/
+
+- name: Create shared configuration directory
+  file:
+    path: "{{ docker_shared_conf_dir }}/octavia/{{ item }}/"
+    state: directory
+  with_items:
+    - backup
+    - octavia
+
+- name: Remove certs directory
+  file:
+    path: /var/lib/octavia/certs 
+    state: absent
+  ignore_errors: yes
+
+- name: Copy certs
+  copy:
+    src: "{{ playbook_dir }}/roles/octavia/templates/certs"
+    dest: "/var/lib/octavia/"
+    directory_mode: yes

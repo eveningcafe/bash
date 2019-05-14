@@ -1,0 +1,8 @@
+---
+
+- name: Delete role
+  shell: |
+    {{ docker_openstack_client }} role delete {{ item }} 
+  with_items: "{{ roles }}"
+  environment: "{{ ops_client_env }}"
+  ignore_errors: yes

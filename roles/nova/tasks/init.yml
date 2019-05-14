@@ -1,0 +1,101 @@
+---
+
+- name: Create nova database
+  include_role:
+    name: sql
+    tasks_from: update
+  vars:
+    db_update:
+      name: "{{ item }}" 
+      user: nova
+      passwd: "{{ nova_env.NOVA_DBPASS }}"
+  with_items:
+    - nova_api
+    - nova
+    - nova_cell0
+
+- name: Create service user
+  include_role:
+    name: openstack-client
+    tasks_from: user
+  vars:
+    domain:
+      name: default
+    service:
+      user: nova
+      pass: "{{ nova_pass }}"
+
+- name: Create service user
+  include_role:
+    name: openstack-client
+    tasks_from: user
+  vars:
+    domain_id: default
+    service:
+      user: placement 
+      pass: "{{ placement_pass }}"
+
+- name: Create service and service endpoints
+  include_role:
+    name: openstack-client
+    tasks_from: service
+  vars:
+    domain_id: default
+    region_name: "{{ compute_env.REGION_NAME }}" 
+    service:
+      type: compute 
+      name: nova
+      user: nova
+      pass: "{{ nova_pass }}"
+      description: "OpenStack Compute"
+      endpoints:
+        - scope: public
+          url: "{% raw %}'http://{{ general_env.CONTROLLER_HOST }}:8774/v2.1'{% endraw %}"
+        - scope: internal
+          url: "{% raw %}'http://{{ general_env.CONTROLLER_HOST }}:8774/v2.1'{% endraw %}"
+        - scope: admin
+          url: "{% raw %}'http://{{ general_env.CONTROLLER_HOST }}:8774/v2.1'{% endraw %}"
+  when: nova_env.SSL_ENABLED == 0
+
+- name: Create service and service endpoints
+  include_role:
+    name: openstack-client
+    tasks_from: service
+  vars:
+    domain_id: default
+    region_name: "{{ compute_env.REGION_NAME }}"
+    service:
+      type: compute
+      name: nova
+      user: nova
+      pass: "{{ nova_pass }}"
+      description: "OpenStack Compute"
+      endpoints:
+        - scope: public
+          url: "{% raw %}'https://{{ general_env.CONTROLLER_HOST }}:8774/v2.1'{% endraw %}"
+        - scope: internal
+          url: "{% raw %}'https://{{ general_env.CONTROLLER_HOST }}:8774/v2.1'{% endraw %}"
+        - scope: admin
+          url: "{% raw %}'https://{{ general_env.CONTROLLER_HOST }}:8774/v2.1'{% endraw %}"
+  when: nova_env.SSL_ENABLED == 1 
+
+- name: Create service and service endpoints
+  include_role:
+    name: openstack-client
+    tasks_from: service
+  vars:
+    domain_id: default
+    region_name: "{{ compute_env.REGION_NAME }}" 
+    service:
+      type: placement 
+      name: placement 
+      user: placement 
+      pass: "{{ placement_pass }}"
+      description: "Placement API"
+      endpoints:
+        - scope: public
+          url: "{% raw %}'http://{{ general_env.CONTROLLER_HOST }}:8778'{% endraw %}"
+        - scope: internal
+          url: "{% raw %}'http://{{ general_env.CONTROLLER_HOST }}:8778'{% endraw %}"
+        - scope: admin
+          url: "{% raw %}'http://{{ general_env.CONTROLLER_HOST }}:8778'{% endraw %}"

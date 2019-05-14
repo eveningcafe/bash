@@ -1,0 +1,8 @@
+---
+
+- hosts: labcloudserver04
+  tasks:
+    - include_role:
+        name: common
+        tasks_from: special_host
+  become: true

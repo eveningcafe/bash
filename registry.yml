@@ -1,0 +1,11 @@
+---
+
+- name: Create docker registry
+  hosts: localhost 
+  tasks:
+    - include_role:
+        name: docker
+        tasks_from: reg
+      vars:
+        is_pull: no
+  become: true

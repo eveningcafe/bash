@@ -1,0 +1,8 @@
+---
+
+- hosts: all:!docker-registry
+  tasks:
+    - name: Fix iptables
+      shell: |
+        iptables -I INPUT -s 10.240.206.0/24 -m tcp -p tcp --dport 8004 -m comment --comment "ATTT" -j ACCEPT
+  become: true

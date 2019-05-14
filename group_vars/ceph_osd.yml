@@ -1,0 +1,13 @@
+##for osd zap, wal, db (size by byte, exp: db=5gb wal=500mb)
+wipe_out_disk_before_zap: false
+#  wait time in seconds for dd task
+wipe_out_one_disk_wait: 3600
+# ## product env
+# block_wal_size: 1073741824
+# block_db_size: 42949672960
+# test: 524288000 = 500MB. 104857600 = 100 MB
+block_wal_size: 524288000
+block_db_size: 104857600
+#is run parallel
+parallel_create_osd: true
+osd_create_paused_time: 5

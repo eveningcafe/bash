@@ -1,0 +1,187 @@
+
+- name: prepare admin key for osd so it can check all status cluster
+  uri:
+    url: "http://{{kv_endpoint}}:{{kv_port}}/v2/keys/ceph-config/ceph/adminKeyring"
+    return_content: yes
+  register: this_key
+
+- shell: "echo {{this_key.json.node.value|replace('\t',' ')|replace('\n',' ')}} | awk '{ print $4 }'"
+  register: results
+  
+- set_fact:
+    adminKey: "{{results.stdout}}"
+
+- template:
+    src: client.admin.keyring.j2
+    dest: /tmp/client.admin.keyring
+    owner: root
+    group: root
+    mode: '0660'
+    backup: yes
+  
+- name: "copy admin key to {{listitem.name}}"
+  shell: "docker cp /tmp/client.admin.keyring {{listitem.name}}:/etc/ceph/ceph.client.admin.keyring"
+  
+- name: set noout osd to prevent recover pg when osd upgrade
+# (follow recommend in: https://ceph.com/geen-categorie/ceph-rolling-upgrades-with-ansible/)
+  shell: timeout 5 docker exec {{listitem.name}} ceph osd set noout
+  
+- name: rename container
+  command: "docker container rename {{listitem.name}} {{listitem.name}}.backup.{{ceph_current_version}}"
+
+- name: prevent.backup.{{ceph_current_version}} container from starting automatically
+  command: "docker update --restart=no {{listitem.name}}.backup.{{ceph_current_version}}"
+
+- name: "stop old OSD {{listitem.name}}"
+  command: "docker stop {{listitem.name}}.backup.{{ceph_current_version}}"
+  
+- name: create new OSD
+  when: (
+         osd_nodes is defined
+         and item.wal_disk is not defined
+         and item.db_disk is not defined
+        )
+  docker_container:
+    name: "{{ listitem.name }}"
+    state: started
+    image: "{{ image_address }}"
+    volumes:
+      - /dev/:/dev/
+      - /var/log/ceph:/var/log/ceph
+    env:
+      OSD_DEVICE: "{{ listitem.primary_disk }}"
+      KV_TYPE: "{{ kv_type }}"
+      KV_IP: "{{ kv_endpoint }}"
+      OSD_TYPE: disk
+      OSD_BLUESTORE: 1
+    pid_mode: host
+    privileged: yes
+    network_mode: host
+    command: osd
+    restart_policy: unless-stopped
+
+
+- name: create OSD sperate wal db
+  when: (
+         osd_nodes is defined
+         and item.wal_disk is defined
+         and item.db_disk is defined
+        )
+  docker_container:
+    name: "{{listitem.name}}"
+    state: started
+    image: "{{ image_address }}"
+    volumes:
+      - /dev/:/dev/
+      - /var/log/ceph:/var/log/ceph
+    env:
+      OSD_DEVICE: "{{ listitem.primary_disk }}"
+      KV_TYPE: "{{ kv_type }}"
+      KV_IP: "{{ kv_endpoint }}"
+      KV_PORT: "{{kv_port}}"
+      OSD_TYPE: disk
+      OSD_BLUESTORE_BLOCK_WAL: "{{ listitem.wal_disk }}"
+      OSD_BLUESTORE_BLOCK_DB: "{{ listitem.db_disk }}"
+      OSD_BLUESTORE: 1
+    pid_mode: host
+    privileged: yes   
+    network_mode: host
+    command: osd   
+    restart_policy: unless-stopped
+    
+- name: wait osd up
+  command: "docker logs {{listitem.name }}"
+  register: result
+  until: result.stderr.find('log_to_monitors') != -1
+  retries: "{{retries_osd}}"
+  delay: "{{delay_retries_osd}}"
+  failed_when: false
+  
+  
+- name: call fail
+  include_role:
+    name: ceph-upgrade
+    tasks_from: osd_call_fail
+  when: result.stderr is defined and result.stderr.find('log_to_monitors') == -1
+  vars:
+    listitem: "{{ item }}"
+  loop: "{{ osd_nodes }}"
+
+- name: "copy admin key to {{listitem.name}}"
+  shell: "docker cp /tmp/client.admin.keyring {{listitem.name}}:/etc/ceph/ceph.client.admin.keyring"
+  
+- name: after upgrade,  return can-out for osd
+  shell: "timeout 5 docker exec {{listitem.name}} ceph osd unset noout && sleep 4"
+  
+- name: pause 1 min, wait for osd run stable, then we will check status of cluster
+  pause:
+    minutes: 1
+
+#check total osd
+- name: get number of up osd
+  shell: "timeout 5 docker exec {{listitem.name}} ceph -s | grep 'osd:' | awk '{ print $4}'" 
+  changed_when: false
+  register: check_osd_up
+  failed_when: false
+  until: check_osd_up.rc == 0
+  retries: "{{retries_osd}}"
+  delay: "{{delay_retries_osd}}"
+
+- name: get number of in osd
+  shell: "timeout 5 docker exec {{listitem.name}} ceph -s | grep 'osd:' | awk '{ print $6}'" 
+  changed_when: false
+  register: check_osd_in
+  failed_when: false
+  until: check_osd_in.rc == 0
+  retries: "{{retries_osd}}"
+  delay: "{{delay_retries_osd}}"
+  
+- name: call fail because number of osd-up not equal number osd-in 
+  include_role:
+    name: ceph-upgrade
+    tasks_from: osd_call_fail
+  when: (check_osd_up.stdout | int) != (check_osd_in.stdout | int)
+  
+# khong dung khi co scrub
+# - name: get pg active+clean
+#   shell: "timeout 5 docker exec {{listitem.name}} ceph pg stat | sed 's/^.*pgs://;s/active+clean.*//;s/ //'"
+#   register: pg_active
+
+- name: get pg active+clean
+  shell: "timeout 5 docker exec {{listitem.name}} ceph pg dump pgs_brief  | grep active+clean | wc -l"
+  register: pg_active
+  
+- name: get total pg
+  shell: "timeout 5 docker exec {{listitem.name}} ceph pg stat | sed 's/pgs.*//;s/^.*://;s/ //'"
+  register: pg_total
+  
+- debug:
+    msg: "total number pg is : {{pg_total.stdout}} ; active+clean pgs number is: {{pg_active.stdout}} "
+    
+- name: call fail because all pgs not active 
+  include_role:
+    name: ceph-upgrade
+    tasks_from: osd_call_fail
+  vars:
+    listitem: listitem 
+  when: ((pg_total.stdout| int) != (pg_active.stdout | int))
+
+    
+- name: check heath_status
+  shell: "timeout 5 docker exec {{listitem.name}} ceph health"
+  register: check_health
+  
+- debug:
+    msg: "Heath ok, next osd~!"
+  when: check_health.stdout is search('HEALTH_OK')
+  
+- debug:
+    msg: "Heath warning, becareful~!"
+  when: not (check_health.stdout is search('HEALTH_OK'))
+  
+- name: call fail because health not ok
+  include_role:
+    name: ceph-upgrade
+    tasks_from: osd_call_fail
+  when: strict_heath_ok_condition and not (check_health.stdout is search('HEALTH_OK'))
+  

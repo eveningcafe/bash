@@ -1,0 +1,26 @@
+---
+
+- include_role:
+    name: openstack-client
+    tasks_from: service_delete
+  vars:
+    domain:
+      name: default
+    service:
+      name: ceilometer 
+
+- include_role:
+    name: openstack-client
+    tasks_from: user_delete
+  vars:
+    service:
+      user: ceilometer 
+
+- name: Remove ceilometer containers
+  docker_container:
+    name: "{{ item }}" 
+    state: absent
+  with_items:
+    - ceilometer-agent-central
+    - ceilometer-agent-notification
+  ignore_errors: yes

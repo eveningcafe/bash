@@ -1,0 +1,49 @@
+---
+
+- name: Create shared configuration directory
+  file:
+    path: "{{ docker_shared_conf_dir }}/horizon/"
+    state: directory
+
+- name: Create shared configuration directory
+  file:
+    path: "{{ docker_shared_conf_dir }}/horizon/{{ item }}/"
+    state: directory
+  with_items:
+    - backup
+    - openstack-dashboard 
+    - apache2
+
+- name: Create shared configuration directory
+  file:
+    path: "{{ docker_shared_conf_dir }}/horizon/apache2/conf-enabled/"
+    state: directory
+
+- name: Config apache2 
+  template: src=otp.openstack-dashboard.conf.j2 dest="{{ docker_shared_conf_dir }}/horizon/apache2/conf-enabled/openstack-dashboard.conf" backup=yes
+
+- name: Distribute certs
+  copy: src="{{ playbook_dir }}/roles/openstack-client/files/{{ item }}" dest="{{ docker_shared_conf_dir }}/horizon/apache2/conf-enabled/{{ item }}" backup=yes
+  with_items:
+    - openstack.crt
+    - openstack.key
+  when: dashboard_env.SSL_ENABLED == 1 
+
+- name: Local settings 
+  template: src=local_settings.py.j2 dest="{{ docker_shared_conf_dir }}/horizon/openstack-dashboard/local_settings.py" backup=yes
+  when: dashboard_env.SSL_ENABLED == 0
+
+- name: Config horizon (ssl)
+  template: src=ssl.local_settings.py.j2 dest="{{ docker_shared_conf_dir }}/horizon/openstack-dashboard/local_settings.py" backup=yes
+  when: dashboard_env.SSL_ENABLED == 1
+
+- name: Database setting  
+  template: src=settings.py.j2 dest="{{ docker_shared_conf_dir }}/horizon/openstack-dashboard/settings.py" backup=yes
+  when: dashboard_env.SSL_ENABLED == 0
+
+- name: Database setting
+  template: src=ssl.settings.py.j2 dest="{{ docker_shared_conf_dir }}/horizon/openstack-dashboard/settings.py" backup=yes
+  when: dashboard_env.SSL_ENABLED == 1
+
+- name: Password setting 
+  template: src=password_conf.py.j2 dest="{{ docker_shared_conf_dir }}/horizon/openstack-dashboard/password_conf.py" backup=yes

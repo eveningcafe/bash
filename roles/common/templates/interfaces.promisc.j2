@@ -1,0 +1,13 @@
+{% if networking.promisc.enabled %}
+{% for item in networking.promisc.data %}
+auto {{ item.interface }}
+iface {{ item.interface }} inet manual
+  up ifconfig $IFACE 0.0.0.0 up
+  up ip link set $IFACE promisc on
+  down ip link set $IFACE promisc off
+  down ifconfig $IFACE down
+{% if not loop.last %}
+
+{% endif %}
+{% endfor %}
+{% endif %}

@@ -1,0 +1,49 @@
+---
+
+- name: Remove gnocchi containers
+  docker_container:
+    name: "{{ item }}"
+    state: absent
+  with_items:
+    - gnocchi-api
+    - gnocchi-metricd
+
+- include_role:
+    name: gnocchi
+    tasks_from: config
+
+- name: Start gnocchi api
+  docker_container:
+    name: gnocchi-api
+    image: "{{ docker_reg_host }}:{{ docker_host_port }}/gnocchi:{{ docker_images_tag }}"
+    pull: yes
+    restart_policy: unless-stopped
+    state: started
+    user: root 
+    log_driver: none
+    volumes:
+      - "{{ docker_shared_conf_dir }}/gnocchi/:{{ docker_shared_conf_dir }}/gnocchi/"
+      - /var/log/apache2:/var/log/apache2
+      - /var/log/gnocchi:/var/log/gnocchi
+      - /var/lib/gnocchi:/var/lib/gnocchi
+      - /etc/localtime:/etc/localtime
+    env: "{{ data_collection_env | merge({ 'GNOCCHI_START': 'START_GNOCCHI_API', 'GNOCCHI_COMPONENT': 'gnocchi-api' }) }}"
+    network_mode: host
+
+- name: Start gnocchi metricd
+  docker_container:
+    name: gnocchi-metricd
+    image: "{{ docker_reg_host }}:{{ docker_host_port }}/gnocchi:{{ docker_images_tag }}"
+    pull: yes
+    restart_policy: unless-stopped
+    state: started
+    user: gnocchi
+    log_driver: none
+    volumes:
+      - "{{ docker_shared_conf_dir }}/gnocchi/:{{ docker_shared_conf_dir }}/gnocchi/"
+      - /var/log/apache2:/var/log/apache2
+      - /var/log/gnocchi:/var/log/gnocchi
+      - /var/lib/gnocchi:/var/lib/gnocchi
+      - /etc/localtime:/etc/localtime
+    env: "{{ data_collection_env | merge({ 'GNOCCHI_START': 'START_GNOCCHI_METRICD', 'GNOCCHI_COMPONENT': 'gnocchi-metricd' }) }}"
+    network_mode: host

@@ -1,0 +1,29 @@
+[DEFAULT]
+debug = false
+log_file = /var/log/glance/glance-registry.log
+bind_host = {{ image_env.MY_IP }}
+bind_port = 9191
+
+transport_url = {{ image_env.TRANSPORT_URL }}
+
+[database]
+connection = mysql+pymysql://glance:{{ image_env.GLANCE_DBPASS }}@{{ mysql_host }}/glance
+
+[keystone_authtoken]
+auth_uri = https://{{ image_env.CONTROLLER_HOST }}:5000
+auth_url = https://{{ image_env.CONTROLLER_HOST }}:35357
+auth_type = password
+project_domain_name = Default
+user_domain_name = Default
+project_name = service
+username = glance
+password = {{ image_env.GLANCE_PASS }}
+memcached_servers = {{ image_env.MEMCACHED_SERVERS }}
+#memcache_security_strategy = ENCRYPT
+#memcache_secret_key = {{ image_env.MEMCACHE_SECRET_KEY }}
+
+[paste_deploy]
+flavor = keystone
+
+[oslo_messaging_notifications]
+driver = messagingv2

@@ -1,0 +1,37 @@
+---
+
+- name: Create shared configuration directory
+  file:
+    path: "{{ docker_shared_conf_dir }}/ceilometer/"
+    state: directory
+
+- name: Create shared configuration directory
+  file:
+    path: "{{ docker_shared_conf_dir }}/ceilometer/{{ item }}/"
+    state: directory
+  with_items:
+    - backup
+    - ceilometer
+    - sudoers.d
+    - ssl
+
+- name: Config ceilometer
+  template: src=ceilometer.conf.j2 dest="{{ docker_shared_conf_dir }}/ceilometer/ceilometer/ceilometer.conf" backup=yes
+  when: ceilometer_env.SSL_ENABLED == 0 
+
+- name: Config ceilometer (ssl)
+  template: src=ssl.ceilometer.conf.j2 dest="{{ docker_shared_conf_dir }}/ceilometer/ceilometer/ceilometer.conf" backup=yes
+  when: ceilometer_env.SSL_ENABLED == 1 
+
+- name: Config ceilometer polling
+  template: src=polling.yaml.j2 dest="{{ docker_shared_conf_dir }}/ceilometer/ceilometer/polling.yaml" backup=yes
+
+- name: Config sudoer
+  template: src=ceilometer_sudoers.j2 dest="{{ docker_shared_conf_dir }}/ceilometer/sudoers.d/ceilometer_sudoers" backup=yes
+
+- name: Distribute certs
+  copy: src="{{ playbook_dir }}/roles/openstack-client/files/{{ item }}" dest="{{ docker_shared_conf_dir }}/ceilometer/ssl/{{ item }}" backup=yes
+  with_items:
+    - openstack.crt
+    - openstack.key
+  when: ceilometer_env.SSL_ENABLED == 1

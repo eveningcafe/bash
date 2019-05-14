@@ -1,0 +1,15 @@
+# docker rm -f ceph-mgr
+# docker container rename ceph-mgr.backup ceph-mgr
+# docker start ceph-mgr
+---
+
+- name: get list mgr upgraded
+  shell: |
+    docker ps -a | grep backup | grep ceph-mgr| grep "{{ceph_current_version}}" | awk '{print $NF}' |  awk -F. '{ print $1 }'
+  register: result
+
+- name: rollback mgrs
+  include_role:
+    name: ceph-rollback
+    tasks_from: rollback-mgr
+  with_items: "{{ result.stdout_lines }}"

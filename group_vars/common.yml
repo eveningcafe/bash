@@ -1,0 +1,6 @@
+#ignore this group var in product enviroment
+use_proxy: true
+http_proxy: "http://192.168.5.8:3128"
+https_proxy: "http://192.168.5.8:3128"
+#remember add vitural ip keepalive in no_proxy
+no_proxy: "localhost,127.0.0.1,storage01,storage02,storage03,storage04,.191,.192,.193,.194,.195,192.168.2.195,192.168.100.195"

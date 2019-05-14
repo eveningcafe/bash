@@ -1,0 +1,5 @@
+---
+
+- name: Drop service database
+  shell: |
+    {{ postgres_cli }} -c 'DROP DATABASE IF EXISTS {{ db_update.name }}'

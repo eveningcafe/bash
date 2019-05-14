@@ -1,0 +1,30 @@
+---
+
+- name: Remove Nova bootstrap container
+  docker_container:
+    name: nova-bootstrap
+    state: absent
+
+- include_role:
+    name: nova
+    tasks_from: config
+
+- name: Bootstrap Nova 
+  docker_container:
+    name: nova-bootstrap
+    image: "{{ docker_reg_host }}:{{ docker_host_port }}/nova:{{ docker_images_tag }}"
+    pull: yes
+    privileged: yes
+    state: started
+    user: nova 
+    volumes:
+      - "{{ docker_shared_conf_dir }}/nova/:{{ docker_shared_conf_dir }}/nova/"
+      - /var/log/nova:/var/log/nova 
+      - /var/lib/nova:/var/lib/nova 
+      - /etc/localtime:/etc/localtime
+    env: "{{ compute_env | merge({ 'NOVA_START': 'BOOTSTRAP', 'CELL_NAME': 'cell1' }) }}"
+    network_mode: host
+
+- name: Waiting for Nova bootstrap done
+  shell: |
+    docker wait nova-bootstrap

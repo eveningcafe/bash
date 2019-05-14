@@ -1,0 +1,7 @@
+---
+
+- name: Delete glance image 
+  shell: |
+    {{ docker_openstack_client }} image delete {{ image.name }}
+  environment: "{{ ops_client_env }}"
+  ignore_errors: yes 

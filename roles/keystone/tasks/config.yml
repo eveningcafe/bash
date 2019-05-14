@@ -1,0 +1,55 @@
+---
+
+- name: Create keystone database
+  include_role:
+    name: sql
+    tasks_from: update
+  vars:
+    db_update:
+      name: keystone
+      user: keystone
+      passwd: "{{ keystone_env.KEYSTONE_DBPASS }}"
+
+- name: Create shared configuration directory
+  file:
+    path: "{{ docker_shared_conf_dir }}/keystone/" 
+    state: directory
+
+#- include_role:
+#    name: keystone
+#    tasks_from: gencerts
+#  when: keystone_env.SSL_ENABLED == 1
+
+- name: Create shared configuration directory
+  file:
+    path: "{{ docker_shared_conf_dir }}/keystone/{{ item }}/"
+    state: directory
+  with_items:
+    - backup
+    - keystone
+    - apache2
+    - ssl
+
+- name: Config keystone
+  template: src=keystone.conf.j2 dest="{{ docker_shared_conf_dir }}/keystone/keystone/keystone.conf" backup=yes
+
+- name: Config keystone wsgi 
+  template: src=keystone-wsgi.conf.j2 dest="{{ docker_shared_conf_dir }}/keystone/apache2/keystone.conf" backup=yes
+  when: keystone_env.SSL_ENABLED == 0
+
+- name: Config keystone wsgi (ssl configuration)
+  template: src=ssl.keystone-wsgi.conf.j2 dest="{{ docker_shared_conf_dir }}/keystone/apache2/keystone.conf" backup=yes
+  when: keystone_env.SSL_ENABLED == 1
+
+- name: Distribute certs
+  copy: src="{{ playbook_dir }}/roles/openstack-client/files/{{ item }}" dest="{{ docker_shared_conf_dir }}/keystone/apache2/{{ item }}" backup=yes
+  with_items:
+    - openstack.crt
+    - openstack.key
+  when: keystone_env.SSL_ENABLED == 1
+
+#- name: Restart keystone 
+#  docker_container:
+#    name: keystone 
+#    state: started
+#    restart: yes

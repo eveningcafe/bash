@@ -1,0 +1,33 @@
+---
+
+#- name: Set default interfaces config
+#  copy: src=interfaces dest=/etc/network/interfaces mode=0644 backup=yes
+
+- name: Set sources interfaces.d 
+  lineinfile:
+    dest: /etc/network/interfaces 
+    regexp: "source /etc/network/interfaces.d/*"
+    line: "source /etc/network/interfaces.d/*"
+  
+- name: Create interfaces configuration directory
+  file:
+    path: /etc/network/interfaces.d/
+    state: directory
+
+- name: Create interfaces configuration file 
+  template: src="{{ item }}.j2" dest="/etc/network/interfaces.d/{{ item }}"
+  with_items:
+    - interfaces.dhcp
+    - interfaces.static
+    - interfaces.promisc
+    - interfaces.bond
+
+#- name: Restart networking services
+#  shell: |
+#    /etc/init.d/networking restart
+#  ignore_errors: yes
+#
+#- name: Restart interfaces
+#  shell: |
+#    ifdown -a && ifup -a
+#  ignore_errors: yes

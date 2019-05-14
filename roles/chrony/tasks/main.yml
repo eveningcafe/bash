@@ -1,0 +1,10 @@
+---
+
+- name: Install chrony 
+  apt: name=chrony state=present update_cache=yes
+
+- name: Configure chrony for controllers
+  template: src=chrony.conf.j2 dest=/etc/chrony/chrony.conf backup=yes
+
+- name: Restart chrony
+  service: name=chrony state=restarted 

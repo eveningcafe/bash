@@ -1,0 +1,22 @@
+- name: prepare admin key for osd so it can check status cluster
+  uri:
+    url: "http://{{kv_endpoint}}:{{kv_port}}/v2/keys/ceph-config/ceph/adminKeyring"
+    return_content: yes
+  register: this_key
+
+- shell: "echo {{this_key.json.node.value|replace('\t',' ')|replace('\n',' ')}} | awk '{ print $4 }'"
+  register: results
+  
+- set_fact:
+    adminKey: "{{results.stdout}}"
+
+- template:
+    src: client.admin.keyring.j2
+    dest: /tmp/client.admin.keyring
+    owner: root
+    group: root
+    mode: '0660'
+    backup: yes
+  
+- name: "copy admin key to {{mds_name}}"
+  shell: "docker cp /tmp/client.admin.keyring {{mds_name}}:/etc/ceph/ceph.client.admin.keyring"

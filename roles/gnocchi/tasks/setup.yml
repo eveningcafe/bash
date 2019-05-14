@@ -1,0 +1,9 @@
+---
+
+- include_role:
+    name: gnocchi
+    tasks_from: init
+
+- include_role:
+    name: gnocchi
+    tasks_from: bootstrap

@@ -1,0 +1,19 @@
+---
+
+domain:
+  name: default
+  description: default
+region_name: North_VN
+service:
+  type: default
+  name: default
+  user: default
+  pass: secret
+  description: "Service Description"
+  endpoints:
+    - scope: public
+      url: "http://service_uri:port"
+    - scope: internal
+      url: "http://service_uri:port"
+    - scope: admin
+      url: "http://service_uri:port"

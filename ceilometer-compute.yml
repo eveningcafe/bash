@@ -1,0 +1,9 @@
+---
+
+- name: Install Ceilometer agent compute 
+  hosts: current_compute
+  tasks:
+    - include_role:
+        name: ceilometer 
+        tasks_from: compute 
+  become: true

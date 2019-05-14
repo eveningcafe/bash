@@ -1,0 +1,6 @@
+---
+
+- name: Create domain
+  shell: |
+    {{ docker_openstack_client }} domain create --description "{{ domain.description }}" {{ domain.name }} 
+  environment: "{{ ops_client_env }}"

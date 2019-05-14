@@ -1,0 +1,40 @@
+---
+
+- name: Check ha config for service
+  shell: |
+    cat {{ docker_shared_conf_dir }}/haproxy/haproxy/haproxy.cfg | grep horizon 
+  register: service_cfg
+  ignore_errors: yes
+  
+- include_role:
+    name: haproxy
+    tasks_from: update
+  vars:
+    services:
+      - name: horizon
+        port: 80
+        bind_ips:
+        options:
+          - "balance source"
+          - "http-request del-header X-Forwarded-Proto"
+  when: service_cfg.rc == 1
+
+- name: Check ha config for service
+  shell: |
+    cat {{ docker_shared_conf_dir }}/haproxy/haproxy/haproxy.cfg | grep horizonssl 
+  register: service_cfg_horizonssl
+  ignore_errors: yes
+
+- include_role:
+    name: haproxy
+    tasks_from: update
+  vars:
+    services:
+      - name: horizonssl 
+        port: 443 
+        bind_ips:
+        options:
+          - "mode tcp"
+          - "option ssl-hello-chk"
+          - "balance source"
+  when: service_cfg_horizonssl.rc == 1

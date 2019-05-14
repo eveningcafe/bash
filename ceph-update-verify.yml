@@ -1,0 +1,11 @@
+---
+- hosts: ceph_mon
+  sudo: yes
+  roles:
+     - update-monmap
+
+- hosts: ceph_conf
+  sudo: yes
+  roles:
+     - verify
+  

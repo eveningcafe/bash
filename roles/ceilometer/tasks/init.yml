@@ -1,0 +1,31 @@
+---
+
+- include_role:
+    name: openstack-client
+    tasks_from: user
+  vars:
+    domain:
+      name: default
+    service:
+      user: ceilometer
+      pass: "{{ ceilometer_pass }}"
+
+- include_role:
+    name: openstack-client
+    tasks_from: service
+  vars:
+    domain_id: default
+    region_name: "{{ data_collection_env.REGION_NAME }}"
+    service:
+      type: metering 
+      name: ceilometer 
+      user: ceilometer
+      pass: "{{ ceilometer_pass }}"
+      description: "Telemetry"
+      endpoints:
+        - scope: public
+          url: "{% raw %}'http://{{ general_env.CONTROLLER_HOST }}:8777'{% endraw %}"
+        - scope: internal
+          url: "{% raw %}'http://{{ general_env.CONTROLLER_HOST }}:8777'{% endraw %}"
+        - scope: admin
+          url: "{% raw %}'http://{{ general_env.CONTROLLER_HOST }}:8777'{% endraw %}"

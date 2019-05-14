@@ -1,0 +1,11 @@
+---
+
+- hosts: current_controller 
+  tasks:
+    - include_role:
+        name: haproxy
+        tasks_from: "{{ item }}" 
+      with_items:
+        - teardown
+        - up
+  become: true

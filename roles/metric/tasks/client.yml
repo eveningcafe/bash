@@ -1,0 +1,5 @@
+---
+
+- include_role:
+    name: telegraf
+    tasks_from: client 

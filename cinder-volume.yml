@@ -1,0 +1,9 @@
+---
+
+- name: Setup cinder-volume
+  hosts: az_production:&current_controller
+  tasks:
+    - include_role:
+        name: cinder
+        tasks_from: volume 
+  become: true

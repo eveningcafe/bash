@@ -1,0 +1,17 @@
+---  
+- hosts: ceph_osd
+  #sudo: yes
+  serial: 1
+  tasks:  
+    - include_role: 
+        name: ceph-upgrade
+        tasks_from: upgrade_osds
+      when: (ceph_new_version is defined) and upgrade_ceph
+  become: true
+  
+# - hosts: ceph_conf
+#   tasks:
+#     # after upgrade get all osd version
+#     - name: unset noout osd
+#       shell: timeout 5 docker exec {{mon_name}} ceph osd unset noout
+#   become: true

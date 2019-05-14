@@ -1,0 +1,12 @@
+---
+
+- name: Build heat image 
+  docker_image:
+    path: "{{ ops_dk_files_path }}/heat"
+    name: heat 
+    repository: "{{ docker_reg_host }}:{{ docker_host_port }}/heat"
+    tag: "{{ docker_images_tag }}"
+    pull: no
+    push: yes
+    #nocache: yes
+    buildargs: "{{ proxy }}"

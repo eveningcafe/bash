@@ -1,0 +1,6 @@
+---
+
+- name: Create user 
+  shell: |
+    {{ postgres_cli }} -c 'CREATE USER {{ db_update.user }}';
+    {{ postgres_cli }} -c "ALTER USER {{ db_update.user }} WITH ENCRYPTED PASSWORD '{{ db_update.passwd }}'";

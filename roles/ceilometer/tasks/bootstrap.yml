@@ -1,0 +1,29 @@
+---
+
+- name: Remove Ceilometer bootstrap container
+  docker_container:
+    name: ceilometer-bootstrap
+    state: absent
+
+- include_role:
+    name: ceilometer
+    tasks_from: config 
+
+- name: Bootstrap Ceilometer 
+  docker_container:
+    name: ceilometer-bootstrap
+    image: "{{ docker_reg_host }}:{{ docker_host_port }}/ceilometer:{{ docker_images_tag }}"
+    pull: yes
+    state: started
+    user: ceilometer 
+    volumes:
+      - "{{ docker_shared_conf_dir }}/ceilometer/:{{ docker_shared_conf_dir }}/ceilometer/"
+      - /var/log/ceilometer:/var/log/ceilometer
+      - /var/lib/ceilometer:/var/lib/ceilometer 
+      - /etc/localtime:/etc/localtime
+    env: "{{ data_collection_env | merge({ 'CEILOMETER_START': 'BOOTSTRAP' }) }}"
+    network_mode: host
+
+- name: Waiting for Ceilometer bootstrap done 
+  shell: |
+    docker wait ceilometer-bootstrap

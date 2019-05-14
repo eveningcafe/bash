@@ -1,0 +1,27 @@
+---
+
+- name: Config grub
+  lineinfile:
+    path: /etc/default/grub
+    regexp: '^GRUB_CMDLINE_LINUX_DEFAULT='
+    line: 'GRUB_CMDLINE_LINUX_DEFAULT="quiet default_hugepagesz={{ dpdk_config.grub.default_hugepagesz }} hugepagesz={{ dpdk_config.grub.hugepagesz }} intel_iommu=on iommu=pt isolcpus={{ dpdk_config.grub.isolcpus }}"'
+  when: (inventory_hostname in groups['compute']) and (DPDK.ENABLED==true)
+
+- name: Config grub
+  lineinfile:
+    path: /etc/default/grub
+    regexp: '^GRUB_CMDLINE_LINUX_DEFAULT='
+    line: 'GRUB_CMDLINE_LINUX_DEFAULT="intel_iommu=on iommu=pt isolcpus={{ system_config.grub.isolcpus }}"'
+  when: (inventory_hostname in groups['compute']) and (DPDK.ENABLED==false)
+
+- name: Config grub 
+  lineinfile:
+    path: /etc/default/grub
+    regexp: '^GRUB_CMDLINE_LINUX_DEFAULT='
+    line: 'GRUB_CMDLINE_LINUX_DEFAULT="text"'
+  when: (inventory_hostname in groups['controller'])
+
+- name: Update grub
+  shell: |
+    update-grub
+  ignore_errors: yes

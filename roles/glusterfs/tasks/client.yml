@@ -1,0 +1,38 @@
+---
+
+- name: Add GlusterFS ppa repo
+  apt_repository:
+    repo: "{{ glusterfs_repo }}" 
+    state: present
+    update_cache: yes
+
+- name: Install glusterfs-client
+  apt: name=glusterfs-client state=present update_cache=yes
+
+- set_fact: num_of_glsrvs="{{ groups['glusterfs_server'] | length }}"
+
+- name: Update fstab when number of gluster servers greater 1
+  lineinfile:
+    dest=/etc/fstab
+    regexp="^{{ groups['glusterfs_server'] | first }}.+$"
+    line="{{ groups['glusterfs_server'] | first }}:{{ instance.server_path }} {{ instance.client_path }} glusterfs defaults,_netdev,backup-volfile-servers={% for node in groups['glusterfs_server'][1:] %}{{ node }}{% if not loop.last %}:{% endif %}{% endfor %} 0 0"
+  when: num_of_glsrvs | int > 1 
+
+- name: Update fstab when having only 1 gluster server
+  lineinfile:
+    dest=/etc/fstab
+    regexp="^{{ groups['glusterfs_server'] | first }}.+$"
+    line="{{ groups['glusterfs_server'] | first }}:{{ instance.server_path }} {{ instance.client_path }} glusterfs defaults,_netdev 0 0"
+  when: num_of_glsrvs | int == 1
+
+- name: Mount Gluster Volumes
+  shell: |
+    mount -a
+    
+- name: Change permission of instance directory
+  file:
+    path: "{{ instance.client_path }}"
+    owner: nova
+    group: nova
+    recurse: yes
+    state: directory

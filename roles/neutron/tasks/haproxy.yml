@@ -1,0 +1,31 @@
+---
+
+- name: Check ha config for service
+  shell: |
+    cat {{ docker_shared_conf_dir }}/haproxy/haproxy/haproxy.cfg | grep neutron 
+  register: service_cfg
+  ignore_errors: yes
+  
+- include_role:
+    name: haproxy
+    tasks_from: update
+  vars:
+    services:
+      - name: neutron_server
+        port: 9696
+        bind_ips:
+        options:
+          - "mode tcp"
+          - "option ssl-hello-chk"
+  when: (service_cfg.rc == 1) and (neutron_env.SSL_ENABLED == 1)
+ 
+- include_role:
+    name: haproxy
+    tasks_from: update
+  vars:
+    services:
+      - name: neutron_server
+        port: 9696
+        bind_ips:
+        options:
+  when: (service_cfg.rc == 1) and (neutron_env.SSL_ENABLED == 0)

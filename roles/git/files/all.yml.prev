@@ -1,0 +1,313 @@
+---
+
+ops_dk_repo: https://gitlab.visc.com/thaiph5/ops_container_deployment.git
+ops_dk_files_path: /usr/src/openstack-dockerfiles/
+ops_dk_repo_dir: ops_container_deployment
+ops_dk_repo_branch: bash/pike 
+time_zone: Asia/Ho_Chi_Minh
+openstack_release: pike 
+openstack_branch: "stable/{{ openstack_release }}"
+server_delay: 10
+server_time_out: 300 
+
+proxy_addr: "http://192.168.5.8:3128/"
+proxy: 
+  http_proxy: "{{ proxy_addr }}"
+  https_proxy: "{{ proxy_addr }}"
+
+services_controller: os-controller
+
+vip:
+  private:
+    ip: 10.10.0.135
+    inf: ens3
+    router_id: 140
+
+ha_cred:
+  user: cloud
+  pass: HAPROXY_PASS 
+
+ceph_client_keyring:
+  nova: CEPH_NOVA_KEYRING 
+
+#docker_version: 17.12.0~ce-0~ubuntu
+docker_version: 18.03.1~ce-0~ubuntu
+docker_host_port: 4000
+docker_reg_port: 4000
+docker_reg_host: docker-registry
+docker_reg_ip: 10.10.0.145
+
+docker_images_tag: "{{ openstack_release }}" 
+docker_shared_conf_dir: /usr/share/docker
+
+local_repo_ip: "{{ docker_reg_ip }}"
+local_installation: 1
+
+management_net: 10.10.0.0/24
+management_netaddr: "{{ management_net | net_parser | first }}"
+management_netmask: "{{ management_net | net_parser | last }}"
+
+controlplane_mgmt_ip: "{{ vip.haproxy.ip }}"
+
+influxdb_host: "{{ groups['influxdb'] | map('extract', hostvars, ['ansible_ssh_host']) | first }}"
+influxdb_pass: INFLUXDB_PASS 
+
+logstash_host: "{{ groups['logstash'] | map('extract', hostvars, ['ansible_ssh_host']) | first }}"
+logstash_port: 5044
+
+# services password
+rabbit_user: openstack
+rabbit_passwd: RABBIT_PASS 
+rabbit_port: 5672
+
+horizon_dbpass: DASHBOARD_DB_PASSWD
+
+keystone_pass: AD_PASSWD
+keystone_dbpass: ID_DB_PASSWD
+
+glance_dbpass: IMG_DB_PASSWD 
+glance_pass: IMG_SRV_PASSWD 
+
+nova_dbpass: CP_DB_PASSWD 
+nova_pass: CP_SRV_PASSWD
+placement_pass: PL_PASSWD
+
+neutron_dbpass: NW_DB_PASSWD
+neutron_pass: NW_SRV_PASSWD
+
+cinder_dbpass: BLK_DB_PASSWD
+cinder_pass: BLK_SRV_PASSWD
+
+metadata_secret: META_PASSWD
+memcached_pass: MEMCACHED_PASS
+memcached_port: 11211
+
+masakari_dbpass: CPU_HA_DB_PASSWD
+masakari_pass: CPU_HA_PASSWD
+
+heat_dbpass: OCH_DB_PASSWD 
+heat_pass: OCH_PASSWD
+heat_domain_admin_pass: OCH_DOMAIN_PASSWD 
+
+ceilometer_dbpass: MON_AGT_DB_PASSWD
+ceilometer_pass: MON_AGT_PASSWD
+
+gnocchi_dbpass: METRIC_DB_PASSWD
+gnocchi_pass: METRIC_PASSWD
+
+aodh_dbpass: ALARM_DB_PASSWD
+aodh_pass: ALARM_PASSWD
+
+octavia_dbpass: LB_DB_PASSWD 
+octavia_pass: LB_PASSWD
+
+no_proxy_env:
+  http_proxy: ''
+  https_proxy: ''
+
+general_env:
+  MY_IP: "{{ ansible_ssh_host }}" 
+  TUNNEL_IP: "{{ ansible_ssh_host }}" 
+  REGISTRY_HOST: "{{ services_controller }}" 
+  MEMCACHED_SERVER: "{{ ansible_ssh_host }}" 
+  CELL_NAME: cell1
+  DB_HOST: "{{ services_controller }}"
+  CONTROLLER_HOST: "{{ services_controller }}"
+  REGION_NAME: North_VN
+  TRANSPORT_URL: "rabbit://{% for controller in groups['controller'] %}{{ rabbit_user }}:{{ rabbit_passwd }}@{{ controller }}:{{ rabbit_port }}{% if not loop.last %},{% endif %}{% endfor %}"
+  RABBIT_HOSTS: "{% for controller in groups['controller'] %}{{ controller }}:{{ rabbit_port }}{% if not loop.last %},{% endif %}{% endfor %}"
+  MEMCACHED_SERVERS: "{% for controller in groups['controller'] %}{{ controller }}:{{ memcached_port }}{% if not loop.last %},{% endif %}{% endfor %}"
+  MEMCACHE_SECRET_KEY: "{{ memcached_pass }}"
+  SHARED_CONF_DIR: "{{ docker_shared_conf_dir }}"
+  RECHECK_INTERVAL: "1m"
+
+ops_client_env:
+  OS_PROJECT_DOMAIN_NAME: Default
+  OS_PROJECT_DOMAIN_ID: default
+  OS_USER_DOMAIN_NAME: Default
+  OS_USER_DOMAIN_ID: default
+  OS_PROJECT_NAME: admin
+  OS_TENANT_NAME: admin
+  OS_USERNAME: admin
+  OS_PASSWORD: "{{ keystone_pass }}"
+  OS_AUTH_URL: "http://{{ services_controller }}:35357/v3"
+  OS_AUTH_URL_PUB: "http://{{ services_controller }}:5000"
+  OS_IDENTITY_API_VERSION: 3
+  OS_IMAGE_API_VERSION: 2
+
+keystone_env:
+  ADMIN_PASS: "{{ keystone_pass }}"
+  KEYSTONE_DBPASS: "{{ keystone_dbpass }}"
+
+glance_env:
+  GLANCE_DBPASS: "{{ glance_dbpass }}"
+  GLANCE_PASS: "{{ glance_pass }}"
+
+nova_env:
+  NOVA_DBPASS: "{{ nova_dbpass }}"
+  NOVA_PASS: "{{ nova_pass }}"
+  PLACEMENT_PASS: "{{ placement_pass }}"
+  NEUTRON_PASS: "{{ neutron_pass }}"
+  METADATA_PROXY_SHARED_SECRET: "{{ metadata_secret }}"
+
+neutron_env:
+  NEUTRON_DBPASS: "{{ neutron_dbpass }}"
+  NEUTRON_PASS: "{{ neutron_pass }}"
+  NOVA_PASS: "{{ nova_pass }}"
+  METADATA_PROXY_SHARED_SECRET: "{{ metadata_secret }}"
+
+cinder_env:
+  CINDER_DBPASS: "{{ cinder_dbpass }}"
+  CINDER_PASS: "{{ cinder_pass }}"
+
+masakari_env:
+  MASAKARI_DBPASS: "{{ masakari_dbpass }}" 
+  MASAKARI_PASS: "{{ masakari_pass }}"
+  NOVA_PASS: "{{ nova_pass }}"
+  MSQ_PASS: "{{ rabbit_passwd }}" 
+
+heat_env:
+  HEAT_DBPASS: "{{ heat_dbpass }}"
+  HEAT_PASS: "{{ heat_pass }}"
+  HEAT_DOMAIN_PASS: "{{ heat_domain_admin_pass }}"
+
+ceilometer_env:
+  CEILOMETER_DBPASS: "{{ ceilometer_dbpass }}"
+  CEILOMETER_PASS: "{{ ceilometer_pass }}"
+
+gnocchi_env:
+  GNOCCHI_DBPASS: "{{ gnocchi_dbpass }}"
+  GNOCCHI_PASS: "{{ gnocchi_pass }}"
+  GNOCCHI_INDEXER: postgresql
+  GNOCCHI_INDEXER_MODE: master_master
+#  GNOCCHI_INDEXER_MODE: master_slave
+
+aodh_env:
+  AODH_DBPASS: "{{ aodh_dbpass }}"
+  AODH_PASS: "{{ aodh_pass }}"
+
+octavia_env:
+  OCTAVIA_DBPASS: "{{ octavia_dbpass }}"
+  OCTAVIA_PASS: "{{ octavia_pass }}"
+  AMP_IMAGE_TAG: amphora
+  AMP_BOOT_NETWORK_LIST: 73993b45-2dd4-4c2a-87d1-e80c7c4af400
+
+dashboard_env:
+  HORIZON_DBPASS: "{{ horizon_dbpass }}"
+
+identity_env: "{{ general_env | merge(keystone_env) | merge(no_proxy_env) }}"
+
+openstack_client_env: "{{ general_env | merge(ops_client_env) | merge(glance_env) | merge(nova_env) | merge(neutron_env) | merge(cinder_env) | merge(no_proxy_env) }}"
+
+image_env: "{{ general_env | merge(glance_env) | merge(no_proxy_env) }}"
+
+compute_env: "{{ general_env | merge(nova_env) | merge(no_proxy_env) }}"
+
+network_env: "{{ general_env | merge(neutron_env) | merge(no_proxy_env) }}"
+
+block_storage_env: "{{ general_env | merge(cinder_env) | merge(no_proxy_env) }}"
+
+horizon_env: "{{ general_env | merge(dashboard_env) | merge(no_proxy_env) }}"
+
+ha_compute_env: "{{ general_env | merge(masakari_env) | merge(no_proxy_env) }}"
+
+orchestration_env: "{{ general_env | merge(heat_env) | merge(no_proxy_env) }}"
+
+data_collection_env: "{{ general_env | merge(ceilometer_env) | merge(no_proxy_env) }}"
+
+metric_storage_env: "{{ general_env | merge(gnocchi_env) | merge(no_proxy_env) }}"
+
+alert_env: "{{ general_env | merge(aodh_env) | merge(no_proxy_env) }}"
+
+loadbalancer_env: "{{ general_env | merge(octavia_env) | merge(no_proxy_env) }}"
+
+grafana:
+  fqdn: http://10.10.0.181:3000
+
+ceph:
+  glance:
+    enabled: 1
+    user: images
+    keyring: AQDDh8haLGmAAhAAebZsugX3KW2yq8RQmJ+fFw==
+    keyring_path: ceph.client.images.keyring
+    pool: images
+  cinder:
+    enabled: 1
+    user: volumes
+    keyring: AQDJh8haeIPVEhAAiULgwyfmW6zloNQsR42gAA==
+    keyring_path: ceph.client.volumes.keyring
+    pool: volumes
+    rbd_secret_uuid: 94019c72-1928-4303-8364-c339592c8cdb
+    client:
+      config_path: /etc/ceph/nova.xml
+      key_path: /etc/ceph/client.volumes.key
+  nova:
+    enabled: 1
+    user: volumes
+    keyring: AQDJh8haeIPVEhAAiULgwyfmW6zloNQsR42gAA==
+    keyring_path: ceph.client.volumes.keyring
+    pool: vms
+    rbd_secret_uuid: 94019c72-1928-4303-8364-c339592c8cdb
+  gnocchi:
+    enabled: 1
+    user: images
+    keyring: AQA/5KVbDp1RJxAAsIf9/ddiGrcSOnv/ksLy7Q==
+    keyring_path: ceph.client.gnocchi.keyring
+    pool: images
+  
+redis:
+  redis_sentinel_port: 26379
+  redis_master_set: mymaster
+  redis_user:
+  redis_password: INCOMING_PASS
+  image:
+    server: "{{ docker_reg_host }}:{{ docker_host_port }}/redis:latest"
+    sentinel: "{{ docker_reg_host }}:{{ docker_host_port }}/redis-sentinel:latest"
+  env:
+    master:
+      REDIS_REPLICATION_MODE: master
+      REDIS_PASSWORD: INCOMING_PASS
+    slave:
+      REDIS_REPLICATION_MODE: slave
+      REDIS_MASTER_HOST: "{{ groups['redis-master'][0] }}"
+      REDIS_MASTER_PORT_NUMBER: 6379
+      REDIS_MASTER_PASSWORD: INCOMING_PASS
+      REDIS_PASSWORD: INCOMING_PASS
+    sentinel:
+      REDIS_MASTER_HOST: "{{ groups['redis-master'][0] }}"
+      REDIS_MASTER_SET: mymaster
+      REDIS_SENTINEL_QUORUM: 2
+      REDIS_MASTER_PORT_NUMBER: 6379
+      REDIS_MASTER_PASSWORD: INCOMING_PASS
+      REDIS_PASSWORD: INCOMING_PASS
+
+zookeeper:
+  user: gnocchi
+  password: gnocchi
+  image: "{{ docker_reg_host }}:{{ docker_host_port }}/zookeeper:latest"
+  env:
+    ZOO_SERVER_USERS: gnocchi
+    ZOO_SERVER_PASSWORDS: ZOO_PASS 
+    ZOO_SERVER_ID: "{{ zk_server.id }}"
+    ZOO_SERVERS: "{{ zk_server.server }}"
+    ZOO_ENABLE_AUTH: "yes"
+  
+postgres:
+  addr: "{{ groups['postgres-master'][0] }}"
+  image: "{{ docker_reg_host }}:{{ docker_host_port }}/postgresql:latest"
+  env:
+    master:
+      POSTGRESQL_PASSWORD: POSTGRES_PASS
+      PGPASSWORD: POSTGRES_PASS
+      POSTGRESQL_REPLICATION_MODE: master
+      POSTGRESQL_REPLICATION_USER: repl_user
+      POSTGRESQL_REPLICATION_PASSWORD: POSTGRES_REPL_PASSWORD
+      POSTGRESQL_DATABASE: gnocchi
+    slave:
+      POSTGRESQL_PASSWORD: POSTGRES_PASS
+      PGPASSWORD: POSTGRES_PASS
+      POSTGRESQL_REPLICATION_MODE: slave
+      POSTGRESQL_REPLICATION_USER: repl_user
+      POSTGRESQL_REPLICATION_PASSWORD: POSTGRES_REPL_PASSWORD
+      POSTGRESQL_MASTER_HOST: "{{ groups['postgres-master'][0] }}"
+      POSTGRESQL_MASTER_PORT_NUMBER: 5432

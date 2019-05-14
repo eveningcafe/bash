@@ -1,0 +1,64 @@
+# pxc_backup:
+#  crontime: [cronentry] cron entry that triggers the backup
+#  keep: [number] how many backups do we keep
+#  destination: [destination] directory in the filesystem to put backups in
+#  s3bucket: [bucketaddess] when defined, this will trigger a 
+#            sync from pxc_backup.destination to s3 bucket
+#
+# pxc_users:
+#   - { user: foo,
+#       password: "bar",
+#       priv="*.*:ALL"
+#       host="somehost" }
+
+# pxc_backup: are we doing backups ?
+pxc_backup: false
+# pxc_backup_destination: where do we store local backups
+pxc_backup_destination: /tmp
+# pxc_backup_keep: how many backups do we keep
+pxc_backup_keep: 30
+# pxc_backup_s3bucket: when defined, this will trigger a sync from
+#   pxc_backup_destination to s3 bucket
+pxc_backup_s3bucket: ""
+# pxc_backup_gcloudbucket: when defined, this will trigger a sync from
+#   pxc_backup_destination to gcloud bucket
+pxc_backup_gcloudbucket: ""
+
+# which interface do we bind for general mysql daemon
+pxc_bind_interface: "{{ db_params.bind_interface }}"
+
+# which interface do we bind for cluster communications
+pxc_cluster_bind_interface: "{{ pxc_bind_interface }}"
+
+# Define ansible cluster group somewhere
+pxc_cluster_group: pxc_cluster_group 
+pxc_cluster_name: "{{ db_params.wsrep_cluster_name }}" 
+# Set primary inventory_hostame
+pxc_cluster_primary: "{{ groups['pxc_cluster_group'] | first }}" 
+pxc_cluster_sst_password: "{{ db_params.sst_passwd }}" 
+pxc_cluster_sst_user: "{{ db_params.sst_user }}" 
+
+pxc_datadog_user: false
+pxc_datadog_password: false
+
+# Binary log expire
+pxc_expire_log_days: 8
+
+# Allowed list for 3306 port access
+# This can contain ansible group names, ansible host names or IPs
+# Not that the role needs facts for hosts and groups to be gathered
+# It won't do it for you
+pxc_filter_allow_mysql_port: false
+pxc_innodb_large_prefix: false
+
+pxc_max_allowed_packet: 4194304
+pxc_max_connections: 10000
+
+# Datadir
+pxc_datadir: /var/lib/mysql
+
+pxc_root_password: "{{ db_params.root_passwd }}" 
+
+pxc_strict_mode: ENFORCING
+
+pxc_version: "{{ db_params.version }}"

@@ -1,0 +1,16 @@
+---
+
+- name: Create replica extentions
+  shell: |
+    {{ postgres_cli }} -d {{ db_update.name }} -c 'CREATE EXTENSION IF NOT EXISTS btree_gist;'
+    {{ postgres_cli }} -d {{ db_update.name }} -c 'CREATE EXTENSION IF NOT EXISTS bdr;'
+
+- name: Init replica on the first node
+  shell: |
+    {{ postgres_cli }} -d {{ db_update.name }} -c "SELECT bdr.bdr_group_create(local_node_name := '{{ inventory_hostname }}', node_external_dsn := 'host={{ ansible_ssh_host }} user=postgres password={{ postgres_bdr.env.POSTGRES_PASSWORD }} port=5432 dbname={{ db_update.name }}');"
+  when: inventory_hostname in groups['postgres-master']
+
+- name: Init replica on n-th node
+  shell: |
+    {{ postgres_cli }} -d {{ db_update.name }} -c "SELECT bdr.bdr_group_join(local_node_name := '{{ inventory_hostname }}', node_external_dsn := 'host={{ ansible_ssh_host }} user=postgres password={{ postgres_bdr.env.POSTGRES_PASSWORD }} port=5432 dbname={{ db_update.name }}', join_using_dsn := 'host={{ hostvars[groups['postgres-master'][0]]['ansible_ssh_host'] }} user=postgres password={{ postgres_bdr.env.POSTGRES_PASSWORD }} port=5432 dbname={{ db_update.name }}');"
+  when: inventory_hostname in groups['postgres-slave']

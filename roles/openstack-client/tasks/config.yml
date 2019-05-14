@@ -1,0 +1,37 @@
+---
+
+- name: Create shared configuration directory
+  file:
+    path: "{{ docker_shared_conf_dir }}/openstack-client/"
+    state: directory
+
+- name: Create shared configuration directory
+  file:
+    path: "{{ docker_shared_conf_dir }}/openstack-client/{{ item }}/"
+    state: directory
+  with_items:
+    - backup
+    - openstack-client 
+
+- include_tasks: gencerts.yml
+  when: SSL_ENABLED == 1
+
+- name: Distribute certs
+  copy: src="{{ playbook_dir }}/roles/openstack-client/files/{{ item }}" dest="{{ docker_shared_conf_dir }}/openstack-client/{{ item }}" backup=yes
+  with_items:
+    - openstack.crt
+    - openstack.key
+  when: SSL_ENABLED == 1
+
+- name: Create openrc 
+  template: src=openrc.j2 dest="{{ docker_shared_conf_dir }}/openstack-client/openstack-client/openrc" backup=yes
+  vars:
+    OS_PROJECT_DOMAIN_NAME: Default
+    OS_USER_DOMAIN_NAME: Default
+    OS_PROJECT_NAME: admin
+    OS_TENANT_NAME: admin
+    OS_USERNAME: admin
+    OS_PASSWORD: "{{ keystone_pass }}"
+    OS_AUTH_URL: "http://{{ services_controller }}:35357/v3"
+    OS_IDENTITY_API_VERSION: 3
+    OS_IMAGE_API_VERSION: 2

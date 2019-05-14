@@ -1,0 +1,12 @@
+---
+
+- name: Build gnocchi image 
+  docker_image:
+    path: "{{ ops_dk_files_path }}/gnocchi/gnocchi"
+    name: gnocchi
+    repository: "{{ docker_reg_host }}:{{ docker_host_port }}/gnocchi"
+    tag: "{{ docker_images_tag }}"
+    pull: no
+    push: yes
+    #nocache: yes
+    buildargs: "{{ proxy }}"

@@ -1,0 +1,25 @@
+---
+
+- hosts: redis-master 
+  tasks:
+    - include_role:
+        name: redis 
+        tasks_from: master 
+  become: true
+
+- hosts: redis-slave
+  tasks:
+    - include_role:
+        name: redis
+        tasks_from: slave 
+  become: true
+
+- hosts: redis-master:redis-slave
+  tasks:
+    - name: Waiting for cluster up and running 
+      shell: |
+        sleep 30
+    - include_role:
+        name: redis
+        tasks_from: post_installation 
+  become: true

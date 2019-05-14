@@ -1,0 +1,34 @@
+---
+
+- name: Create shared configuration directory
+  file:
+    path: "{{ docker_shared_conf_dir }}/heat/"
+    state: directory
+
+- name: Create shared configuration directory
+  file:
+    path: "{{ docker_shared_conf_dir }}/heat/{{ item }}/"
+    state: directory
+  with_items:
+    - backup
+    - heat
+    - sudoers.d
+    - ssl
+
+- name: Config heat
+  template: src=heat.conf.j2 dest="{{ docker_shared_conf_dir }}/heat/heat/heat.conf" backup=yes
+  when: heat_env.SSL_ENABLED == 0
+
+- name: Config heat
+  template: src=ssl.heat.conf.j2 dest="{{ docker_shared_conf_dir }}/heat/heat/heat.conf" backup=yes
+  when: heat_env.SSL_ENABLED == 1 
+
+- name: Config sudoers 
+  template: src=heat_sudoers.j2 dest="{{ docker_shared_conf_dir }}/heat/sudoers.d/heat_sudoers" backup=yes
+
+- name: Distribute certs
+  copy: src="{{ playbook_dir }}/roles/openstack-client/files/{{ item }}" dest="{{ docker_shared_conf_dir }}/heat/ssl/{{ item }}" backup=yes
+  with_items:
+    - openstack.crt
+    - openstack.key
+  when: heat_env.SSL_ENABLED == 1

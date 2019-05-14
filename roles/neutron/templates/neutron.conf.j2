@@ -1,0 +1,78 @@
+[DEFAULT]
+dhcp_lease_duration = -1
+bind_host = {{ network_env.MY_IP }}
+bind_port = 9696
+core_plugin = ml2
+service_plugins = router
+allow_overlapping_ips = true
+notify_nova_on_port_status_changes = true
+notify_nova_on_port_data_changes = true
+dhcp_agents_per_network = 2
+auth_strategy = keystone
+#global_physnet_mtu = 9000
+
+transport_url = {{ network_env.TRANSPORT_URL }}
+
+[agent]
+root_helper = sudo /usr/bin/neutron-rootwrap /etc/neutron/rootwrap.conf
+
+[cors]
+
+[cors.subdomain]
+
+[database]
+connection = mysql+pymysql://neutron:{{ network_env.NEUTRON_DBPASS }}@{{ mysql_host }}/neutron
+max_retries = -1
+
+[keystone_authtoken]
+auth_uri = http://{{ network_env.CONTROLLER_HOST }}:5000
+auth_url = http://{{ network_env.CONTROLLER_HOST }}:35357
+auth_type = password
+project_domain_name = Default
+user_domain_name = Default
+project_name = service
+username = neutron
+password = {{ network_env.NEUTRON_PASS }}
+memcached_servers = {{ network_env.MEMCACHED_SERVERS }}
+#memcache_security_strategy = ENCRYPT
+#memcache_secret_key = {{ network_env.MEMCACHE_SECRET_KEY }}
+
+[matchmaker_redis]
+
+[nova]
+auth_url = http://{{ network_env.CONTROLLER_HOST }}:35357
+auth_type = password
+os_region_name = {{ network_env.REGION_NAME }}
+project_domain_name = Default
+user_domain_name = Default
+project_name = service
+username = nova
+password = {{ network_env.NOVA_PASS }}
+
+[oslo_concurrency]
+lock_path = /var/lib/neutron/tmp
+
+[oslo_messaging_amqp]
+
+[oslo_messaging_kafka]
+
+[oslo_messaging_notifications]
+driver = messagingv2
+
+[oslo_messaging_rabbit]
+
+[oslo_messaging_zmq]
+
+[oslo_middleware]
+
+[oslo_policy]
+
+[qos]
+
+[quotas]
+quota_security_group = 50
+quota_security_group_rule = 100
+
+
+[ssl]
+

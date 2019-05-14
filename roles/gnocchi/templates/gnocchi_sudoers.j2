@@ -1,0 +1,4 @@
+Defaults:gnocchi !requiretty
+
+gnocchi ALL = (root) NOPASSWD: /usr/bin/gnocchi-rootwrap /etc/gnocchi/rootwrap.conf *
+gnocchi ALL=(root) NOPASSWD:SETENV: /usr/local/bin/copy_file.sh

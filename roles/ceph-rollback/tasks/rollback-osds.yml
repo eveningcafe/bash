@@ -1,0 +1,16 @@
+
+# docker rm -f ceph-osd
+# docker container rename ceph-osd-sdb.backup ceph-osd
+# docker start ceph-osd
+---
+
+- name: get list osd upgraded
+  shell: |
+    docker ps -a | grep backup | grep ceph-osd| grep "{{ceph_current_version}}" | awk '{print $NF}' |  awk -F. '{ print $1 }'
+  register: result
+
+- name: rollback osds
+  include_role:
+    name: ceph-rollback
+    tasks_from: rollback-osd
+  with_items: "{{ result.stdout_lines }}"

@@ -1,0 +1,62 @@
+---
+
+- name: Remove current docker installation
+  apt: name=docker-ce state=absent purge=yes
+
+- name: Get kernel version
+  shell: uname -r
+  register: kernel_version
+
+- name: Install docker prerequisite
+  apt: name={{ item }} state=present update_cache=yes
+  with_items:
+#    - linux-image-extra-{{ kernel_version.stdout }}
+#    - linux-image-extra-virtual
+    - apt-transport-https
+    - ca-certificates
+    - curl
+    - software-properties-common
+#    - python-pip
+ 
+- name: Get GPG key
+  shell: |
+    curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
+  when: local_installation == 0
+
+- name: Add docker repos
+  apt_repository:
+    repo: deb [arch=amd64] https://download.docker.com/linux/ubuntu {{ ansible_distribution_release }} stable
+    state: present
+  when: local_installation == 0
+
+- name: Update system
+  apt:
+    update_cache: yes
+
+- name: Install docker
+  apt: name="docker-ce={{ docker_version }}" state=present update_cache=yes
+
+- name: Add docker group
+  group:
+    name: docker
+    state: present
+
+- name: Add current user to docker group
+  user:
+    name: "{{ ansible_env.USER }}"
+    shell: /bin/bash
+    group: docker
+    append: yes
+
+- name: Config docker registry
+  template: src=daemon.json.j2 dest=/etc/docker/daemon.json backup=yes  
+
+- name: Restart docker
+  shell: |
+    systemctl restart docker
+    sleep 2
+
+- name: Create shared configuration directory
+  file:
+    path: "{{ docker_shared_conf_dir }}" 
+    state: directory

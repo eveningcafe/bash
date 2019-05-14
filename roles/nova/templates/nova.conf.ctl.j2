@@ -1,0 +1,110 @@
+[DEFAULT]
+debug = false
+state_path = /var/lib/nova
+log_dir = /var/log/nova
+my_ip = {{ compute_env.MY_IP }}
+enabled_apis=osapi_compute,metadata
+osapi_compute_listen = {{ compute_env.MY_IP }}
+osapi_compute_listen_port = 8774
+metadata_listen = {{ compute_env.MY_IP }}
+metadata_listen_port = 8775
+firewall_driver = nova.virt.firewall.NoopFirewallDriver
+
+osapi_compute_unique_server_name_scope = global
+
+transport_url = {{ compute_env.TRANSPORT_URL }}
+
+allow_resize_to_same_host = True
+
+# SYNC POWER STATE CONFIG
+#sync_power_state_interval = -1
+#image_cache_manager_interval = -1
+
+# INSTANCE NAME TEMPLATE
+instance_name_template = "%(hostname)s"
+
+[api_database]
+connection = mysql+pymysql://nova:{{ compute_env.NOVA_DBPASS }}@{{ mysql_host }}/nova_api
+max_retries = -1
+
+[database]
+connection = mysql+pymysql://nova:{{ compute_env.NOVA_DBPASS }}@{{ mysql_host }}/nova
+max_pool_size = 50
+max_overflow = 1000
+max_retries = -1
+
+[api]
+auth_strategy = keystone
+
+[keystone_authtoken]
+auth_uri = http://{{ compute_env.CONTROLLER_HOST }}:5000
+auth_url = http://{{ compute_env.CONTROLLER_HOST }}:35357
+auth_type = password
+project_domain_name = Default
+user_domain_name = Default
+project_name = service
+username = nova
+password = {{ compute_env.NOVA_PASS }}
+memcached_servers = {{ compute_env.MEMCACHED_SERVERS }}
+#memcache_security_strategy = ENCRYPT
+#memcache_secret_key = {{ compute_env.MEMCACHE_SECRET_KEY }}
+
+[placement]
+auth_url = http://{{ compute_env.CONTROLLER_HOST }}:35357/v3
+auth_type = password
+os_region_name = {{ compute_env.REGION_NAME }}
+project_domain_name = Default
+user_domain_name = Default
+project_name = service
+username = placement
+password = {{ compute_env.PLACEMENT_PASS }}
+
+[neutron]
+url = http://{{ compute_env.CONTROLLER_HOST }}:9696
+auth_url = http://{{ compute_env.CONTROLLER_HOST }}:35357
+auth_type = password
+region_name = {{ compute_env.REGION_NAME }}
+project_domain_name = Default
+user_domain_name = Default
+project_name = service
+username = neutron
+password = {{ compute_env.NEUTRON_PASS }}
+service_metadata_proxy = true
+metadata_proxy_shared_secret = {{ compute_env.METADATA_PROXY_SHARED_SECRET }}
+
+[cache]
+backend = oslo_cache.memcache_pool
+enabled = true
+memcache_servers = {{ compute_env.MEMCACHED_SERVERS }}
+
+[cinder]
+os_region_name = {{ general_env.REGION_NAME }}
+cross_az_attach = False
+
+[glance]
+api_servers = http://{{ compute_env.CONTROLLER_HOST }}:9292
+
+[cells]
+enable = false
+
+[crypto]
+keys_path = /var/lib/nova/keys
+
+[oslo_concurrency]
+lock_path = /var/lib/nova/tmp
+
+[wsgi]
+api_paste_config=/etc/nova/api-paste.ini
+
+[vnc]
+enabled = true
+novncproxy_host = {{ compute_env.MY_IP }}
+novncproxy_port = 6080
+vncserver_listen = 0.0.0.0
+vncserver_proxyclient_address = {{ compute_env.MY_IP }}
+
+[upgrade_levels]
+compute = auto
+
+[filter_scheduler]
+enabled_filters = RetryFilter,AvailabilityZoneFilter,ComputeFilter,ComputeCapabilitiesFilter,ImagePropertiesFilter,ServerGroupAntiAffinityFilter,ServerGroupAffinityFilter,AggregateMultiTenancyIsolation

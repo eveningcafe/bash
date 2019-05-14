@@ -1,0 +1,12 @@
+parallel_create_mds: false
+create_cephfs: false
+# #if create_cephfs: true , it will create the ceph filesystem, default fs_name is "cephfs" with pools: "cephfs_data" "cephfs_metadata", pg 8
+# create_cephfs: true
+# fs_name: myfs
+# data_pool_name: myfs_data
+# metadata_pool_name: myfs_metadata
+# pg_num: 8
+
+
+
+

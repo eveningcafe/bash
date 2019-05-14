@@ -1,0 +1,97 @@
+---
+
+- name: Remove Aodh containers
+  docker_container:
+    name: "{{ item }}"
+    state: absent
+  with_items:
+    - aodh-api
+    - aodh-evaluator
+    - aodh-notifier
+    - aodh-listener
+    - aodh-expirer
+
+- include_role:
+    name: aodh
+    tasks_from: config
+
+- name: Start aodh-api 
+  docker_container:
+    name: aodh-api 
+    image: "{{ docker_reg_host }}:{{ docker_host_port }}/aodh:{{ docker_images_tag }}"
+    pull: yes
+    restart_policy: unless-stopped
+    state: started
+    user: root 
+    volumes:
+      - "{{ docker_shared_conf_dir }}/aodh/:{{ docker_shared_conf_dir }}/aodh/"
+      - /var/log/apache2/:/var/log/apache2/
+      - /var/log/aodh:/var/log/aodh
+      - /var/lib/aodh:/var/lib/aodh
+      - /etc/localtime:/etc/localtime
+    env: "{{ image_env | merge({ 'AODH_START': 'START_AODH_API' }) }}"
+    network_mode: host
+
+- name: Start aodh-evaluator
+  docker_container:
+    name: aodh-evaluator
+    image: "{{ docker_reg_host }}:{{ docker_host_port }}/aodh:{{ docker_images_tag }}"
+    pull: yes
+    restart_policy: unless-stopped
+    state: started
+    user: root 
+    volumes:
+      - "{{ docker_shared_conf_dir }}/aodh/:{{ docker_shared_conf_dir }}/aodh/"
+      - /var/log/aodh:/var/log/aodh
+      - /var/lib/aodh:/var/lib/aodh
+      - /etc/localtime:/etc/localtime
+    env: "{{ image_env | merge({ 'AODH_START': 'START_AODH_EVALUATOR' }) }}"
+    network_mode: host
+
+- name: Start aodh-notifier 
+  docker_container:
+    name: aodh-notifier 
+    image: "{{ docker_reg_host }}:{{ docker_host_port }}/aodh:{{ docker_images_tag }}"
+    pull: yes
+    restart_policy: unless-stopped
+    state: started
+    user: root 
+    volumes:
+      - "{{ docker_shared_conf_dir }}/aodh/:{{ docker_shared_conf_dir }}/aodh/"
+      - /var/log/aodh:/var/log/aodh
+      - /var/lib/aodh:/var/lib/aodh
+      - /etc/localtime:/etc/localtime
+    env: "{{ image_env | merge({ 'AODH_START': 'START_AODH_NOTIFIER' }) }}"
+    network_mode: host
+
+- name: Start aodh-listener 
+  docker_container:
+    name: aodh-listener 
+    image: "{{ docker_reg_host }}:{{ docker_host_port }}/aodh:{{ docker_images_tag }}"
+    pull: yes
+    restart_policy: unless-stopped
+    state: started
+    user: root 
+    volumes:
+      - "{{ docker_shared_conf_dir }}/aodh/:{{ docker_shared_conf_dir }}/aodh/"
+      - /var/log/aodh:/var/log/aodh
+      - /var/lib/aodh:/var/lib/aodh
+      - /etc/localtime:/etc/localtime
+    env: "{{ image_env | merge({ 'AODH_START': 'START_AODH_LISTENER' }) }}"
+    network_mode: host
+
+#- name: Start aodh-expirer 
+#  docker_container:
+#    name: aodh-expirer 
+#    image: "{{ docker_reg_host }}:{{ docker_host_port }}/aodh:{{ docker_images_tag }}"
+#    pull: yes
+#    restart_policy: unless-stopped
+#    state: started
+#    user: root 
+#    volumes:
+#      - "{{ docker_shared_conf_dir }}/aodh/:{{ docker_shared_conf_dir }}/aodh/"
+#      - /var/log/aodh:/var/log/aodh
+#      - /var/lib/aodh:/var/lib/aodh
+#      - /etc/localtime:/etc/localtime
+#    env: "{{ image_env | merge({ 'AODH_START': 'START_AODH_EXPIRER' }) }}"
+#    network_mode: host

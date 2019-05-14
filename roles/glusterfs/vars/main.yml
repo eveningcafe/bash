@@ -1,0 +1,10 @@
+---
+
+glusterfs_repo: "ppa:gluster/glusterfs-3.9"
+
+gluster_volume: nova_instances
+gluster_brick: /mnt/gluster
+
+instance:
+  server_path: "/{{ gluster_volume }}"
+  client_path: "/var/lib/nova/instances"

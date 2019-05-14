@@ -1,0 +1,8 @@
+# Create an additional socket in haproxy's chroot in order to allow logging via
+# /dev/log to chroot'ed HAProxy processes
+#local1.notice /var/log/haproxy.log
+$AddUnixListenSocket {{ haproxy_env.LOG_PATH }} 
+
+# Send HAProxy messages to a dedicated logfile
+if $programname startswith 'haproxy' then /var/log/haproxy/haproxy.log
+&~

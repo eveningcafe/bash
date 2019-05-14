@@ -1,0 +1,64 @@
+---
+
+- name: Create cinder database
+  include_role:
+    name: sql
+    tasks_from: update
+  vars:
+    db_update:
+      name: cinder
+      user: cinder
+      passwd: "{{ cinder_env.CINDER_DBPASS }}"
+
+- name: Create service user
+  include_role:
+    name: openstack-client
+    tasks_from: user
+  vars:
+    domain:
+      name: default
+    service:
+      user: cinder
+      pass: "{{ cinder_pass }}"
+
+- name: Cinder v2 service and service endpoints 
+  include_role:
+    name: openstack-client
+    tasks_from: service 
+  vars:
+    domain_id: default
+    region_name: "{{ block_storage_env.REGION_NAME }}"
+    service:
+      type: volumev2
+      name: cinderv2
+      user: cinder
+      pass: "{{ cinder_pass }}"
+      description: "OpenStack Block Storage"
+      endpoints:
+        - scope: public
+          url: "{% raw %}'http://{{ general_env.CONTROLLER_HOST }}:8776/v2/%(project_id)s'{% endraw %}"
+        - scope: internal
+          url: "{% raw %}'http://{{ general_env.CONTROLLER_HOST }}:8776/v2/%(project_id)s'{% endraw %}"
+        - scope: admin
+          url: "{% raw %}'http://{{ general_env.CONTROLLER_HOST }}:8776/v2/%(project_id)s'{% endraw %}"
+
+- name: Cinder v3 service and service endpoints 
+  include_role:
+    name: openstack-client
+    tasks_from: service
+  vars:
+    domain_id: default
+    region_name: "{{ block_storage_env.REGION_NAME }}"
+    service:
+      type: volumev3
+      name: cinderv3
+      user: cinder
+      pass: "{{ cinder_pass }}"
+      description: "OpenStack Block Storage"
+      endpoints:
+        - scope: public
+          url: "{% raw %}'http://{{ general_env.CONTROLLER_HOST }}:8776/v3/%(project_id)s'{% endraw %}"
+        - scope: internal
+          url: "{% raw %}'http://{{ general_env.CONTROLLER_HOST }}:8776/v3/%(project_id)s'{% endraw %}"
+        - scope: admin
+          url: "{% raw %}'http://{{ general_env.CONTROLLER_HOST }}:8776/v3/%(project_id)s'{% endraw %}"

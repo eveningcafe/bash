@@ -1,0 +1,43 @@
+---
+
+- hosts: mysql
+  tasks:
+    - include_role:
+        name: mysql
+        tasks_from: teardown 
+  become: true
+
+- hosts: mysql-bootstrap
+  tasks:
+    - include_role:
+        name: mysql
+        tasks_from: bootstrap 
+
+    - name: Waiting for mysql-service up
+      shell: |
+        sleep 10
+  become: true
+
+- hosts: mysql-follower
+  tasks:
+    - include_role:
+        name: mysql
+        tasks_from: follower 
+    - name: Waiting for mysql-service up
+      shell: |
+        sleep 10
+  become: true
+
+- hosts: mysql-bootstrap
+  tasks:
+    - include_role:
+        name: mysql
+        tasks_from: post_config 
+  become: true
+
+- hosts: mysql
+  tasks:
+    - include_role:
+        name: mysql
+        tasks_from: keepalived
+  become: true

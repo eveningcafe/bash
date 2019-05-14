@@ -1,0 +1,7 @@
+---
+
+- name: Create glance image 
+  shell: |
+    {{ docker_openstack_client }} image create --{{ image.visibility }} --disk-format {{ image.disk_format }} --container-format {{ image.container_format }} --file {{ image.path }} --tag {{ image.tag }} {{ image.name }} -c id -f value
+  environment: "{{ ops_client_env }}"
+  ignore_errors: yes 

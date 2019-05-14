@@ -1,0 +1,20 @@
+Listen 8042
+<VirtualHost *:8042>
+    DocumentRoot "/var/www/cgi-bin/aodh"
+    <Directory "/var/www/cgi-bin/aodh">
+        AllowOverride None
+        Require all granted
+        <LimitExcept GET POST HEAD PUT DELETE OPTIONS>
+            Deny from all
+        </LimitExcept>
+        Options -Indexes
+    </Directory>
+
+    ErrorLog "|/usr/bin/rotatelogs /var/log/apache2/aodh_error_%Y-%m-%d.log 86400"
+    CustomLog "|/usr/bin/rotatelogs /var/log/apache2/aodh_access_%Y-%m-%d.log 86400" vt_combined
+    SetEnvIf X-Forwarded-Proto https HTTPS=1
+    WSGIApplicationGroup %{GLOBAL}
+    WSGIDaemonProcess aodh display-name=aodh_wsgi user=aodh group=aodh processes=6 threads=3
+    WSGIProcessGroup aodh
+    WSGIScriptAlias / "/var/www/cgi-bin/aodh/app.wsgi"
+</VirtualHost>

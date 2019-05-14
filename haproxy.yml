@@ -1,0 +1,12 @@
+---
+
+- hosts: current_controller 
+  tasks:
+    - include_role:
+        name: haproxy
+        tasks_from: setup
+
+    - include_role: 
+        name: haproxy 
+        tasks_from: keepalived 
+  become: true

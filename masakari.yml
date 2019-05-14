@@ -1,0 +1,20 @@
+---
+
+- name: Bootstrap
+  hosts: current_controller:&hub
+  tasks:
+    - include_role:
+        name: masakari 
+        tasks_from: setup 
+  become: true
+
+- name: Start masakari on Controller Nodes 
+  hosts: current_controller
+  tasks:
+    - include_role:
+        name: masakari 
+        tasks_from: "{{ item }}"
+      with_items:
+        - controller 
+        - haproxy 
+  become: true

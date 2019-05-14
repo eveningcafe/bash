@@ -1,0 +1,19 @@
+---
+
+- name: Ceph keyring setting 
+  template: src=ceph.keyring.j2 dest="{{ docker_shared_conf_dir }}/glance/ceph/{{ ceph.glance.keyring_path }}" backup=yes
+
+- name: Copy ceph base config for glance 
+  template: src=ceph.base.j2 dest="{{ docker_shared_conf_dir }}/glance/ceph/ceph.conf" backup=yes
+
+- name: Update ceph config for glance
+  lineinfile:
+    dest: "{{ docker_shared_conf_dir }}/glance/ceph/ceph.conf" 
+    regexp: "{{ item.regexp }}"
+    line: "{{ item.line }}"
+  with_items:
+    - { regexp: '^[client.{{ ceph.glance.user }}]', line: '[client.{{ ceph.glance.user }}]' }
+    - { regexp: '^keyring', line: 'keyring = /etc/ceph/{{ ceph.glance.keyring_path }}' }
+
+- name: Config ceph sudoer
+  template: src=ceph.j2 dest="{{ docker_shared_conf_dir }}/glance/sudoers.d/ceph" backup=yes

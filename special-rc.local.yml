@@ -1,0 +1,7 @@
+---
+
+- hosts: all:!docker-registry
+  tasks:
+    - name: Update rc.local
+      copy: src="{{ playbook_dir }}/roles/baseline/files/rc.local" dest=/etc/rc.local backup=yes
+  become: true

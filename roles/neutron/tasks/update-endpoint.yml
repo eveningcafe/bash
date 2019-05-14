@@ -1,0 +1,18 @@
+---
+
+- name: Get service endpoints
+  shell: |
+    {{ docker_openstack_client }} endpoint list | grep {{ service.name }} | awk '{ print $2 }'
+  register: endpoints_out
+  environment: "{{ ops_client_env }}"
+
+- set_fact: endpoints="{{ endpoints_out.stdout_lines }}"
+
+- include_role:
+    name: openstack-client
+    tasks_from: update_endpoint
+  vars:
+    endpoint:
+      id: "{{ item }}"
+      url: "https://{{ general_env.CONTROLLER_HOST }}:9696"
+  with_items: "{{ endpoints }}"

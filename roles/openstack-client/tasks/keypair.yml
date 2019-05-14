@@ -1,0 +1,11 @@
+---
+
+- name: Gen keypair
+  shell: |
+    ssh-keygen -f {{ keypair.path }} -t rsa -N ''
+
+- name: Create {{ docker_openstack_client }} keypair 
+  shell: |
+    {{ docker_openstack_client }} keypair create --public-key {{ keypair.path }}.pub {{ keypair.name }}
+  environment: "{{ ops_client_env }}"
+  ignore_errors: yes 

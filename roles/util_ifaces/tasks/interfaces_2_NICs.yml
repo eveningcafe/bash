@@ -1,0 +1,9 @@
+---
+
+- name: Get interfaces
+  include_role:
+    name: util_ifaces
+    tasks_from: main
+
+- name: Update new interfaces configuration
+  template: src=interfaces_2_NICs.j2 dest=/etc/network/interfaces backup=yes

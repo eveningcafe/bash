@@ -1,0 +1,23 @@
+
+{% for service in services %}
+listen {{ service.name }}
+{% for ip in ha_bind_common_ips %}
+  bind {{ ip }}:{{ service.port }}
+{% endfor %}
+{% if service.bind_ips is not none %}
+{% for ip in service.bind_ips %}
+  bind {{ ip }}:{{ service.port }}
+{% endfor %}
+{% endif %}
+{% if service.options is not none %}
+{% for option in service.options %}
+  {{ option }}
+{% endfor %}
+{% endif %}
+{% for key, value in controllers.items() %}
+  server {{ value }} {{ key }}:{{ service.port }} check inter 2000 rise 2 fall 5
+{% endfor %}
+{% if not loop.last %}
+
+{% endif %}
+{% endfor %}

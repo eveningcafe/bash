@@ -1,0 +1,21 @@
+---
+
+- name: Start haproxy 
+  docker_container:
+    name: haproxy
+    image: "{{ haproxy_env.IMAGE }}"
+    pull: yes
+    restart_policy: unless-stopped
+    state: started
+    volumes:
+      - "{{ docker_shared_conf_dir }}/haproxy/:{{ docker_shared_conf_dir }}/haproxy/"
+      - "{{ haproxy_env.LOG_PATH }}:{{ haproxy_env.LOG_PATH }}"
+      - /run/haproxy/:/run/haproxy/
+      - /etc/localtime:/etc/localtime
+    env: "{{ haproxy_env }}"
+    network_mode: host
+
+- name: Update haproxy socket permission
+  file:
+    path: /run/haproxy/admin.sock
+    mode: "o=rw"

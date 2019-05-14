@@ -1,0 +1,44 @@
+---
+
+- name: force create osd check output file
+  local_action:
+    module: copy
+    content: ""
+    dest: "/tmp/output_{{inventory_hostname}}_osd"
+    force: yes
+    
+- name: collect error container 
+  include_role: 
+    name: fixbugosd
+    tasks_from: export_error
+  vars: 
+    listitem: "{{ item }}"
+  loop: "{{ osd_nodes }}"
+
+- name: read osd output file
+  shell: |
+    cat /tmp/output_{{inventory_hostname}}_osd
+  register: check_file
+  
+- name: no problem  
+  debug: msg="In host {{inventory_hostname}} , all ceph osd is good, congratulation :)"
+  when: check_file.stdout.find('die') == -1
+
+#- name: has osd die, ask for next action
+#  pause:
+#    prompt: " List of died osd in file /tmp/output_{{inventory_hostname}}_osd." 
+#    seconds: 30
+#  when: check_file.stdout.find('die') != -1
+
+- name: autofix die osd
+  include_role:
+    name: fixbugosd
+    tasks_from: fix
+  #when: (mypause.user_input is defined) and (mypause.user_input | bool) and (check_file.stdout.find('die') != -1)
+  when: (check_file.stdout.find('die') != -1)
+
+- fail:
+    msg: ok. you choose fix manual.
+  #when: (mypause.user_input is defined) and not ( mypause.user_input | bool) and (check_file.stdout.find('die') != -1)
+  when: (check_file.stdout.find('die') != -1)
+

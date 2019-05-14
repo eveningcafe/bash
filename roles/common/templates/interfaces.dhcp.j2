@@ -1,0 +1,9 @@
+{% if networking.dhcp.enabled %}
+{% for item in networking.dhcp.data %}
+auto {{ item.interface }}
+iface {{ item.interface }} inet dhcp
+{% if not loop.last %}
+
+{% endif %}
+{% endfor %}
+{% endif %}

@@ -1,0 +1,33 @@
+---
+
+- include_role:
+    name: sql
+    tasks_from: drop 
+  vars:
+    db_update:
+      name: masakari
+
+- include_role:
+    name: openstack-client
+    tasks_from: service_delete
+  vars:
+    domain:
+      name: default
+    service:
+      name: masakari
+
+- include_role:
+    name: openstack-client
+    tasks_from: user_delete
+  vars:
+    service:
+      user: masakari
+
+- name: Remove masakari containers
+  docker_container:
+    name: "{{ item }}" 
+    state: absent
+  with_items:
+    - masakari-api
+    - masakari-engine
+  ignore_errors: yes

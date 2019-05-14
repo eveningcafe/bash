@@ -1,0 +1,13 @@
+---
+
+- name: Build Masakari images
+  docker_image:
+    path: "{{ ops_dk_files_path }}/masakari/{{ item }}"
+    name: "{{ item }}"
+    repository: "{{ docker_reg_host }}:{{ docker_host_port }}/{{ item }}"
+    tag: "{{ docker_images_tag }}"
+    pull: no
+    push: yes
+    buildargs: "{{ proxy }}"
+  with_items:
+    - masakari

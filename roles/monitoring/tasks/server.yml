@@ -1,0 +1,9 @@
+---
+
+- include_role:
+    name: metric
+    tasks_from: server
+
+- include_role:
+    name: log
+    tasks_from: server

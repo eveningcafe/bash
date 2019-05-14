@@ -1,0 +1,19 @@
+!includedir /etc/mysql/conf.d/
+
+[mysqld]
+bind-address = {{ db_params.bind_address }} 
+port = 3306
+wsrep_provider=/usr/lib/libgalera_smm.so
+wsrep_cluster_name={{ db_params.wsrep_cluster_name }}
+wsrep_cluster_address=gcomm://{{ groups['controller'] | map('extract', hostvars, ['ansible_ssh_host']) | join(',') }}
+wsrep_node_name={{ inventory_hostname }}
+wsrep_node_address={{ ansible_ssh_host }}
+wsrep_sst_method=xtrabackup-v2
+wsrep_sst_auth=sst:{{ db_params.cluster_passwd }}
+pxc_strict_mode=ENFORCING
+binlog_format=ROW
+default_storage_engine=InnoDB
+innodb_autoinc_lock_mode=2
+max_connections = 10000
+max_connect_errors = 10000
+max_allowed_packet = 16M

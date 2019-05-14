@@ -1,0 +1,24 @@
+---
+
+- name: Clean data directory
+  file:
+    path: "/tmp/{{ archive }}"
+    state: absent
+  ignore_errors: yes
+
+- name: Create data directory 
+  file:
+    path: "/tmp/{{ archive }}"
+    state: directory
+
+- name: Extract package
+  unarchive:
+    src: "{{ tar_archive }}"
+    remote_src: yes
+    dest: "/tmp/{{ archive }}"
+    extra_opts: [--strip-components=1]
+
+- name: Install package
+  shell: python setup.py install
+  args:
+    chdir: "/tmp/{{ archive }}"

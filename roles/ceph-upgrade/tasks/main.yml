@@ -1,0 +1,22 @@
+---
+# neu goi main thi se upgrade mon,osd, mgr lan-luot-tung-host
+- name: upgrade mon
+  include_role:
+    name: ceph-upgrade
+    tasks_from: upgrade_mon
+  when: inventory_hostname in groups.ceph_mon
+- name: upgrade mgr
+  include_role:
+    name: ceph-upgrade
+    tasks_from: upgrade_mgr
+  when: inventory_hostname in groups.ceph_mgr
+- name: upgrade osd
+  include_role:
+    name: ceph-upgrade
+    tasks_from: upgrade_osds
+  when: inventory_hostname in groups.ceph_osd
+- name: show final status
+  include_role:
+    name: ceph-upgrade
+    tasks_from: verify_total
+  when: inventory_hostname in groups.ceph_conf

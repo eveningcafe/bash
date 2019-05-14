@@ -1,0 +1,66 @@
+---
+- name: use image_address from local registry
+  set_fact:
+    image_address: "{{docker_reg_host}}:{{docker_reg_port}}/{{ ceph_docker_image }}:{{ ceph_docker_image_tag }}"
+  when: docker_use_local_registry
+
+- name: use image_address from extenal registry
+  set_fact:
+    image_address: "{{ ceph_docker_image }}:{{ ceph_docker_image_tag }}"
+  when: not docker_use_local_registry
+- name: populate-kvstore
+  include: populate-kvstore.yml
+
+- name: run monitor with kv store
+  docker_container:
+    name: "{{ mon_name }}"
+    state: started
+    command: mon
+    network_mode: host
+    restart_policy: unless-stopped
+    volumes: 
+      - /var/lib/ceph:/var/lib/ceph
+      - /etc/localtime:/etc/localtime
+      - /var/run/ceph:/var/run/ceph 
+      - /var/log/ceph:/var/log/ceph
+    env:
+      MON_IP: "{{ mon_ip }}"
+      KV_TYPE: "{{ kv_type }}"
+      KV_IP: "{{kv_endpoint}}"
+      KV_PORT: "{{kv_port}}"
+      CEPH_PUBLIC_NETWORK: "{{ ceph_public_network }}"
+    image: "{{image_address}}"
+- name: put client host key
+  command: "curl 'http://{{kv_endpoint}}:{{kv_port}}/v2/keys/ceph-config/ceph/client_host' -XPUT -d value=''"
+  changed_when: false
+  register: check_put
+  failed_when: false
+  until: check_put.rc == 0
+  retries: 5
+  delay: 2
+  
+- name: check mon up
+  include: verify-mon.yml
+
+- name: update permission log dir
+  command: "docker exec {{mon_name}} chown -R ceph:ceph /var/log/ceph"
+  ignore_errors: yes
+
+- name: update mon map
+  command: "docker exec {{mon_name}} ceph mon getmap -o /etc/ceph/monmap-ceph"
+
+# - name: restart docker
+#   docker_container:
+#     name: "{{ mon_name }}"
+#     state: started
+#     restart: yes
+- name: restart docker
+  command: "docker restart {{mon_name}}"
+  ignore_errors: yes
+  
+- name: check mon up
+  include: verify-mon.yml
+
+  
+#- name: update mon map
+#  command: "docker exec {{mon_name}} ceph mon getmap -o /etc/ceph/monmap-ceph"

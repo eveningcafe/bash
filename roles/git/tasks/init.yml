@@ -1,0 +1,15 @@
+---
+
+- name: Copy password templates for ansible deployment 
+  copy:
+    src: "{{ item }}"
+    dest: "{{ playbook_dir }}/group_vars/{{ item }}"
+    backup: yes
+  with_items:
+    - all.yml
+    - controller.yml
+    - mysql.yml
+
+- name: Generate passwords 
+  shell:
+    bash -c '{{ playbook_dir }}/roles/git/files/genpw.sh {{ playbook_dir }}/group_vars'

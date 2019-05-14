@@ -1,0 +1,34 @@
+---
+
+- name: Remove old zookeeper container
+  docker_container:
+    name: zookeeper 
+    state: absent
+
+- name: Remove old zookeeper data 
+  file:
+    path: /var/lib/zookeeper/ 
+    state: absent
+  ignore_errors: yes
+
+- include_tasks: config.yml
+
+- name: Zookeeper 
+  docker_container:
+    name: zookeeper 
+    image: "{{ zookeeper.image }}"
+    pull: yes
+    restart_policy: unless-stopped
+    state: started
+    user: root 
+    ports:
+      - "2181:2181"
+      - "2888:2888"
+      - "3888:3888"
+    volumes:
+      - "{{ docker_shared_conf_dir }}/zookeeper/log4j.properties:/opt/bitnami/zookeeper/conf/log4j.properties"
+      - /var/lib/zookeeper/data:/bitnami/zookeeper
+      - /var/log/zookeeper/:/opt/bitnami/zookeeper/logs/
+      - /etc/localtime:/etc/localtime
+    env: "{{ zookeeper.env }}"
+    network_mode: host

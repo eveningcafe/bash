@@ -1,0 +1,7 @@
+---
+
+- name: Remove memcached 
+  docker_container:
+    name: memcached 
+    state: absent
+  ignore_errors: yes

@@ -1,0 +1,26 @@
+---
+
+- name: Check ha config for service
+  shell: |
+    cat {{ docker_shared_conf_dir }}/haproxy/haproxy/haproxy.cfg | grep masakari 
+  register: service_cfg
+  ignore_errors: yes
+  
+- include_role:
+    name: haproxy
+    tasks_from: update
+  vars:
+    services:
+      - name: masakari_api 
+        port: 15868 
+        bind_ips:
+        options:
+          - "timeout client 2m"
+          - "timeout server 2m"
+          - "balance  source"
+          - "http-request del-header X-Forwarded-Proto"
+          - "http-request set-header X-Forwarded-Proto https if { ssl_fc }"
+          - "option  httpchk"
+          - "option  httplog"
+          - "option  httpclose"
+  when: service_cfg.rc == 1

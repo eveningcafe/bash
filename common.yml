@@ -1,0 +1,13 @@
+---
+
+######## COMMON SETUP ############
+
+- name: Install prerequisite
+  hosts: all:!docker-registry
+  tasks:
+    - include_role:
+        name: common
+        tasks_from: main 
+      vars:
+        reboot: 0
+  become: true

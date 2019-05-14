@@ -1,0 +1,7 @@
+---
+
+- name: Remove keepalived 
+  docker_container:
+    name: keepalived 
+    state: absent
+  ignore_errors: yes

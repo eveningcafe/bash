@@ -1,0 +1,62 @@
+{% if networking.bond.enabled %}
+# BOND PROMISC
+
+{% if networking.bond.data.promisc.enabled %}
+{% for item in networking.bond.data.promisc.data %}
+{% for slave in item.slaves %}
+auto {{ slave }} 
+iface {{ slave }} inet manual
+bond-master {{ item.master }} 
+{% if not loop.last %}
+
+{% endif %}
+{% endfor %}
+
+auto {{ item.master }} 
+iface {{ item.master }} inet manual
+up ip link set dev $IFACE up
+down ip link set dev $IFACE down
+post-up ip link set promisc on dev $IFACE
+post-up ifenslave {{ item.master }} {% for slave in item.slaves %}{{ slave }}{% if not loop.last %} {% endif %}{% endfor %}
+
+pre-down ifenslave -d {{ item.master }} {% for slave in item.slaves %}{{ slave }}{% if not loop.last %} {% endif %}{% endfor %}
+
+bond-slaves nones
+bond-mode 4 
+bond-miimon 0
+bond-lacp-rate 1
+{% if not loop.last %}
+
+{% endif %}
+{% endfor %}
+{% endif %}
+
+# BOND MANUAL
+
+{% if networking.bond.data.manual.enabled %}
+{% for item in networking.bond.data.manual.data %}
+{% for slave in item.slaves %}
+auto {{ slave }} 
+iface {{ slave }} inet manual
+bond-master {{ item.master }} 
+{% if not loop.last %}
+
+{% endif %}
+{% endfor %}
+
+auto {{ item.master }}
+iface {{ item.master }} inet manual
+post-up ifenslave {{ item.master }} {% for slave in item.slaves %}{{ slave }}{% if not loop.last %} {% endif %}{% endfor %}
+
+pre-down ifenslave -d {{ item.master }} {% for slave in item.slaves %}{{ slave }}{% if not loop.last %} {% endif %}{% endfor %}
+
+bond-slaves nones
+bond-mode 4
+bond-miimon 0
+bond-lacp-rate 1
+{% if not loop.last %}
+
+{% endif %}
+{% endfor %}
+{% endif %}
+{% endif %}

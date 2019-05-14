@@ -1,0 +1,53 @@
+---
+
+- name: Remove gnocchi containers
+  docker_container:
+    name: "{{ item }}"
+    state: absent
+  with_items:
+    - gnocchi-api
+    - gnocchi-metricd
+  ignore_errors: yes
+
+- include_role:
+    name: sql
+    tasks_from: tmp_drop
+    #tasks_from: drop
+  vars:
+    db_update:
+      name: gnocchi 
+  when: (gnocchi_env.GNOCCHI_INDEXER == "mysql") and (inventory_hostname in groups['hub'])
+
+- include_role:
+    name: postgres 
+    tasks_from: dropdb
+  vars:
+    db_update:
+      name: gnocchi
+  when: (gnocchi_env.GNOCCHI_INDEXER == "postgresql") and (gnocchi_env.GNOCCHI_INDEXER_MODE == "master_slave") and (inventory_hostname in groups['hub'])
+
+- include_role:
+    name: postgres
+    tasks_from: bdr_dropdb
+  vars:
+    db_update:
+      name: gnocchi
+  when: (gnocchi_env.GNOCCHI_INDEXER == "postgresql") and (gnocchi_env.GNOCCHI_INDEXER_MODE == "master_master")
+
+- include_role:
+    name: openstack-client
+    tasks_from: service_delete
+  vars:
+    domain:
+      name: default
+    service:
+      name: gnocchi 
+  when: inventory_hostname in groups['hub']
+
+- include_role:
+    name: openstack-client
+    tasks_from: user_delete
+  vars:
+    service:
+      user: gnocchi 
+  when: inventory_hostname in groups['hub']

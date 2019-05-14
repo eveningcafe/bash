@@ -1,0 +1,4 @@
+---
+
+- name: Config log rotation
+  copy: src=logrotate.conf dest=/etc/logrotate.d/openstack

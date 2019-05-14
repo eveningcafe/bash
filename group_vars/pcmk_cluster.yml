@@ -1,0 +1,38 @@
+---
+
+cluster_name: controller_cluster
+
+rings:
+  - ringnum: 0
+    bindnetaddr: 10.240.207.128 
+    broadcast: "yes"
+    mcastport: 5405
+    ttl: 1
+
+nodes:
+  - node_id: 1
+    hostname: "{{ hostvars[groups['pcmk_cluster'][0]].inventory_hostname }}" 
+    addrs: 
+      - ringnum: 0 
+        value: "{{ hostvars[groups['pcmk_cluster'][0]].ansible_ssh_host }}" 
+  - node_id: 2 
+    hostname: "{{ hostvars[groups['pcmk_cluster'][1]].inventory_hostname }}" 
+    addrs: 
+      - ringnum: 0 
+        value: "{{ hostvars[groups['pcmk_cluster'][1]].ansible_ssh_host }}" 
+  - node_id: 3 
+    hostname: "{{ hostvars[groups['pcmk_cluster'][2]].inventory_hostname }}" 
+    addrs: 
+      - ringnum: 0
+        value: "{{ hostvars[groups['pcmk_cluster'][2]].ansible_ssh_host }}" 
+
+crm_params:
+  pe_warn_series_max: 1000
+  pe_input_series_max: 1000
+  pe_error_series_max: 1000
+  cluster_recheck_interval: 5min
+  stonith_enabled: false
+
+remote_params:
+  reconnect_interval: "1m"
+  monitor_interval: "60s"

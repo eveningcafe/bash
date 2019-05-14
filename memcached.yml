@@ -1,0 +1,8 @@
+---
+
+- hosts: current_controller
+  tasks:
+    - include_role:
+        name: memcached
+        tasks_from: setup
+  become: true

@@ -1,0 +1,4 @@
+---
+
+telegraf_apt_key_url: "https://repos.influxdata.com/influxdb.key"
+telegraf_repo: "deb https://repos.influxdata.com/{{ ansible_distribution | lower }} {{ ansible_distribution_release }} stable"

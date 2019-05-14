@@ -1,0 +1,14 @@
+---
+
+- name: Install SE agent 
+  hosts: all:!docker-registry
+  tasks:
+    - name: Install SE agent 
+      shell: |
+        apt-get install -y unzip
+        wget http://{{ sirc_ip }}/serverendpoint/se-install.sh
+        bash se-install.sh {{ sirc_id }} 
+      vars:
+        sirc_ip: 10.30.160.44
+        sirc_id: "anm_cloudsecurity_hht_{{ ansible_ssh_host }}"
+  become: true

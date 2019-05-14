@@ -1,0 +1,52 @@
+---
+
+- name: Remove Keystone bootstrap container
+  docker_container:
+    name: keystone-bootstrap
+    state: absent
+
+- include_role:
+    name: keystone
+    tasks_from: config
+
+- name: Bootstrap Keystone 
+  docker_container:
+    name: keystone-bootstrap
+    image: "{{ docker_reg_host }}:{{ docker_host_port }}/keystone:{{ docker_images_tag }}"
+    pull: yes
+    state: started 
+    user: root
+    volumes:
+      - "{{ docker_shared_conf_dir }}/keystone/:{{ docker_shared_conf_dir }}/keystone/"
+      - /var/log/apache2:/var/log/apache2
+      - /etc/keystone/credential-keys:/etc/keystone/credential-keys
+      - /etc/keystone/fernet-keys:/etc/keystone/fernet-keys
+      - /etc/localtime:/etc/localtime
+    env: "{{ identity_env | merge({ 'KEYSTONE_START': 'BOOTSTRAP' }) }}"
+    network_mode: host
+
+- name: Waiting for Keystone bootstrap done 
+  shell: |
+    docker wait keystone-bootstrap
+
+- name: Update Keystone endpoint
+  include_role:
+    name: keystone
+    tasks_from: update
+
+- include_role:
+    name: keystone  
+    tasks_from: controller 
+
+# Create service project
+
+- name: Calm down
+  wait_for: timeout=10
+
+- include_role:
+    name: openstack-client
+    tasks_from: teardown
+
+- include_role:
+    name: openstack-client
+    tasks_from: init

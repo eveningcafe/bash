@@ -1,0 +1,8 @@
+---
+
+- hosts: ceph_conf
+  tasks:
+    - include_role:
+        name: ceph-conf
+        tasks_from: monitor
+  become: true

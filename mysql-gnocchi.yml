@@ -1,0 +1,76 @@
+---
+
+- hosts: mysql
+  tasks:
+    - include_role:
+        name: mysql
+        tasks_from: teardown 
+      vars:
+        MYSQL_CONTAINERS:
+          - "{{ mysql_env.gnocchi.CONTAINER_NAME }}-bootstrap"
+          - "{{ mysql_env.gnocchi.CONTAINER_NAME }}"
+        MYSQL_CONTAINER_DATA_DIR: "{{ mysql_env.gnocchi.CONTAINER_DATA_DIR }}"
+  become: true
+
+- hosts: mysql-bootstrap
+  tasks:
+    - include_role:
+        name: mysql
+        tasks_from: bootstrap 
+      vars:
+        MYSQL_IMAGE: "{{ mysql_env.gnocchi.IMAGE }}"
+        MYSQL_CONTAINER_NAME: "{{ mysql_env.gnocchi.CONTAINER_NAME }}-bootstrap"
+        MYSQL_CONTAINER_DATA_DIR: "{{ mysql_env.gnocchi.CONTAINER_DATA_DIR }}" 
+        MYSQL_CONTAINER_LOG_DIR: "{{ mysql_env.gnocchi.CONTAINER_LOG_DIR }}"
+        MYSQL_ENVIRONMENT: "{{ mysql_env.gnocchi }}"
+        MYSQL_CONFIG_TEMPLATE: "{{ playbook_dir }}/roles/mysql/templates/my.cnf.gnocchi.j2"
+
+    - name: Waiting for mysql-service up
+      shell: |
+        sleep 60 
+  become: true
+
+- hosts: mysql-follower
+  tasks:
+    - include_role:
+        name: mysql
+        tasks_from: follower 
+      vars:
+        MYSQL_IMAGE: "{{ mysql_env.gnocchi.IMAGE }}"
+        MYSQL_CONTAINER_NAME: "{{ mysql_env.gnocchi.CONTAINER_NAME }}"
+        MYSQL_CONTAINER_DATA_DIR: "{{ mysql_env.gnocchi.CONTAINER_DATA_DIR }}"
+        MYSQL_CONTAINER_LOG_DIR: "{{ mysql_env.gnocchi.CONTAINER_LOG_DIR }}"
+        MYSQL_ENVIRONMENT: "{{ mysql_env.gnocchi }}"
+        MYSQL_CONFIG_TEMPLATE: "{{ playbook_dir }}/roles/mysql/templates/my.cnf.gnocchi.j2"
+
+    - name: Waiting for mysql-service up
+      shell: |
+        sleep 60 
+  become: true
+
+- hosts: mysql-bootstrap
+  tasks:
+    - name: Stop MySQL bootstrap container
+      docker_container:
+        name: "{{ mysql_env.gnocchi.CONTAINER_NAME }}-bootstrap" 
+        state: stopped 
+
+    - name: Start new MySQL instance
+      include_role:
+        name: mysql
+        tasks_from: follower
+      vars:
+        MYSQL_IMAGE: "{{ mysql_env.gnocchi.IMAGE }}"
+        MYSQL_CONTAINER_NAME: "{{ mysql_env.gnocchi.CONTAINER_NAME }}"
+        MYSQL_CONTAINER_DATA_DIR: "{{ mysql_env.gnocchi.CONTAINER_DATA_DIR }}"
+        MYSQL_CONTAINER_LOG_DIR: "{{ mysql_env.gnocchi.CONTAINER_LOG_DIR }}"
+        MYSQL_ENVIRONMENT: "{{ mysql_env.gnocchi }}"
+        MYSQL_CONFIG_TEMPLATE: "{{ playbook_dir }}/roles/mysql/templates/my.cnf.gnocchi.j2"
+  become: true
+
+- hosts: mysql
+  tasks:
+    - include_role:
+        name: gnocchi 
+        tasks_from: keepalived
+  become: true

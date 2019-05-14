@@ -1,0 +1,29 @@
+---
+
+#- hosts: mysql
+- hosts: prodcloudserver01 
+  tasks:
+    - name: Optimize mysql configuration
+      template:
+         src: "{{ item.src }}"
+         dest: "{{ item.dest }}"
+      with_items:
+        #- src: "{{ playbook_dir }}/roles/mysql/templates/optimized.my.cnf.openstack.j2"
+        - src: "{{ playbook_dir }}/roles/mysql/templates/my.cnf.openstack.j2"
+          dest: "{{ docker_shared_conf_dir }}/mysql-openstack/conf/my.cnf"
+        #- src: "{{ playbook_dir }}/roles/mysql/templates/optimized.my.cnf.gnocchi.j2"
+        - src: "{{ playbook_dir }}/roles/mysql/templates/my.cnf.gnocchi.j2"
+          dest: "{{ docker_shared_conf_dir }}/mysql-gnocchi/conf/my.cnf"
+
+    - name: Restart mysql-openstack
+      docker_container:
+        name: mysql-openstack
+        state: started
+        restart: yes
+
+    - name: Restart mysql-gnocchi
+      docker_container:
+        name: mysql-gnocchi
+        state: started
+        restart: yes
+  become: true

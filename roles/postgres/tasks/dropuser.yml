@@ -1,0 +1,5 @@
+---
+
+- name: Drop user 
+  shell: |
+    {{ postgres_cli }} -c 'DROP USER IF EXISTS {{ db_update.user }}';

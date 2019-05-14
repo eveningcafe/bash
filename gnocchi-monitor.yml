@@ -1,0 +1,9 @@
+---
+
+- name: Update gnocchi config
+  hosts: controller
+  tasks:
+    - include_role:
+        name: gnocchi
+        tasks_from: config-update
+  become: true

@@ -1,0 +1,5 @@
+- name:  turn off osd maintenance mode
+  shell: "timeout 5 docker exec {{listitem.name}} ceph osd unset noout"
+  
+- fail:
+    msg: "Upgrade osd fail. run ' ansible-playbook ceph-rollback-all.yml ' to rollback all. OR run ' ansible-playbook ceph-rollback-osds.yml ' to rollback only osd "

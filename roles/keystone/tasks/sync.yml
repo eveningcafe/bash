@@ -1,0 +1,75 @@
+---
+
+- shell: (cd /etc/keystone/credential-keys; find . -maxdepth 1 -type f) | cut -d'/' -f2
+  register: credential_keys
+  when: inventory_hostname in groups['hub']
+
+- shell: (cd /etc/keystone/fernet-keys; find . -maxdepth 1 -type f) | cut -d'/' -f2
+  register: fernet_keys
+  when: inventory_hostname in groups['hub']
+
+- name: Delete old keystone keys on controllers
+  file:
+    path: "/etc/keystone/{{ item }}"
+    state: absent
+  with_items: 
+    - credential-keys
+    - fernet-keys
+  when: (inventory_hostname in groups['current_controller']) and (inventory_hostname not in groups['hub']) 
+
+- name: Create new keys directories on controllers
+  file:
+    path: "/etc/keystone/{{ item }}"
+    state: directory
+  with_items:
+    - credential-keys
+    - fernet-keys
+  when: (inventory_hostname in groups['current_controller']) and (inventory_hostname not in groups['hub'])
+
+- name: Create temporary key directories on localhost
+  local_action:
+    module: file
+    path: "/tmp/{{ item }}" 
+    state: directory
+  with_items:
+    - credential-keys
+    - fernet-keys
+
+- name: Fetch credential keys from hub to local
+  fetch: src=/etc/keystone/credential-keys/{{ item }} dest=/tmp/credential-keys/ flat=yes
+  with_items: "{{ credential_keys.stdout_lines }}"
+  when: inventory_hostname in groups['hub']
+
+- name: Fetch fernet keys from hub to local
+  fetch: src=/etc/keystone/fernet-keys/{{ item }} dest=/tmp/fernet-keys/ flat=yes
+  with_items: "{{ fernet_keys.stdout_lines }}"
+  when: inventory_hostname in groups['hub']
+
+- name: Distribute keystone keys from local to all controllers 
+  synchronize:
+    src: /tmp/{{ item }}/
+    dest: /etc/keystone/{{ item }}/
+  with_items:
+    - credential-keys
+    - fernet-keys
+  when: (inventory_hostname in groups['current_controller']) and (inventory_hostname not in groups['hub'])
+
+- name: Set permission for keystone key dirs
+  file:
+    path: "/etc/keystone/{{ item }}/"
+    owner: 999
+    group: docker
+    mode: u=rwX,g-rwx,o-rwx 
+    state: directory
+    recurse: yes
+  with_items:
+    - credential-keys
+    - fernet-keys
+  when: (inventory_hostname in groups['current_controller']) and (inventory_hostname not in groups['hub'])
+
+- name: Restart keystone
+  docker_container:
+    name: keystone 
+    state: started
+    restart: yes
+  when: (inventory_hostname in groups['current_controller']) and (inventory_hostname not in groups['hub'])

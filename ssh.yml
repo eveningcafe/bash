@@ -1,0 +1,17 @@
+---
+
+- name: Create ssh keys for nova user
+  hosts: localhost
+  tasks:
+    - include_role:
+        name: live_migration-ssh-cfg
+        tasks_from: nova_keypair
+  become: true
+
+- name: Create ssh keys for nova user
+  hosts: compute 
+  tasks:
+    - include_role:
+        name: live_migration-ssh-cfg
+        tasks_from: main 
+  become: true

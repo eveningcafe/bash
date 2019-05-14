@@ -1,0 +1,14 @@
+---
+
+#- set_fact: all_ips=["{{ groups['all'] | map('extract', hostvars, ['ansible_ssh_host']) | join('", "') }}"]
+#
+#- set_fact: ips=["{{ hostvars.values()|map(attribute='ansible_ssh_host')|join('", "') }}"]
+#
+#- debug: var=all_ips
+#
+#- debug: var=groups['all']
+#
+
+#- include_role:
+#    name: controller-installer
+#    tasks_from: bootstrap

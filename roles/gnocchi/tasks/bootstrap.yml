@@ -1,0 +1,31 @@
+---
+
+- name: Remove gnocchi bootstrap container
+  docker_container:
+    name: gnocchi-bootstrap
+    state: absent
+
+- include_role:
+    name: gnocchi
+    tasks_from: config 
+
+- name: Bootstrap gnocchi 
+  docker_container:
+    name: gnocchi-bootstrap
+    image: "{{ docker_reg_host }}:{{ docker_host_port }}/gnocchi:{{ docker_images_tag }}"
+    pull: yes
+    state: started
+    user: root 
+    log_driver: none
+    volumes:
+      - "{{ docker_shared_conf_dir }}/gnocchi/:{{ docker_shared_conf_dir }}/gnocchi/"
+      - /var/log/apache2:/var/log/apache2
+      - /var/log/gnocchi:/var/log/gnocchi
+      - /var/lib/gnocchi:/var/lib/gnocchi 
+      - /etc/localtime:/etc/localtime
+    env: "{{ metric_storage_env | merge({ 'GNOCCHI_START': 'BOOTSTRAP' }) }}"
+    network_mode: host
+
+- name: Waiting for gnocchi bootstrap done 
+  shell: |
+    docker wait gnocchi-bootstrap

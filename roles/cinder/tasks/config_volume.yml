@@ -1,0 +1,51 @@
+---
+
+- name: Create shared configuration directory
+  file:
+    path: "{{ docker_shared_conf_dir }}/cinder-volume/"
+    state: directory
+
+- name: Create shared configuration directory
+  file:
+    path: "{{ docker_shared_conf_dir }}/cinder-volume/{{ item }}/"
+    state: directory
+  with_items:
+    - backup
+    - cinder-volume
+    - ceph
+    - sudoers.d
+    - apache2
+    - ssl
+
+- name: Get list server's IPs
+  set_fact: ips=["{{ groups['volume'] | map('extract', hostvars, ['ansible_ssh_host']) | join('", "') }}"]
+
+- name: Get list hostnames
+  set_fact: hostnames="{{ groups['volume'] }}"
+
+- name: Create dict with hostname and correspond IP
+  set_fact: hosts={{ ips | get_hosts(hostnames) }}
+
+- name: Config cinder
+  template: src=cinder.conf.ceph.compute.j2 dest="{{ docker_shared_conf_dir }}/cinder-volume/cinder-volume/cinder.conf" backup=yes
+  when: cinder_env.SSL_ENABLED == 0
+
+- name: Config cinder
+  template: src=ssl.cinder.conf.ceph.compute.j2 dest="{{ docker_shared_conf_dir }}/cinder-volume/cinder-volume/cinder.conf" backup=yes
+  when: cinder_env.SSL_ENABLED == 1
+
+- name: Config cinder-wsgi
+  template: src=cinder-wsgi.conf.j2 dest="{{ docker_shared_conf_dir }}/cinder-volume/apache2/cinder-wsgi.conf" backup=yes
+
+- name: Config ceph as backend storage for cinder 
+  include_role:
+    name: cinder 
+    tasks_from: ceph_volume
+  when: ceph.cinder.enabled == 1
+
+- name: Distribute certs
+  copy: src="{{ playbook_dir }}/roles/openstack-client/files/{{ item }}" dest="{{ docker_shared_conf_dir }}/cinder-volume/ssl/{{ item }}" backup=yes
+  with_items:
+    - openstack.crt
+    - openstack.key
+  when: cinder_env.SSL_ENABLED == 1

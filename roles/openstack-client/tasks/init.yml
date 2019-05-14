@@ -1,0 +1,6 @@
+---
+
+- name: Create service project 
+  shell: |
+    {{ docker_openstack_client }} project create --domain default --description "Service Project" service
+  environment: "{{ ops_client_env }}"

@@ -1,0 +1,7 @@
+---
+
+- name: Remove horizon
+  docker_container:
+    name: horizon  
+    state: absent
+  ignore_errors: yes

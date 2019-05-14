@@ -1,0 +1,38 @@
+---
+
+- name: ensure file ceph.conf exists 
+  local_action:
+    module: copy
+    content: ""
+    dest: "{{ ceph_conf_file.path }}"
+    force: yes # rewrite if file exit
+    group: "{{ceph_conf_file.group}}"
+    owner: "{{ceph_conf_file.owner}}"
+    mode: "{{ceph_conf_file.mode}}"
+
+- name: get conf file
+  command: "docker exec {{mon_name}} cat /etc/ceph/ceph.conf"
+  register: ceph_conf
+
+- name: Remove old ceph base config files 
+  local_action:
+    module: file
+    path: "{{ item }}"
+    state: absent
+  with_items:
+    - "{{ playbook_dir }}/roles/glance/templates/ceph.base.j2"
+    - "{{ playbook_dir }}/roles/nova/templates/ceph.base.j2"
+    - "{{ playbook_dir }}/roles/cinder/templates/ceph.base.j2"
+    - "{{ playbook_dir }}/roles/gnocchi/templates/ceph.base.j2"
+
+- name: save ceph conf to ansible host
+  local_action:
+    module: lineinfile
+    path: "{{ item }}"
+    line: "\n{{ ceph_conf.stdout }} \n"
+    create: yes
+  with_items:
+    - "{{ playbook_dir }}/roles/glance/templates/ceph.base.j2"
+    - "{{ playbook_dir }}/roles/nova/templates/ceph.base.j2"
+    - "{{ playbook_dir }}/roles/cinder/templates/ceph.base.j2" 
+    - "{{ playbook_dir }}/roles/gnocchi/templates/ceph.base.j2"

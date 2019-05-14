@@ -1,0 +1,20 @@
+---
+
+- name: Configure keepalived base config
+  template: src=keepalived.conf.base.j2 dest=/etc/keepalived/keepalived.conf backup=yes
+
+- name: Create keepalived configuration directory 
+  file:
+    path: /etc/keepalived/hosts 
+    state: directory
+    owner: root 
+    group: root 
+    mode: 0775
+
+- name: Configure keepalived
+  template: src=keepalived.conf.update.j2 dest="/etc/keepalived/hosts/{{ keepalived_conf }}" backup=yes
+
+- name: Restart keepalived
+  service: name={{ item }} state=restarted enabled=yes 
+  with_items: 
+    - keepalived

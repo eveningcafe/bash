@@ -1,0 +1,41 @@
+---
+
+- name: Delete Open vSwitch bridges
+  shell: |
+    {% for map in bridge_mappings %}ovs-vsctl del-br {{ map.bridge }}{% if not loop.last %};{% endif %}{% endfor %}
+  ignore_errors: yes
+
+- name: Remove neutron-ovs-agent
+  docker_container:
+    name: neutron-ovs-agent 
+    state: absent
+  ignore_errors: yes
+
+- include_role:
+    name: neutron
+    tasks_from: config_dpdk
+
+- name: Create Open vSwitch bridges 
+  shell: |
+    {% for map in bridge_mappings %}ovs-vsctl add-br {{ map.bridge }} -- set bridge {{ map.bridge }} datapath_type={{ map.dp_type }} {% if not loop.last %};{% endif %}{% endfor %}
+
+- name: Update ml2 and openvswitch agent configuration
+  template: src=openvswitch_agent.ini.dpdk.j2 dest="{{ docker_shared_conf_dir }}/neutron/neutron/plugins/ml2/openvswitch_agent.ini" backup=yes
+
+- name: Setup neutron-ovs-agent
+  docker_container:
+    name: neutron-ovs-agent 
+    image: "{{ docker_reg_host }}:{{ docker_host_port }}/neutron-dpdk:{{ docker_images_tag }}"
+    pull: yes
+    privileged: yes
+    restart_policy: unless-stopped
+    state: started
+    user: neutron
+    volumes:
+      - "{{ docker_shared_conf_dir }}/neutron/:{{ docker_shared_conf_dir }}/neutron/"
+      - /var/log/neutron:/var/log/neutron
+      - /var/lib/neutron:/var/lib/neutron
+      - /etc/localtime:/etc/localtime
+      - /run:/run:shared
+    env: "{{ network_env | merge({ 'NEUTRON_START': 'START_NEUTRON_OVS_AGENT' }) }}"
+    network_mode: host

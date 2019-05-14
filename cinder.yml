@@ -1,0 +1,20 @@
+---
+
+- name: Bootstrap OpenStack projects
+  hosts: current_controller:&hub
+  tasks:
+    - include_role:
+        name: cinder 
+        tasks_from: setup
+  become: true
+
+- name: Setup cinder services on Controller Nodes
+  hosts: current_controller
+  tasks:
+    - include_role:
+        name: cinder 
+        tasks_from: "{{ item }}"
+      with_items:
+        - controller
+        - haproxy 
+  become: true

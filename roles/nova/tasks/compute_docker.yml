@@ -1,0 +1,51 @@
+---
+
+- name: Install libvirtd
+  apt:
+    name: "{{ item }}"
+    state: present
+  with_items: "{{ nova_compute_pkgs }}"
+
+- include_tasks: config_compute.yml
+
+- name: Restart libvirtd 
+  service: name=libvirtd state=restarted
+
+- name: Remove nova-compute
+  docker_container:
+    name: nova-compute
+    state: absent
+
+- name: Start nova-compute
+  docker_container:
+    name: nova-compute
+    image: "{{ docker_reg_host }}:{{ docker_host_port }}/nova-compute:{{ docker_images_tag }}"
+    pull: yes
+    privileged: yes
+    restart_policy: unless-stopped
+    state: started
+    user: nova
+    volumes:
+      - "{{ docker_shared_conf_dir }}/nova/:{{ docker_shared_conf_dir }}/nova/"
+      - /var/log/nova:/var/log/nova
+      - /var/lib/nova:/var/lib/nova:shared,z
+      - /etc/localtime:/etc/localtime
+      - /var/lib/libvirt:/var/lib/libvirt
+      - /dev/:/dev/
+      - /run/:/run/
+      - /lib/modules:/lib/modules:ro
+      - /sys/class/net:/sys/class/net
+      - /sys/bus/pci:/sys/bus/pci
+      - /etc/iscsi:/etc/iscsi:ro
+      - /etc/ceph:/etc/ceph:ro
+    env: "{{ compute_env | merge({ 'NOVA_START': 'START_NOVA_CPU' }) }}"
+    network_mode: host
+#
+#- name: Change nova shell
+#  shell: |
+#    usermod -s /bin/bash nova
+#
+#- name: Configure ssh keys for VM live migration
+#  include_role:
+#    name: live_migration-ssh-cfg
+#    tasks_from: main 

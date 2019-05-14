@@ -1,0 +1,35 @@
+---
+
+rbd_secret_uuid: 94019c72-1928-4303-8364-c339592c8cdb
+
+ceph:
+  glance:
+    enabled: 1
+    user: images 
+    keyring: AQD6hLhb0GkDJxAAaZNd2S9e859C6Ofcj6scQg==
+    keyring_path: ceph.client.images.keyring
+    pool: images 
+    rbd_secret_uuid: "{{ rbd_secret_uuid }}"
+    client:
+      config_path: /etc/ceph/glance.xml
+      key_path: /etc/ceph/client.images.key
+  cinder:
+    enabled: 1
+    user: volumes 
+    keyring: AQD7hLhbSt1IEBAAIdbGKghAuAepHG2P7rT44Q==
+    keyring_path: ceph.client.volumes.keyring
+    pool: volumes 
+    rbd_secret_uuid: "{{ rbd_secret_uuid }}"
+    client:
+      config_path: /etc/ceph/cinder.xml
+      key_path: /etc/ceph/client.volumes.key
+  nova:
+    enabled: 1
+    user: volumes 
+    keyring: AQD7hLhbSt1IEBAAIdbGKghAuAepHG2P7rT44Q==
+    keyring_path: ceph.client.volumes.keyring
+    pool: vms 
+    rbd_secret_uuid: "{{ rbd_secret_uuid }}"
+    client:
+      config_path: /etc/ceph/nova.xml
+      key_path: /etc/ceph/client.volumes.key

@@ -1,0 +1,33 @@
+Listen 8041
+
+<VirtualHost *:8041>
+    WSGIDaemonProcess gnocchi-api processes=2 threads=10 user=gnocchi group=gnocchi display-name=%{GROUP}
+    WSGIProcessGroup gnocchi-api
+    WSGIScriptAlias / "/var/www/cgi-bin/gnocchi/gnocchi-api"
+    WSGIApplicationGroup %{GLOBAL}
+
+    ErrorLog "|/usr/bin/rotatelogs /var/log/apache2/gnocchi_error_%Y-%m-%d.log 86400"
+    CustomLog "|/usr/bin/rotatelogs /var/log/apache2/gnocchi_access_%Y-%m-%d.log 86400" vt_combined
+
+    <IfVersion >= 2.4>
+      ErrorLogFormat "%{cu}t %M"
+    </IfVersion>
+
+    <Directory /var/www/cgi-bin/gnocchi/>
+        <IfVersion >= 2.4>
+            Require all granted
+        </IfVersion>
+        <IfVersion < 2.4>
+            Order allow,deny
+            Allow from all
+        </IfVersion>
+        <LimitExcept GET POST HEAD PUT DELETE OPTIONS PATCH>
+            Deny from all
+        </LimitExcept>
+        Options -Indexes
+    </Directory>
+
+
+</VirtualHost>
+
+WSGISocketPrefix /var/run/apache2

@@ -1,0 +1,6 @@
+---
+
+- name: Update service endpoint 
+  shell: |
+    {{ docker_openstack_client }} endpoint set --url {{ endpoint.url }} {{ endpoint.id }} 
+  environment: "{{ ops_client_env }}"

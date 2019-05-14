@@ -1,0 +1,7 @@
+---
+
+- name: Delete service project
+  shell: |
+    {{ docker_openstack_client }} project delete service
+  environment: "{{ ops_client_env }}"
+  ignore_errors: yes

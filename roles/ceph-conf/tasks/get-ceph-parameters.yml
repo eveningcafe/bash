@@ -1,0 +1,26 @@
+---
+
+- name: Ensure file ceph.parameters exists 
+  local_action:
+    module: copy
+    content: ""
+    dest: "{{ ceph_parameters_file.path }}"
+    force: yes # rewrite if file exit
+    group: "{{ceph_parameters_file.group}}"
+    owner: "{{ceph_parameters_file.owner}}"
+    mode: "{{ceph_parameters_file.mode}}"
+
+- name: Get client key
+  command: "docker exec {{mon_name}} ceph auth print-key client.{{item.name}}"
+  register: client_keys 
+  loop: "{{users}}"
+
+- name: get keyrings
+  set_fact: ceph_user_keys="{{ client_keys.results }}"
+
+- name: Create ceph variables
+  local_action:
+    module: template
+    src: ceph_account.yml.j2
+    dest: "{{ playbook_dir }}/group_vars/ceph_account.yml"
+    backup: yes

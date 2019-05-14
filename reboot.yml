@@ -1,0 +1,11 @@
+---
+
+- hosts: all:!docker-registry
+  tasks:
+    - name: Reboot system 
+      shell: |
+        sleep 2
+        init 6
+      async: 1
+      poll: 0
+  become: true

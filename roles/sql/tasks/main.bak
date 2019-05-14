@@ -1,0 +1,35 @@
+---
+
+- name: Get Percona XtraDB Cluster repo
+  apt:
+    deb: "{{ perconar_deb_repo }}"
+
+- name: Install Percona XtraDB Cluster
+  apt: 
+    name: percona-xtradb-cluster-57 
+    state: present 
+    update_cache: yes
+
+- name: Stop mysql to configure
+  service: name=mysql state=stopped
+
+- name: Configure mysql 
+  template: src=my.cnf.j2 dest=/etc/mysql/my.cnf backup=yes
+
+- name: Bootstrap database on hub controller
+  shell: |
+    /etc/init.d/mysql bootstrap-pxc
+  when: inventory_hostname in groups['hub']
+
+- name: Create additional database user
+  shell:
+    mysql -uroot -p{{ db_params.root_passwd }} -e "{{ item }}"
+  with_items:
+    - "CREATE USER '{{ db_params.sst_user }}'@'localhost' IDENTIFIED BY '{{ db_params.sst_passwd }}'"
+    - "GRANT RELOAD, LOCK TABLES, PROCESS, REPLICATION CLIENT ON *.* TO '{{ db_params.sst_user }}'@'localhost'"
+    - "FLUSH PRIVILEGES"
+  when: inventory_hostname in groups['hub']
+
+- name: Start mysql on controllers
+  service: name=mysql state=started
+  when: (inventory_hostname in groups['current_controller']) and (inventory_hostname not in groups['hub'])

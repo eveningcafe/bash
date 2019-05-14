@@ -1,0 +1,33 @@
+---
+
+- include_role:
+    name: sql
+    tasks_from: drop 
+  vars:
+    db_update:
+      name: glance
+
+- include_role:
+    name: openstack-client
+    tasks_from: service_delete
+  vars:
+    domain:
+      name: default
+    service:
+      name: glance
+
+- include_role:
+    name: openstack-client
+    tasks_from: user_delete
+  vars:
+    service:
+      user: glance
+
+- name: Remove glance containers
+  docker_container:
+    name: "{{ item }}" 
+    state: absent
+  with_items:
+    - glance-api
+    - glance-registry
+  ignore_errors: yes

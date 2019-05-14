@@ -1,0 +1,23 @@
+---
+
+- name: Build Ceilometer image 
+  docker_image:
+    path: "{{ ops_dk_files_path }}/ceilometer/ceilometer"
+    name: ceilometer
+    repository: "{{ docker_reg_host }}:{{ docker_host_port }}/ceilometer"
+    tag: "{{ docker_images_tag }}"
+    pull: no
+    push: yes
+    #nocache: yes
+    buildargs: "{{ proxy }}"
+
+- name: Build Ceilometer Compute agent image 
+  docker_image:
+    path: "{{ ops_dk_files_path }}/ceilometer/ceilometer-agent-compute"
+    name: ceilometer-agent-compute
+    repository: "{{ docker_reg_host }}:{{ docker_host_port }}/ceilometer-agent-compute"
+    tag: "{{ docker_images_tag }}"
+    pull: no
+    push: yes
+    #nocache: yes
+    buildargs: "{{ proxy }}"

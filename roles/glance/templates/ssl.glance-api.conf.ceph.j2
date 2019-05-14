@@ -1,0 +1,44 @@
+[DEFAULT]
+debug = false
+log_file = /var/log/glance/glance-api.log
+bind_host = {{ image_env.MY_IP }}
+bind_port = 9292
+registry_host = {{ image_env.REGISTRY_HOST }}
+show_image_direct_url = true
+
+transport_url = {{ image_env.TRANSPORT_URL }}
+
+cert_file = /etc/glance/ssl/openstack.crt
+key_file = /etc/glance/ssl/openstack.key
+
+[database]
+connection = mysql+pymysql://glance:{{ image_env.GLANCE_DBPASS }}@{{ mysql_host }}/glance
+
+[glance_store]
+stores = glance.store.rbd.Store
+default_store = rbd
+rbd_store_pool = {{ ceph.glance.pool }}
+rbd_store_user = {{ ceph.glance.user }}
+rbd_store_ceph_conf = /etc/ceph/ceph.conf
+rbd_store_chunk_size = 8
+
+
+[keystone_authtoken]
+auth_uri = https://{{ image_env.CONTROLLER_HOST }}:5000
+auth_url = https://{{ image_env.CONTROLLER_HOST }}:35357
+cafile = /etc/glance/ssl/openstack.crt
+auth_type = password
+project_domain_name = Default
+user_domain_name = Default
+project_name = service
+username = glance
+password = {{ image_env.GLANCE_PASS }}
+memcached_servers = {{ image_env.MEMCACHED_SERVERS }}
+#memcache_security_strategy = ENCRYPT
+#memcache_secret_key = {{ image_env.MEMCACHE_SECRET_KEY }}
+
+[paste_deploy]
+flavor = keystone
+
+[oslo_messaging_notifications]
+driver = messagingv2

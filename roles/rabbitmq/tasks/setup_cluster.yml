@@ -1,0 +1,7 @@
+---
+
+- name: Setup cluster
+  shell: |
+    docker exec -i rabbitmq bash -c 'rabbitmqctl stop_app'
+    docker exec -i rabbitmq bash -c 'rabbitmqctl join_cluster rabbit@{{ groups['rabbitmq-bootstrap'][0] }}'
+    docker exec -i rabbitmq bash -c 'rabbitmqctl start_app'

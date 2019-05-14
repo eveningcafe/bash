@@ -1,0 +1,55 @@
+[DEFAULT]
+debug = true
+use_syslog = false
+use_stderr = false
+#log_dir = /var/log/gnocchi
+log_file = /var/log/gnocchi/gnocchi-api.log
+transport_url = {{ metric_storage_env.TRANSPORT_URL }}
+
+[archive_policy]
+default_aggregation_methods = mean,min,max,sum,std,median,count,last,95pct
+
+[indexer]
+driver = sqlalchemy
+{% if gnocchi_env.GNOCCHI_INDEXER == "mysql" %}
+url = mysql+pymysql://gnocchi:{{ metric_storage_env.GNOCCHI_DBPASS }}@{{ mysql_env.gnocchi.MYSQL_HOST }}:{{ mysql_env.gnocchi.MYSQL_PORT }}/gnocchi
+{% elif gnocchi_env.GNOCCHI_INDEXER == "postgresql" %}
+url = postgresql://gnocchi:{{ metric_storage_env.GNOCCHI_DBPASS }}@{{ postgres_host }}/gnocchi
+{% endif %}
+
+[storage]
+coordination_url = file:///var/lib/gnocchi/locks
+driver = file
+file_basepath = /var/lib/gnocchi
+
+[incoming]
+driver = file
+file_basepath = /var/lib/gnocchi
+
+[metricd]
+workers = 6
+metric_processing_delay = 5
+
+[api]
+auth_mode = keystone
+paste_config = /etc/gnocchi/api-paste.ini
+port = 8041
+
+[keystone_authtoken]
+auth_type = password
+auth_uri = https://{{ services_controller }}:5000/v3
+auth_url = https://{{ services_controller }}:35357/v3
+cafile = /etc/gnocchi/ssl/openstack.crt
+project_domain_name = Default
+user_domain_name = Default
+project_name = service
+username = gnocchi
+password = {{ metric_storage_env.GNOCCHI_PASS }}
+region_name = {{ metric_storage_env.REGION_NAME }} 
+memcached_servers = {{ metric_storage_env.MEMCACHED_SERVERS }}
+interface = internalURL
+
+[cors]
+allowed_origin = {{ grafana.fqdn }}
+allow_methods = GET,PUT,POST,DELETE,PATCH
+allow_headers = X-Auth-Token,X-Openstack-Request-Id,X-Subject-Token,X-Project-Id,X-Project-Name,X-Project-Domain-Id,X-Project-Domain-Name,X-Domain-Id,X-Domain-Name

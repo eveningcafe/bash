@@ -1,0 +1,98 @@
+[DEFAULT]
+transport_url = {{ loadbalancer_env.TRANSPORT_URL }}
+api_handler = queue_producer
+bind_host = {{ loadbalancer_env.MY_IP }} 
+bind_port = 9876
+debug = true
+verbose = true
+auth_strategy = keystone
+
+[api_settings]
+
+[database]
+connection = mysql+pymysql://octavia:{{ loadbalancer_env.OCTAVIA_DBPASS }}@{{ mysql_host }}/octavia
+
+[health_manager]
+bind_ip = {{ loadbalancer_env.MY_IP }}
+bind_port = 5555
+controller_ip_port_list = {% for controller in controllers_ips %}{{ controller }}:5555{% if not loop.last %}, {% endif %}{% endfor %}
+
+heartbeat_key = insecure
+
+[keystone_authtoken]
+auth_uri = https://{{ loadbalancer_env.CONTROLLER_HOST }}:5000
+auth_url = https://{{ loadbalancer_env.CONTROLLER_HOST }}:35357
+auth_type = password
+project_domain_name = Default
+user_domain_name = Default
+project_name = service
+username = octavia
+password = {{ loadbalancer_env.OCTAVIA_PASS }} 
+memcached_servers = {{ loadbalancer_env.MEMCACHED_SERVERS }}
+
+[certificates]
+ca_private_key_passphrase = foobar
+ca_private_key = /var/lib/octavia/certs/private/cakey.pem
+ca_certificate = /var/lib/octavia/certs/ca_01.pem
+
+[anchor]
+
+[networking]
+
+[haproxy_amphora]
+server_ca = /var/lib/octavia/certs/ca_01.pem
+client_cert = /var/lib/octavia/certs/client.pem
+base_path = /var/lib/octavia
+base_cert_dir = /var/lib/octavia/certs
+connection_max_retries = 1500
+connection_retry_interval = 1
+rest_request_conn_timeout = 20
+rest_request_read_timeout = 240
+
+[controller_worker]
+amp_boot_network_list = {{ amp_boot_network_list }}
+amp_image_tag = {{ loadbalancer_env.AMP_IMAGE_TAG }} 
+amp_secgroup_list = {{ amp_secgroup_list }}
+amp_flavor_id = {{ amp_flavor_id }}
+amp_ssh_key_name = {{ amp_ssh_key_name }}
+network_driver = allowed_address_pairs_driver
+compute_driver = compute_nova_driver
+amphora_driver = amphora_haproxy_rest_driver
+workers = 2
+amp_active_retries = 200
+amp_active_wait_sec = 4
+client_ca = /var/lib/octavia/certs/ca_01.pem
+loadbalancer_topology = ACTIVE_STANDBY
+
+[task_flow]
+
+[oslo_messaging]
+topic = octavia_prov
+rpc_thread_pool_size = 2
+
+[house_keeping]
+load_balancer_expiry_age = 3600
+amphora_expiry_age = 3600
+
+[amphora_agent]
+
+[keepalived_vrrp]
+
+[service_auth] 
+memcached_servers = {{ loadbalancer_env.MEMCACHED_SERVERS }}
+project_domain_name = Default 
+project_name = admin 
+user_domain_name = Default 
+username = admin 
+password = {{ keystone_pass }} 
+auth_uri = https://{{ loadbalancer_env.CONTROLLER_HOST }}:5000
+auth_url = https://{{ loadbalancer_env.CONTROLLER_HOST }}:35357
+auth_type = password
+
+[nova]
+
+[glance]
+ca_certificates_file = /etc/octavia/ssl/openstack.crt
+
+[neutron]
+

@@ -1,0 +1,17 @@
+  - name: check mon is up
+    shell: "timeout 5 docker exec {{mon_name}} ceph -s | grep 'mon:'| grep {{ansible_hostname}}" 
+    changed_when: false
+    register: check_mon
+    failed_when: false
+    until: check_mon.rc == 0
+    retries: "{{retries_mon}}"
+    delay: "{{delay_retries_mon}}"
+    
+  - name: end execution
+    fail:
+      msg: "mon is not fully up, manually verify "
+    when: check_mon.stdout is defined and check_mon.rc == 1
+    
+  - name: keep going
+    debug: 
+      msg: "monitor in {{inventory_hostname}} is up, in quorum"

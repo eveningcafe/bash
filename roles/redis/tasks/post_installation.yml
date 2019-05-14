@@ -1,0 +1,20 @@
+---
+
+- name: Set sentinel down-after-milliseconds
+  shell: |
+    docker exec -i redis-sentinel bash -c 'redis-cli -a {{ redis.redis_password }} -p {{ redis.redis_sentinel_port }} SENTINEL SET {{ redis.env.sentinel.REDIS_MASTER_SET }} down-after-milliseconds {{ redis.env.sentinel.DOWN_TIMEOUT }}'
+  
+- name: Set sentinel failover-timeout
+  shell: |
+    docker exec -i redis-sentinel bash -c 'redis-cli -a {{ redis.redis_password }} -p {{ redis.redis_sentinel_port }} SENTINEL SET {{ redis.env.sentinel.REDIS_MASTER_SET }} failover-timeout {{ redis.env.sentinel.FAILOVER_TIMEOUT }}'
+
+- name: Set log dir
+  shell: |
+    docker exec -i redis bash -c 'sed -i "/logfile/d" /opt/bitnami/redis/etc/redis.conf'
+    docker exec -i redis bash -c 'echo "logfile /opt/bitnami/redis/logs/redis.log" >> /opt/bitnami/redis/etc/redis.conf'
+
+- name: Restart redis
+  docker_container:
+    name: redis
+    state: started
+    restart: yes

@@ -1,0 +1,8 @@
+---
+
+- hosts: all:!docker-registry
+  tasks:
+    - include_role:
+        name: common
+        tasks_from: interfaces
+  become: true

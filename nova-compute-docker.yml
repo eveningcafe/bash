@@ -1,0 +1,35 @@
+---
+
+- name: Install nova
+  hosts: current_compute 
+  tasks:
+    - include_role:
+       name: nova
+       tasks_from: compute_docker
+    - include_role:
+        name: cinder
+        tasks_from: compute
+      when: ceph.nova.enabled == 1
+    - include_role:
+        name: nova
+        tasks_from: ceph
+      when: ceph.nova.enabled == 1
+    - name: Restart nova-compute
+      docker_container:
+        name: nova-compute 
+        state: started
+        restart: yes
+    - lineinfile:
+        path: /etc/default/grub
+        regexp: '^GRUB_CMDLINE_LINUX_DEFAULT='
+        line: 'GRUB_CMDLINE_LINUX_DEFAULT="quiet default_hugepagesz={{ dpdk_config.grub.default_hugepagesz }} hugepagesz={{ dpdk_config.grub.hugepagesz }} intel_iommu=on iommu=pt isolcpus={{ dpdk_config.grub.isolcpus }}"'
+      when: DPDK.ENABLED
+  become: true
+
+- name: Discover new compute hosts
+  hosts: hub 
+  tasks:
+    - include_role:
+       name: controller
+       tasks_from: discover_computes
+  become: true

@@ -1,0 +1,6 @@
+---
+
+db_conf:
+  - name: masakari
+    user: masakari 
+    passwd: "{{ masakari_env.MASAKARI_DBPASS }}"

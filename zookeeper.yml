@@ -1,0 +1,8 @@
+---
+
+- hosts: zkcluster 
+  tasks:
+    - include_role:
+        name: zookeeper 
+        tasks_from: main 
+  become: true

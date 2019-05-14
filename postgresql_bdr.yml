@@ -1,0 +1,8 @@
+---
+
+- hosts: postgres-master:postgres-slave
+  tasks:
+    - include_role:
+        name: postgres 
+        tasks_from: bdr_postgres
+  become: true

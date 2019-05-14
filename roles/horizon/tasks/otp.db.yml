@@ -1,0 +1,19 @@
+---
+
+- include_role:
+    name: sql
+    tasks_from: update
+  vars:
+    db_update:
+      name: otp_db
+      user: horizon 
+      passwd: "{{ horizon_env.HORIZON_DBPASS }}"
+
+- include_role:
+    name: sql
+    tasks_from: assign 
+  vars:
+    db_update:
+      name: keystone 
+      user: horizon
+      passwd: "{{ horizon_env.HORIZON_DBPASS }}"

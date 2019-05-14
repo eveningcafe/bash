@@ -1,0 +1,50 @@
+---
+
+- name: Stop mysql 
+  service:
+    name: mysql 
+    state: stopped 
+  ignore_errors: yes
+
+- name: Cleanup mysql data
+  file:
+    path: "{{ item }}" 
+    state: absent
+  with_items:
+    - /etc/mysql/
+    - /var/lib/mysql/
+    - /var/lib/mysql-files/
+    - /var/lib/mysql-keyring/
+    - /var/log/mysql/
+    - /var/log/mysqld.log
+
+- name: Get mysql processes
+  shell: |
+    ps -ef | grep mysql | egrep -v grep | awk '{ print $2 }'
+  register: mysql_processes
+
+- name: Kill mysql processes
+  shell: |
+    kill -9 {{ item }}
+  with_items: "{{ mysql_processes.stdout_lines }}"
+
+- name: Get mysql packages
+  shell: |
+    dpkg -l | egrep "(percona|mysql)" | awk '{ print $2 }'
+  register: mysql_packages
+
+- name: Remove mysql packages
+  apt:
+    name: "{{ item }}" 
+    state: absent 
+    purge: yes
+  with_items: "{{ mysql_packages.stdout_lines }}"
+  ignore_errors: yes
+
+- name: Remove useless packages from the cache
+  apt:
+    autoclean: yes
+
+- name: Remove dependencies that are no longer required
+  apt:
+    autoremove: yes

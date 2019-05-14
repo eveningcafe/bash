@@ -1,0 +1,51 @@
+---
+
+- name: Create shared configuration directory
+  file:
+    path: "{{ docker_shared_conf_dir }}/aodh/"
+    state: directory
+
+- name: Create shared configuration directory
+  file:
+    path: "{{ docker_shared_conf_dir }}/aodh/{{ item }}/"
+    state: directory
+  with_items:
+    - backup
+    - aodh
+    - sudoers.d
+    - cgi-bin
+    - apache2
+    - ssl
+
+- name: Get list server's IPs
+  set_fact: ips=["{{ groups['controller'] | map('extract', hostvars, ['ansible_ssh_host']) | join('", "') }}"]
+
+- name: Get list hostnames
+  set_fact: hostnames="{{ groups['controller'] }}"
+
+- name: Create dict with hostname and correspond IP
+  set_fact: hosts={{ ips | get_hosts(hostnames) }}
+
+- name: Config aodh
+  template: src="aodh.conf.j2" dest="{{ docker_shared_conf_dir }}/aodh/aodh/aodh.conf" backup=yes
+  when: aodh_env.SSL_ENABLED == 0
+
+- name: Config aodh
+  template: src="ssl.aodh.conf.j2" dest="{{ docker_shared_conf_dir }}/aodh/aodh/aodh.conf" backup=yes
+  when: aodh_env.SSL_ENABLED == 1
+
+- name: Config sudoer
+  template: src=aodh_sudoers.j2 dest="{{ docker_shared_conf_dir }}/aodh/sudoers.d/aodh_sudoers" backup=yes
+
+- name: Config app wsgi
+  template: src=app.wsgi.j2 dest="{{ docker_shared_conf_dir }}/aodh/cgi-bin/app.wsgi" backup=yes
+
+- name: Configure apache2
+  template: src=aodh-api.conf.j2 dest="{{ docker_shared_conf_dir }}/aodh/apache2/aodh-api.conf" backup=yes
+
+- name: Distribute certs
+  copy: src="{{ playbook_dir }}/roles/openstack-client/files/{{ item }}" dest="{{ docker_shared_conf_dir }}/aodh/ssl/{{ item }}" backup=yes
+  with_items:
+    - openstack.crt
+    - openstack.key
+  when: aodh_env.SSL_ENABLED == 1

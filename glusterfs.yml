@@ -1,0 +1,21 @@
+---
+
+######### GLUSTERFS #########
+
+- name: Install glusterfs server
+  hosts: glusterfs_server 
+  tasks:
+    - include_role:
+        name: glusterfs 
+        tasks_from: server 
+  become: true
+  environment: "{{ proxy }}"
+
+- name: Install glusterfs client 
+  hosts: current_compute:!glusterfs_server
+  tasks:
+    - include_role:
+        name: glusterfs
+        tasks_from: client 
+  become: true
+  environment: "{{ proxy }}"

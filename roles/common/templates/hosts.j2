@@ -1,0 +1,6 @@
+127.0.0.1	localhost
+
+{{ vip.haproxy.ip }}    {{ services_controller }} 
+{% for hostname, ip in hosts.items() %}
+{{ ip }}	{{ hostname }}
+{% endfor %}

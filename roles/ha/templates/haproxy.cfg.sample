@@ -1,0 +1,108 @@
+global
+  chroot /var/lib/haproxy
+  user haproxy
+  group haproxy
+  daemon
+  log /dev/log    local0
+  log /dev/log    local1 notice
+  maxconn 4000
+  stats socket /run/haproxy/admin.sock mode 660 level admin
+  stats timeout 30s
+defaults
+  log global
+  mode http
+  option redispatch
+  option httplog
+  option forwardfor
+  retries 3
+  timeout http-request 10s
+  timeout queue 1m
+  timeout connect 10s
+  timeout client 1m
+  timeout server 1m
+  timeout check 10s
+listen stats
+   bind 125.212.206.202:1984
+   mode http
+   stats enable
+   stats uri /
+   stats refresh 15s
+   stats realm Haproxy\ Stats
+   stats auth cloud:ZWFlNWUxZjU4ZDIwNTgyMTNlN2I4YzMx
+listen keystone_internal
+  bind 125.212.206.202:5000
+  bind 10.10.10.3:5000
+  http-request del-header X-Forwarded-Proto
+  server controller01 10.10.10.4:5000 check inter 2000 rise 2 fall 5
+  server controller02 10.10.10.5:5000 check inter 2000 rise 2 fall 5
+  server controller03 10.10.10.6:5000 check inter 2000 rise 2 fall 5
+listen keystone_admin
+  bind 125.212.206.202:35357
+  bind 10.10.10.3:35357
+  http-request del-header X-Forwarded-Proto
+  server controller01 10.10.10.4:35357 check inter 2000 rise 2 fall 5
+  server controller02 10.10.10.5:35357 check inter 2000 rise 2 fall 5
+  server controller03 10.10.10.6:35357 check inter 2000 rise 2 fall 5
+listen glance_api
+  bind 125.212.206.202:9292
+  bind 10.10.10.3:9292
+  server controller01 10.10.10.4:9292 check inter 2000 rise 2 fall 5
+  server controller02 10.10.10.5:9292 check inter 2000 rise 2 fall 5
+  server controller03 10.10.10.6:9292 check inter 2000 rise 2 fall 5
+listen glance_registry
+  bind 125.212.206.202:9191
+  bind 10.10.10.3:9191
+  server controller01 10.10.10.4:9191 check inter 2000 rise 2 fall 5
+  server controller02 10.10.10.5:9191 check inter 2000 rise 2 fall 5
+  server controller03 10.10.10.6:9191 check inter 2000 rise 2 fall 5
+listen nova_api
+  bind 125.212.206.202:8774
+  bind 10.10.10.3:8774
+  http-request del-header X-Forwarded-Proto
+  server controller01 10.10.10.4:8774 check inter 2000 rise 2 fall 5
+  server controller02 10.10.10.5:8774 check inter 2000 rise 2 fall 5
+  server controller03 10.10.10.6:8774 check inter 2000 rise 2 fall 5
+listen nova_placement_api
+  bind 125.212.206.202:8778
+  bind 10.10.10.3:8778
+  http-request del-header X-Forwarded-Proto
+  server controller01 10.10.10.4:8778 check inter 2000 rise 2 fall 5
+  server controller02 10.10.10.5:8778 check inter 2000 rise 2 fall 5
+  server controller03 10.10.10.6:8778 check inter 2000 rise 2 fall 5
+listen nova_metadata
+  bind 125.212.206.202:8775
+  bind 10.10.10.3:8775
+  http-request del-header X-Forwarded-Proto
+  server controller01 10.10.10.4:8775 check inter 2000 rise 2 fall 5
+  server controller02 10.10.10.5:8775 check inter 2000 rise 2 fall 5
+  server controller03 10.10.10.6:8775 check inter 2000 rise 2 fall 5
+listen nova_novncproxy
+  bind 125.212.206.202:6080
+  bind 10.10.10.3:6080
+  http-request del-header X-Forwarded-Proto
+  http-request set-header X-Forwarded-Proto https if { ssl_fc }
+  server controller01 10.10.10.4:6080 check inter 2000 rise 2 fall 5
+  server controller02 10.10.10.5:6080 check inter 2000 rise 2 fall 5
+  server controller03 10.10.10.6:6080 check inter 2000 rise 2 fall 5
+listen neutron_server
+  bind 125.212.206.202:9696
+  bind 10.10.10.3:9696
+  server controller01 10.10.10.4:9696 check inter 2000 rise 2 fall 5
+  server controller02 10.10.10.5:9696 check inter 2000 rise 2 fall 5
+  server controller03 10.10.10.6:9696 check inter 2000 rise 2 fall 5
+listen horizon
+  bind 125.212.206.202:80
+  bind 10.10.10.3:80
+  bind 10.60.117.39:80
+  balance source
+  http-request del-header X-Forwarded-Proto
+  server controller01 10.10.10.4:80 check inter 2000 rise 2 fall 5
+  server controller02 10.10.10.5:80 check inter 2000 rise 2 fall 5
+  server controller03 10.10.10.6:80 check inter 2000 rise 2 fall 5
+listen cinder_api
+  bind 125.212.206.202:8776
+  bind 10.10.10.3:8776
+  http-request del-header X-Forwarded-Proto
+  server controller01 10.10.10.4:8776 check inter 2000 rise 2 fall 5
+  server controller02 10.10.10.5:8776 check inter 2000 rise 2 fall 5
+  server controller03 10.10.10.6:8776 check inter 2000 rise 2 fall 5

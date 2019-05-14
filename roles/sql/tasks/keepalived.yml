@@ -1,0 +1,36 @@
+---
+
+- name: Prepare keepalived track scripts for mysql
+  copy: src=check_mysql.sh dest=/usr/local/bin/check_mysql.sh mode=0755 backup=yes
+
+- include_role:
+    name: ha
+    tasks_from: update_keepalived
+  vars:
+    keepalived_conf: mysql.conf
+    keep_vrrp_scripts:
+      - name: check_mysql
+        commands:
+          - script "/usr/local/bin/check_mysql.sh"
+          - interval 2
+          - weight -30
+
+    keep_vrrp_instances:
+      - name: PRIVATE_MYSQL
+        virtual_ipaddrs:
+          - "{{ vip.mysql.ip }}"
+        cnf_params:
+          - param: state
+            val: BACKUP
+          - param: priority
+            val: "{{ keepalived.mysql.vrrp_prior }}"
+          - param: advert_int
+            val: 1
+          - param: interface
+            val: "{{ keepalived.mysql.iface }}"
+          - param: virtual_router_id
+            val: "{{ vip.mysql.router_id }}"
+    keep_vrrp_sync_grp:
+      name: VG_MYSQL
+      mems:
+        - PRIVATE_MYSQL 

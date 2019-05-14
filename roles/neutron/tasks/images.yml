@@ -1,0 +1,31 @@
+---
+
+- name: Build Neutron images
+  docker_image:
+    path: "{{ ops_dk_files_path }}/neutron"
+    name: neutron 
+    repository: "{{ docker_reg_host }}:{{ docker_host_port }}/neutron"
+    tag: "{{ docker_images_tag }}"
+    pull: no
+    push: yes
+    nocache: yes
+    buildargs: "{{ proxy }}"
+  register: command_result
+  retries: 3
+  delay: 10
+  until: command_result | success
+
+#- name: Build Neutron (without lbaas)images
+#  docker_image:
+#    path: "{{ ops_dk_files_path }}/neutron-without-lbaas"
+#    name: neutron-without-lbaas
+#    repository: "{{ docker_reg_host }}:{{ docker_host_port }}/neutron-without-lbaas"
+#    tag: "{{ docker_images_tag }}"
+#    pull: no
+#    push: yes
+#    nocache: yes
+#    buildargs: "{{ proxy }}"
+#  register: command_result
+#  retries: 3
+#  delay: 10
+#  until: command_result | success

@@ -1,0 +1,27 @@
+[global]
+  fsid = 359a4ffe-94b1-49ac-bdf9-5033f5c95d8b
+
+
+[mon]
+
+{% for ip, hostname in hosts.items() %}
+    [mon.{{ hostname }}]
+      host = {{ hostname }} 
+      mon_addr = {{ ip }} 
+{% endfor %}
+
+[osd]
+
+  osd_journal_size = 100
+
+[mds]
+
+
+[client]
+
+
+  [client_host]
+    
+
+[client.{{ ceph.gnocchi.user }}]
+keyring = /etc/ceph/ceph.client.gnocchi.keyring

@@ -1,0 +1,3 @@
+kv_type: etcd
+kv_endpoint: "{{vip.etcd.ip}}"
+kv_port: 2379

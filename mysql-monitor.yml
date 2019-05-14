@@ -1,0 +1,8 @@
+---
+
+- hosts: hub
+  tasks:
+    - include_role:
+        name: mysql 
+        tasks_from: monitor
+  become: true

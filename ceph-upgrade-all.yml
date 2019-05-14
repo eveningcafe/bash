@@ -1,0 +1,5 @@
+---
+- import_playbook: ceph-upgrade-mons.yml
+- import_playbook: ceph-upgrade-osds.yml
+- import_playbook: ceph-upgrade-mgrs.yml
+- import_playbook: ceph-upgrade-mdss.yml

@@ -1,0 +1,19 @@
+# Galera Cluster Auto Generated Config
+[server]
+bind-address="0.0.0.0"
+binlog_format="row"
+default_storage_engine="InnoDB"
+innodb_autoinc_lock_mode="2"
+innodb_locks_unsafe_for_binlog="1"
+
+[galera]
+wsrep_on="on"
+wsrep_provider="/usr/lib/libgalera_smm.so"
+wsrep_provider_options="{{ mysql_env.openstack.WSREP_PROVIDER_OPTIONS }}"
+wsrep_cluster_address="{{ mysql_env.openstack.WSREP_CLUSTER_ADDRESS }}"
+wsrep_sst_receive_address="{{ mysql_env.openstack.WSREP_SST_RECEIVE_ADDRESS }}"
+wsrep_cluster_name="{{ mysql_env.openstack.WSREP_CLUSTER_NAME }}"
+wsrep_node_name="{{ mysql_env.openstack.WSREP_NODE_NAME }}"
+wsrep_sst_auth=""
+wsrep_sst_method="rsync"
+wsrep_node_address={{ mysql_env.openstack.WSREP_NODE_ADDRESS }}

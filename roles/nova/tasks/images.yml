@@ -1,0 +1,12 @@
+---
+
+- name: Build Nova images
+  docker_image:
+    path: "{{ ops_dk_files_path }}/nova"
+    name: nova
+    repository: "{{ docker_reg_host }}:{{ docker_host_port }}/nova"
+    tag: "{{ docker_images_tag }}"
+    pull: no
+    push: yes
+    #nocache: yes
+    buildargs: "{{ proxy }}"

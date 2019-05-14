@@ -1,0 +1,26 @@
+- name: docker export tree to file 
+  command: "docker exec {{mon_name}} ceph osd getcrushmap -o /tmp/current_crush.crush"
+- name: docker decrypt tree file 
+  command: "docker exec {{mon_name}} crushtool -d /tmp/current_crush.crush -o /tmp/current_crush.txt"
+- name: get conf file to ansible host
+  command: "docker exec {{mon_name}} cat /tmp/current_crush.txt"
+  register: crush_file
+
+- name: Remove old crush if exits
+  local_action:
+    module: file
+    path: "{{ item }}"
+    state: absent
+  with_items:
+    - "{{ current_crush_tree_export }}"
+    - "{{ new_crush_tree_import }}"
+
+- name: save ceph conf to ansible host
+  local_action:
+    module: lineinfile
+    path: "{{ item }}"
+    line: "\n{{ crush_file.stdout }} \n"
+    create: yes
+  with_items:
+    - "{{ current_crush_tree_export }}"
+    - "{{ new_crush_tree_import }}"

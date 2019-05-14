@@ -1,0 +1,15 @@
+---
+
+identity_env: "{{ general_env | merge(keystone_env) }}"
+
+openstack_client_env: "{{ general_env | merge(ops_client_env) | merge(glance_env) | merge(nova_env) | merge(neutron_env) | merge(cinder_env) }}"
+
+image_env: "{{ general_env | merge(glance_env) }}"
+
+compute_env: "{{ general_env | merge(nova_env) }}"
+
+network_env: "{{ general_env | merge(neutron_env) }}"
+
+block_storage_env: "{{ general_env | merge(cinder_env) }}"
+
+horizon_env: "{{ general_env }}"

@@ -1,0 +1,6 @@
+---
+
+- hosts: ceph 
+  roles:
+     - clean-old-ceph
+  become: true 

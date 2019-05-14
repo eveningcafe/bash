@@ -1,0 +1,33 @@
+---
+
+- name: Bootstrap OpenStack projects
+  hosts: current_controller:&hub
+  tasks:
+    - include_role:
+        name: keystone 
+        tasks_from: setup
+  become: true
+
+- name: Start other controllers
+  hosts: current_controller:!hub
+  tasks:
+    - include_role:
+        name: keystone 
+        tasks_from: controller
+  become: true
+
+- name: Synchronize keystone keys
+  hosts: controller
+  tasks:
+    - include_role:
+        name: keystone 
+        tasks_from: sync
+  become: true
+
+- name: Update haproxy config
+  hosts: current_controller
+  tasks:
+    - include_role:
+        name: keystone 
+        tasks_from: haproxy
+  become: true

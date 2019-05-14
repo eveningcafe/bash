@@ -1,0 +1,14 @@
+---
+
+- include_role:
+    name: elasticsearch
+ 
+- include_role:
+    name: logstash
+
+- include_role:
+    name: kibana
+
+- include_role:
+    name: filebeat
+    tasks_from: server

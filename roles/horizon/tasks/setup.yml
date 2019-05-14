@@ -1,0 +1,9 @@
+---
+
+- include_role:
+    name: horizon
+    tasks_from: teardown
+
+- include_role:
+    name: horizon
+    tasks_from: controller 

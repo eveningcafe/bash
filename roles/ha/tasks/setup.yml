@@ -1,0 +1,10 @@
+---
+
+- include_role:
+    name: ha
+    tasks_from: "{{ item }}"
+  with_items:
+    - clean_haproxy
+    - haproxy
+    - clean_keepalived 
+    - keepalived

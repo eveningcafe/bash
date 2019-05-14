@@ -1,0 +1,40 @@
+---
+
+- include_role:
+    name: sql
+    tasks_from: update
+  vars:
+    db_update:
+      name: aodh
+      user: aodh
+      passwd: "{{ aodh_env.AODH_DBPASS }}"
+
+- include_role:
+    name: openstack-client
+    tasks_from: user
+  vars:
+    domain:
+      name: default
+    service:
+      user: aodh
+      pass: "{{ aodh_pass }}"
+
+- include_role:
+    name: openstack-client
+    tasks_from: service
+  vars:
+    domain_id: default
+    region_name: "{{ alert_env.REGION_NAME }}" 
+    service:
+      type: alarming 
+      name: aodh 
+      user: aodh
+      pass: "{{ aodh_pass }}"
+      description: "Telemetry"
+      endpoints:
+        - scope: public
+          url: "{% raw %}'http://{{ general_env.CONTROLLER_HOST }}:8042'{% endraw %}"
+        - scope: internal
+          url: "{% raw %}'http://{{ general_env.CONTROLLER_HOST }}:8042'{% endraw %}"
+        - scope: admin
+          url: "{% raw %}'http://{{ general_env.CONTROLLER_HOST }}:8042'{% endraw %}"

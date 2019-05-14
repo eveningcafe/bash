@@ -1,0 +1,17 @@
+---
+
+- name: Update keystone endpoints 
+  shell: |
+    {{ sql_cli_dbhandler }} "update endpoint set url = REPLACE(url, 'http://{{ services_controller }}:35357/v3/', 'https://{{ services_controller }}:35357/v3/');"
+    {{ sql_cli_dbhandler }} "update endpoint set url = REPLACE(url, 'http://{{ services_controller }}:5000/v3/', 'https://{{ services_controller }}:5000/v3/');"
+  vars:
+    database_name: keystone 
+  when: keystone_env.SSL_ENABLED == 1
+
+- name: Update keystone endpoints
+  shell: |
+    {{ sql_cli_dbhandler }} "update endpoint set url = REPLACE(url, 'https://{{ services_controller }}:35357/v3/', 'http://{{ services_controller }}:35357/v3/');"
+    {{ sql_cli_dbhandler }} "update endpoint set url = REPLACE(url, 'https://{{ services_controller }}:5000/v3/', 'http://{{ services_controller }}:5000/v3/');"
+  vars:
+    database_name: keystone
+  when: keystone_env.SSL_ENABLED == 0 

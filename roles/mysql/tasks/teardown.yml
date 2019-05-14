@@ -1,0 +1,13 @@
+---
+
+- name: Remove mysql 
+  docker_container:
+    name: "{{ item }}"
+    state: absent
+  with_items: "{{ MYSQL_CONTAINERS }}"
+  ignore_errors: yes
+
+- name: Remove mysql data 
+  file:
+    path: "{{ MYSQL_CONTAINER_DATA_DIR }}"
+    state: absent 

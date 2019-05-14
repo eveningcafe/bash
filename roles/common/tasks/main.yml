@@ -1,0 +1,273 @@
+---
+
+- name: Setup hostname
+  hostname: name={{ inventory_hostname }}
+  when: not inventory_hostname|match('(\d{1,3}\.){3}\d{1,3}')
+
+- name: Get list server's IPs
+  set_fact: ips=["{{ groups['all'] | map('extract', hostvars, ['ansible_ssh_host']) | join('", "') }}"]
+
+- name: Get list hostnames
+  set_fact: hostnames="{{ groups['all'] }}"
+
+- name: Create dict with hostname and correspond IP
+  set_fact: hosts={{ hostnames | get_full_of_hosts(ips) }}
+
+- name: Update new hosts file
+  template: src=hosts.j2 dest=/etc/hosts backup=yes
+
+- name: Update repository
+  template: src=sources.list.j2 dest=/etc/apt/sources.list backup=yes
+  when: local_installation == 1
+
+- name: Add local repository public keys
+  shell: |
+    curl -fsSL http://{{ local_repo_ip }}/keys/docker.key | sudo apt-key add -
+    curl -fsSL http://{{ local_repo_ip }}/keys/public.key | sudo apt-key add -
+    curl -fsSL http://{{ local_repo_ip }}/keys/percona.key | sudo apt-key add -
+    curl -fsSL http://{{ local_repo_ip }}/keys/ansible.key | sudo apt-key add -
+    curl -fsSL http://{{ local_repo_ip }}/keys/kernel.key | sudo apt-key add -
+    curl -fsSL http://{{ local_repo_ip }}/keys/security.key | sudo apt-key add -
+  when: local_installation == 1
+
+- name: Update timezone
+  timezone:
+    name: "{{ time_zone }}"
+
+- name: Update system
+  apt:
+    update_cache: yes
+  register: update_output
+  ignore_errors: yes
+
+- name: Clean apt lock
+  file:
+    path: "{{ item }}"
+    state: absent
+  with_items:
+    - /var/lib/apt/lists/lock
+    - /var/cache/apt/archives/lock
+    - /var/lib/dpkg/lock
+  when: update_output.failed == true
+
+- name: Re-update system if failed
+  apt:
+    update_cache: yes
+  when: update_output.failed == true
+
+- name: Upgrade all packages to the latest version
+  apt:
+    upgrade: dist
+  ignore_errors: yes
+
+- name: Install chrony
+  include_role:
+    name: chrony
+
+- name: Install soft-ware-properties-common
+  apt: name=software-properties-common update_cache=yes
+
+- name: Add openstack cloud ring
+  apt:
+    name: ubuntu-cloud-keyring
+    state: present
+
+- name: Add OpenStack repo
+  apt_repository:
+    repo: "deb http://ubuntu-cloud.archive.canonical.com/ubuntu {{ ansible_distribution_release }}-updates/{{ openstack_release }} main"
+    state: present
+    update_cache: yes
+  when: local_installation == 0 
+
+#- name: Install OpenStack client
+#  apt: name=python-openstackclient state=present update_cache=yes
+
+- name: Install docker
+  include_role:
+    name: docker
+    tasks_from: install
+
+- name: Install htop, git, vlan, vim, unzip, libpam-pwquality, jq
+  apt:
+    name: "{{ item }}"
+    state: present
+    update_cache: yes
+  with_items:
+    - htop
+    - git
+    - vlan
+    - vim
+    - unzip
+    - libpam-pwquality
+    - jq
+
+#- name: Install pip
+#  apt: name=python-pip state=present update_cache=yes
+# 
+#- name: Upgrade pip
+#  pip: 
+#    name: pip
+#    extra_args: --upgrade
+#  when: local_installation == 0
+
+- name: Get pip packages and dependencies
+  get_url:
+    url: "http://{{ local_repo_ip }}/pip/{{ item }}"
+    dest: "/tmp/{{ item }}"
+  with_items:
+    - setuptools-36.2.7.tar.gz
+    - pip-18.1.tar.gz
+  when: local_installation == 1
+
+- name: Install setuptools 
+  include_role:
+    name: pip
+    tasks_from: install 
+  vars:
+    tar_archive: /tmp/setuptools-36.2.7.tar.gz
+    archive: setuptools-36.2.7
+  when: local_installation == 1
+
+- name: Install pip 
+  include_role:
+    name: pip
+    tasks_from: install
+  vars:
+    tar_archive: /tmp/pip-18.1.tar.gz
+    archive: pip-18.1
+  when: local_installation == 1
+
+- name: Install netaddr & docker-py
+  pip: name={{ item }} state=present
+  with_items:
+    - netaddr
+    - docker-py
+  when: local_installation == 0
+
+- name: Get packages
+  get_url:
+    url: "http://{{ local_repo_ip }}/pip/{{ item }}"
+    dest: "/tmp/{{ item }}"
+  with_items:
+    - backports.ssl_match_hostname-3.5.0.1.tar.gz
+    - docker-py-1.10.6.tar.gz
+    - docker-pycreds-0.2.1.tar.gz
+    - netaddr-0.7.19.tar.gz
+    - websocket_client-0.32.0.tar.gz
+    - six-1.11.0.tar.gz
+    - ipaddress-1.0.16.tar.gz
+    - requests-2.11.1.tar.gz
+  when: local_installation == 1
+
+- name: Install requests
+  include_role:
+    name: pip
+    tasks_from: main
+  vars:
+    module_name: requests 
+    tar_archive: /tmp/requests-2.11.1.tar.gz
+    archive: requests-2.11.1
+  when: local_installation == 1
+
+- name: Install six
+  include_role:
+    name: pip
+    tasks_from: main
+  vars:
+    module_name: six
+    tar_archive: /tmp/six-1.11.0.tar.gz
+    archive: six-1.11.0
+  when: local_installation == 1
+
+- name: Install netaddr
+  include_role:
+    name: pip
+    tasks_from: main
+  vars:
+    module_name: netaddr 
+    tar_archive: /tmp/netaddr-0.7.19.tar.gz
+    archive: netaddr-0.7.19
+  when: local_installation == 1
+
+- name: Install websocket 
+  include_role:
+    name: pip
+    tasks_from: main
+  vars:
+    module_name: websocket_client 
+    tar_archive: /tmp/websocket_client-0.32.0.tar.gz
+    archive: websocket_client-0.32.0
+  when: local_installation == 1
+
+- name: Install backports 
+  include_role:
+    name: pip
+    tasks_from: main
+  vars:
+    module_name: backports.ssl_match_hostname 
+    tar_archive: /tmp/backports.ssl_match_hostname-3.5.0.1.tar.gz
+    archive: backports.ssl_match_hostname-3.5.0.1
+  when: local_installation == 1
+
+- name: Install docker-pycreds
+  include_role:
+    name: pip
+    tasks_from: main
+  vars:
+    module_name: docker-pycreds
+    tar_archive: /tmp/docker-pycreds-0.2.1.tar.gz
+    archive: docker-pycreds-0.2.1
+  when: local_installation == 1
+
+- name: Install ipaddress 
+  include_role:
+    name: pip
+    tasks_from: main
+  vars:
+    module_name: ipaddress
+    tar_archive: /tmp/ipaddress-1.0.16.tar.gz
+    archive: ipaddress-1.0.16
+  when: local_installation == 1
+
+- name: Install docker-py
+  include_role:
+    name: pip
+    tasks_from: main
+  vars:
+    module_name: docker-py
+    tar_archive: /tmp/docker-py-1.10.6.tar.gz
+    archive: docker-py-1.10.6
+  when: local_installation == 1
+
+- name: Allow RSYNC for new super user without SUDO password
+  lineinfile:
+    path: /etc/sudoers
+    state: present
+    line: "{{ ansible_ssh_user }} ALL=NOPASSWD: /usr/bin/rsync"
+
+- name: Optimize OS
+  include_tasks: optimize_system.yml
+
+- include_tasks: rotate_config.yml
+
+- include_tasks: crontab.yml
+  vars:
+    crontab_line: '00 1 * * * root /usr/bin/find /var/log/apache2 -name \*log\* -name \*.gz -mtime +90 -exec rm -f {} \; >/dev/null 2>&1'
+  when: inventory_hostname in groups['controller']
+
+- include_tasks: crontab.yml
+  vars:
+    crontab_line: '05 1 * * * root /usr/bin/find /var/log/apache2 -name \*log\* ! -name \*.gz -mtime +1 -exec gzip {} \; >/dev/null 2>&1'
+  when: inventory_hostname in groups['controller']
+
+- name: reboot system
+  shell: |
+    sleep 2
+    init 6
+  async: 1
+  poll: 0
+  when: reboot == 1
+
+- name: Waiting for server to come back
+  local_action: wait_for host={{ inventory_hostname }} state=started delay={{ server_delay }} timeout={{ server_time_out }}
+  when: reboot == 1

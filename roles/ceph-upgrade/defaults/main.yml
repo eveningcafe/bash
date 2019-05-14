@@ -1,0 +1,4 @@
+---
+# defaults file for ceph-upgrade
+upgrade_ceph: yes
+strict_heath_ok_condition: false

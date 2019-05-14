@@ -1,0 +1,66 @@
+---
+
+- name: Create neutron database
+  include_role:
+    name: sql
+    tasks_from: update
+  vars:
+    db_update:
+      name: neutron
+      user: neutron
+      passwd: "{{ neutron_env.NEUTRON_DBPASS }}"
+
+- name: Create service user
+  include_role:
+    name: openstack-client
+    tasks_from: user
+  vars:
+    domain:
+      name: default
+    service:
+      user: neutron
+      pass: "{{ neutron_pass }}"
+
+- name: Create service and service endpoints
+  include_role:
+    name: openstack-client
+    tasks_from: service
+  vars:
+    domain_id: default
+    region_name: "{{ network_env.REGION_NAME }}" 
+    service:
+      type: network 
+      name: neutron
+      user: neutron
+      pass: "{{ neutron_pass }}"
+      description: "OpenStack Networking"
+      endpoints:
+        - scope: public
+          url: "{% raw %}'http://{{ general_env.CONTROLLER_HOST }}:9696'{% endraw %}"
+        - scope: internal
+          url: "{% raw %}'http://{{ general_env.CONTROLLER_HOST }}:9696'{% endraw %}"
+        - scope: admin
+          url: "{% raw %}'http://{{ general_env.CONTROLLER_HOST }}:9696'{% endraw %}"
+  when: neutron_env.SSL_ENABLED == 0 
+
+- name: Create service and service endpoints
+  include_role:
+    name: openstack-client
+    tasks_from: service
+  vars:
+    domain_id: default
+    region_name: "{{ network_env.REGION_NAME }}"
+    service:
+      type: network
+      name: neutron
+      user: neutron
+      pass: "{{ neutron_pass }}"
+      description: "OpenStack Networking"
+      endpoints:
+        - scope: public
+          url: "{% raw %}'https://{{ general_env.CONTROLLER_HOST }}:9696'{% endraw %}"
+        - scope: internal
+          url: "{% raw %}'https://{{ general_env.CONTROLLER_HOST }}:9696'{% endraw %}"
+        - scope: admin
+          url: "{% raw %}'https://{{ general_env.CONTROLLER_HOST }}:9696'{% endraw %}"
+  when: neutron_env.SSL_ENABLED == 1

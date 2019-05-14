@@ -1,0 +1,65 @@
+---
+
+- include_role:
+    name: sql
+    tasks_from: drop
+  vars:
+    db_update:
+      name: heat
+
+- include_role:
+    name: openstack-client
+    tasks_from: service_delete
+  vars:
+    service:
+      name: heat-cfn
+
+- include_role:
+    name: openstack-client
+    tasks_from: service_delete
+  vars:
+    service:
+      name: heat
+
+- include_role:
+    name: openstack-client
+    tasks_from: user_delete
+  vars:
+    domain:
+      name: default
+    service:
+      user: heat
+
+- include_role:
+    name: openstack-client
+    tasks_from: role_delete
+  vars:
+    roles:
+      - heat_stack_owner
+      - heat_stack_user
+
+- include_role:
+    name: openstack-client
+    tasks_from: user_delete
+  vars:
+    domain:
+      name: heat 
+    service:
+      user: heat_domain_admin 
+
+- include_role:
+    name: openstack-client
+    tasks_from: domain_delete
+  vars:
+    domain:
+      name: heat
+
+- name: Remove heat containers
+  docker_container:
+    name: "{{ item }}"
+    state: absent
+  with_items:
+    - heat-api
+    - heat-api-cfn
+    - heat-engine
+  ignore_errors: yes

@@ -1,0 +1,7 @@
+---
+
+- name: Create role
+  shell: |
+    {{ docker_openstack_client }} role create {{ item }} 
+  with_items: "{{ roles }}"
+  environment: "{{ ops_client_env }}"

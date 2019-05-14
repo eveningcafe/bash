@@ -1,0 +1,47 @@
+---
+
+- name: Create shared configuration directory
+  file:
+    path: "{{ docker_shared_conf_dir }}/neutron/"
+    state: directory
+
+- name: Create shared configuration directory
+  file:
+    path: "{{ docker_shared_conf_dir }}/neutron/{{ item }}/"
+    state: directory
+  with_items:
+    - backup
+    - neutron
+    - ssl
+
+- name: Create shared configuration directory
+  file:
+    path: "{{ docker_shared_conf_dir }}/neutron/neutron/plugins/ml2/"
+    state: directory
+
+- name: Update neutron dhcp configuration
+  template: src=dhcp_agent.ini.j2 dest="{{ docker_shared_conf_dir }}/neutron/neutron/dhcp_agent.ini" backup=yes
+
+- name: Update neutron metadata configuration
+  template: src=metadata_agent.ini.j2 dest="{{ docker_shared_conf_dir }}/neutron/neutron/metadata_agent.ini" backup=yes
+
+- name: Update neutron configuration
+  template: src=neutron.conf.j2 dest="{{ docker_shared_conf_dir }}/neutron/neutron/neutron.conf" backup=yes
+  when: neutron_env.SSL_ENABLED == 0
+
+- name: Update neutron configuration
+  template: src=ssl.neutron.conf.j2 dest="{{ docker_shared_conf_dir }}/neutron/neutron/neutron.conf" backup=yes
+  when: neutron_env.SSL_ENABLED == 1
+
+- name: Update ml2 and openvswitch agent configuration
+  template: src="{{ item }}.j2" dest="{{ docker_shared_conf_dir }}/neutron/neutron/plugins/ml2/{{ item }}" backup=yes
+  with_items:
+    - ml2_conf.ini
+    - openvswitch_agent.ini
+
+- name: Distribute certs
+  copy: src="{{ playbook_dir }}/roles/openstack-client/files/{{ item }}" dest="{{ docker_shared_conf_dir }}/neutron/ssl/{{ item }}" backup=yes
+  with_items:
+    - openstack.crt
+    - openstack.key
+  when: neutron_env.SSL_ENABLED == 1

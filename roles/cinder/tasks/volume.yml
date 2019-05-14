@@ -1,0 +1,26 @@
+---
+
+- name: Remove cinder-volume 
+  docker_container:
+    name: cinder-volume 
+    state: absent
+  ignore_errors: yes
+
+- include_role:
+    name: cinder
+    tasks_from: config_volume 
+
+- name: Start cinder-volume 
+  docker_container:
+    name: cinder-volume 
+    image: "{{ docker_reg_host }}:{{ docker_host_port }}/cinder-volume:{{ docker_images_tag }}"
+    pull: yes
+    restart_policy: unless-stopped
+    state: started
+    user: cinder 
+    volumes:
+      - "{{ docker_shared_conf_dir }}/cinder-volume/:{{ docker_shared_conf_dir }}/cinder-volume/"
+      - /var/log/cinder:/var/log/cinder 
+      - /etc/localtime:/etc/localtime
+    env: "{{ block_storage_env | merge({ 'CINDER_START': 'START_CINDER_VOLUME' }) }}"
+    network_mode: host

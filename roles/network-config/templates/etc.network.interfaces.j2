@@ -1,0 +1,69 @@
+source /etc/network/interfaces.d/*
+auto lo
+iface lo inet loopback
+
+#### STATIC CONFIG ####
+{% for bond in bonds.static %}
+{% for element in bond.elements %}
+auto {{ element }}
+iface {{ element }} inet manual
+bond-master {{ bond.name }}
+
+{% endfor %}
+auto {{ bond.name }}
+iface {{ bond.name }} inet static
+address {{ bond.addr }}
+netmask {{ bond.netmask }}
+gateway {{ bond.gateway }}
+bond-slaves {% for element in bond.elements %}{{ element }}{% if not loop.last %} {% endif %}{% endfor %}
+
+bond-mode {{ bond.mode }} 
+bond-miimon {{ bond.miimon }}
+
+{% endfor %}
+
+#### PROMISCUOUS CONFIG ####
+{% for bond in bonds.promiscuous %}
+{% for element in bond.elements %}
+auto {{ element }}
+iface {{ element }} inet manual
+bond-master {{ bond.name }}
+
+{% endfor %}
+auto {{ bond.name }}
+iface {{ bond.name }} inet manual
+up ip link set dev $IFACE up
+down ip link set dev $IFACE down
+post-up ip link set promisc on dev $IFACE
+bond-slaves {% for element in bond.elements %}{{ element }}{% if not loop.last %} {% endif %}{% endfor %}
+
+bond-mode 4
+bond-miimon 100
+
+{% endfor %}
+
+#### VLAN CONFIG ####
+{% for bond in bonds.vlan %}
+{% for element in bond.elements %}
+auto {{ element }}
+iface {{ element }} inet manual
+bond-master {{ bond.name }}
+
+{% endfor %}
+auto {{ bond.name }}
+iface {{ bond.name }} inet manual
+bond-slaves {% for element in bond.elements %}{{ element }}{% if not loop.last %} {% endif %}{% endfor %}
+
+bond-mode 4
+bond-miimon 100
+
+{% for vlan in bond.vlans %}
+auto {{ bond.name }}.{{ vlan.id }}
+iface {{ bond.name }}.{{ vlan.id }} inet manual
+address {{ vlan.addr }} 
+netmask {{ vlan.netmask }}
+vlan-raw-device {{ bond.name }}
+
+{% endfor %}
+
+{% endfor %}

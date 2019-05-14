@@ -1,0 +1,51 @@
+---
+
+- name: Remove old redis container
+  docker_container:
+    name: "{{ item }}" 
+    state: absent
+  with_items:
+    - redis
+    - redis-sentinel
+
+- name: Remove old redis data
+  file:
+    path: /var/lib/redis/
+    state: absent
+  ignore_errors: yes
+
+- name: Remove old redis-sentinel data
+  file:
+    path: /var/lib/redis-sentinel/
+    state: absent
+  ignore_errors: yes
+
+- name: Redis master
+  docker_container:
+    name: redis 
+    image: "{{ redis.image.server }}"
+    pull: yes
+    restart_policy: unless-stopped
+    state: started
+    user: root 
+    volumes:
+      - /var/lib/redis/data:/bitnami
+      - /var/log/redis/:/opt/bitnami/redis/logs/
+      - /etc/localtime:/etc/localtime
+    env: "{{ redis.env.master }}"
+    network_mode: host
+
+- name: Redis sentinel on master host
+  docker_container:
+    name: redis-sentinel
+    image: "{{ redis.image.sentinel }}"
+    pull: yes
+    restart_policy: unless-stopped
+    state: started
+    user: root
+    volumes:
+      - /var/lib/redis-sentinel/data:/bitnami 
+      - /var/log/redis-sentinel/:/opt/bitnami/redis-sentinel/logs/
+      - /etc/localtime:/etc/localtime
+    env: "{{ redis.env.sentinel }}"
+    network_mode: host

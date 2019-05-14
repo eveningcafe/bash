@@ -1,0 +1,18 @@
+- name: "check {{listhost}} in quorum"
+  shell: "timeout 5 docker exec {{mon_name}} ceph -s | grep 'mon:'| awk '{ print $5}' | grep {{listhost}}"
+  changed_when: false
+  register: check_allmon
+  retries: "{{retries_mon}}"
+  delay: "{{delay_retries_mon}}"
+  until: check_allmon.rc == 0
+
+#- name: Not all mon are in quorum, temporary rolling back this mon. Maybe you need to rollback all later.
+#  include_role:
+#    name: ceph-rollback
+#    tasks_from: rollback-mons
+#  when: check_allmon.stdout is defined and check_allmon.rc == 1
+
+- fail:
+    msg: "Upgrade mon fail. run ' ansible-playbook ceph-rollback-all.yml ' to rollback all"
+  when: check_allmon.stdout is defined and check_allmon.rc == 1
+  

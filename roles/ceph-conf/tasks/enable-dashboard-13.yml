@@ -1,0 +1,9 @@
+- name: mgr module enable dashboard
+  command: docker exec {{mon_name}} ceph mgr module enable dashboard
+- name: ceph dashboard create-self-signed-cert
+  command: docker exec {{mon_name}} ceph dashboard create-self-signed-cert
+- name: ceph dashboard create username password
+  command: docker exec {{mon_name}} ceph dashboard set-login-credentials {{dashboard_username}} {{dashboard_password}}
+  register: myres
+- debug:
+    msg: "{{myres.stdout_lines}}"

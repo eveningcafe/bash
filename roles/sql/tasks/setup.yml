@@ -1,0 +1,8 @@
+---
+
+- include_role:
+    name: sql
+    tasks_from: clean
+- include_role:
+    name: sql
+    tasks_from: main

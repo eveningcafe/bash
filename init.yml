@@ -1,0 +1,9 @@
+---
+
+- name: Get repo and settings 
+  hosts: localhost 
+  tasks:
+    - include_role:
+        name: git
+        tasks_from: init
+  become: true

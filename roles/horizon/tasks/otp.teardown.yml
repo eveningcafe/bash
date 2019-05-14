@@ -1,0 +1,18 @@
+---
+
+- include_role:
+    name: sql
+    tasks_from: drop
+  vars:
+    db_update:
+      name: otp_db 
+
+- name: Remove Horizon bootstrap container
+  docker_container:
+    name: horizon-bootstrap
+    state: absent
+
+- name: Remove Horizon container
+  docker_container:
+    name: horizon
+    state: absent

@@ -1,0 +1,20 @@
+{% if networking.static.enabled %}
+{% for item in networking.static.data %}
+auto {{ item.interface }}
+iface {{ item.interface }} inet static 
+        address {{ item.address }}
+        netmask {{ item.netmask }}
+{% if item.vlan.enabled %}
+        vlan-raw-device {{  item.vlan.vlan_raw_device }}
+{% endif %}
+{% if item.gateway is not none %}
+        gateway {{ item.gateway }} 
+{% endif %}
+{% if item.nameservers is not none %}
+        dns-nameservers {% for nameserver in item.nameservers %}{{ nameserver }}{% if not loop.last %} {% endif %}{% endfor %}
+{% endif %}
+{% if not loop.last %}
+
+{% endif %}
+{% endfor %}
+{% endif %}

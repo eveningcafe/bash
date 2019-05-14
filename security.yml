@@ -1,0 +1,47 @@
+---
+
+- name: Fix baseline 
+  hosts: all:!docker-registry
+  tasks:
+    - include_role:
+        name: baseline
+        tasks_from: main
+      vars:
+        baseline:
+          users:
+            - cloud
+            - root
+        profile:
+          timeout: 300
+        ssh_config:
+          users:
+            - cloud
+            - nova
+        nameservers:
+          - 203.113.131.2
+    - name: Install SE agent 
+      shell: |
+        apt-get install -y unzip
+        wget http://{{ sirc_ip }}/serverendpoint/se-install.sh
+        bash se-install.sh anm_cloudsecurity_hlc_{{ ansible_ssh_host }} 
+      vars:
+        sirc_ip: 10.30.160.44
+    - name: Update rc.local
+      copy: src="{{ playbook_dir }}/roles/baseline/files/rc.local" dest=/etc/rc.local backup=yes
+    - name: Install OTP
+      shell: |
+        curl -skS {{ otp_url }} | sudo -s -E
+      vars:
+        otp_url: https://10.30.118.10/ext/install/group/FF8V0cqvGgvUmXlR/init.sh
+  become: true
+
+#- name: Fix mysql baseline
+#  hosts: hub 
+#  tasks:
+#    - include_role:
+#        name: baseline
+#        tasks_from: mysql
+#      vars:
+#        mysql:
+#          root_new_name: cloud
+#  become: true

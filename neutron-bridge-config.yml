@@ -1,0 +1,15 @@
+---
+
+- name: Config ovs-bridges 
+  hosts: current_compute
+  tasks:
+    - shell: |
+        ovs-vsctl del-port {{ item.bridge }} {{ item.interface }}
+        ovs-vsctl add-port {{ item.bridge }} {{ item.interface }}
+      with_items:
+        - bridge: br-dcn
+          interface: bond1
+        #- bridge: br-public
+        #  interface: bond2
+      ignore_errors: yes
+  become: true

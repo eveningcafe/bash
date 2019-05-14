@@ -1,0 +1,41 @@
+---
+
+- include_role:
+    name: sql
+    tasks_from: drop 
+  vars:
+    db_update:
+      name: cinder 
+
+- include_role:
+    name: openstack-client
+    tasks_from: service_delete
+  vars:
+    service:
+      name: cinderv2
+
+- include_role:
+    name: openstack-client
+    tasks_from: service_delete
+  vars:
+    service:
+      name: cinderv3
+
+- include_role:
+    name: openstack-client
+    tasks_from: user_delete
+  vars:
+    domain:
+      name: default
+    service:
+      user: cinder 
+
+- name: Remove cinder containers
+  docker_container:
+    name: "{{ item }}" 
+    state: absent
+  with_items:
+    - cinder-api
+    - cinder-scheduler
+    - cinder-volume
+  ignore_errors: yes

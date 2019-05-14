@@ -1,0 +1,17 @@
+---
+
+#- import_playbook: common.yml
+#- import_playbook: registry.yml
+#- import_playbook: build-docker-images.yml 
+#- import_playbook: environment.yml
+- import_playbook: keystone.yml
+#- import_playbook: glance.yml
+#- import_playbook: nova.yml
+#- import_playbook: nova-compute.yml
+#- import_playbook: neutron.yml
+#- import_playbook: neutron-agent.yml
+#- import_playbook: cinder.yml
+#- import_playbook: cinder-volume.yml
+#- import_playbook: heat.yml
+#- import_playbook: horizon.yml
+#- import_playbook: masakari.yml

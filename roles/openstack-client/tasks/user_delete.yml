@@ -1,0 +1,7 @@
+---
+
+- name: Delete service user
+  shell: |
+    {{ docker_openstack_client }} user delete --domain {{ domain.name }} {{ service.user }}
+  environment: "{{ ops_client_env }}"
+  ignore_errors: yes

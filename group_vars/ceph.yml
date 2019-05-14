@@ -1,0 +1,44 @@
+---
+
+#if clean_old_ceph true remove container: mgr, osd, mon; etcd data; /var/lib/ceph/ /var/run/ceph /etc/ceph
+clean_old_ceph: true
+#for docker 
+docker_use_local_registry: true
+#docker_reg_host: docker-registry
+#docker_reg_port: 4000 
+ceph_docker_image: ceph/daemon
+#ceph_docker_image_tag: 13.2.1
+ceph_docker_image_tag: 12.2.4
+etcd_docker_image: etcd
+etcd_docker_image_tag: v3.3.8
+
+ceph_public_network: 192.168.2.0/24
+ceph_cluster_network: 192.168.100.0/24
+
+#for ceph cluster
+# check mon up , neu 3 host se co 3 mon max. 
+mon_max: 3
+retries_mon: 15
+delay_retries_mon: 15
+
+#check osd up
+osd_max: 6 
+retries_osd: 15
+delay_retries_osd: 2
+
+#check mgr up
+retries_mgr: 15
+delay_retries_mgr: 15
+
+#check mds up
+mds_max: 3 
+retries_mds: 15
+delay_retries_mds: 2
+
+#if need upgrade ceph
+upgrade_ceph: true
+# # if strict_heath_ok_condition True, it will make sure heath_ok before move to next step upgrade
+strict_heath_ok_condition: true
+ceph_current_version: 12.2.8
+ceph_new_version: 12.2.4
+

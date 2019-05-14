@@ -1,0 +1,7 @@
+---
+
+- include: down.yml
+
+- include: up.yml
+
+- include: keepalived.yml

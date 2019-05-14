@@ -1,0 +1,57 @@
+- name: "rename docker mds to ceph_mds.backup.{{ceph_current_version}}"
+  command: "docker container rename {{mds_name}} {{mds_name}}.backup.{{ceph_current_version}}"
+
+- name: "prevent backup container from starting automatically"
+  command: "docker update --restart=no {{mds_name}}.backup.{{ceph_current_version}}"
+
+- name: stop mds
+  command: "docker stop {{mds_name}}.backup.{{ceph_current_version}}"
+  
+- name: get localtion new image version
+  set_fact:
+    image_address: "{{docker_reg_host}}:{{docker_reg_port}}/{{ ceph_docker_image }}:{{ ceph_new_version }}"
+  when: docker_use_local_registry
+
+- name: get localtion new image version
+  set_fact:
+    image_address: "{{ ceph_docker_image }}:{{ ceph_new_version }}"
+  when: not docker_use_local_registry
+
+- name: run new container version
+  docker_container:
+    name: "{{ mds_name }}"
+    state: started
+    image: "{{ image_address }}"
+    volumes:
+      - /var/lib/ceph/:/var/lib/ceph/
+      - /etc/localtime:/etc/localtime
+      - /var/log/ceph:/var/log/ceph
+    env:
+      CEPH_PUBLIC_NETWORK: "{{ ceph_public_network }}"
+      KV_TYPE: "{{ kv_type }}"
+      KV_IP: "{{ kv_endpoint }}"
+      KV_PORT: "{{kv_port}}"
+      CEPHFS_CREATE: 0
+    network_mode: host
+    command: mds
+    restart_policy: unless-stopped
+
+
+# Pause for 2 minutes to wait mds run stable
+- pause:
+    minutes: 1
+#check mds
+- name: check has active mds
+  shell: "timeout 5 docker exec {{mon_name}} ceph -s" 
+  changed_when: false
+  register: check_mds
+  failed_when: false
+  until: check_mds.rc == 0 and not (check_mds.stdout is search('laggy or crashed'))
+  retries: "{{retries_mds}}"
+  delay: "{{delay_retries_mds}}"
+  
+  
+- name: all mds is not up, end execution, need rollback
+  fail:
+    msg: "Upgrade mds fail. run ' ansible-playbook ceph-rollback-mds.yml ' to rollback mds"
+  when: check_mds.stdout is defined and (check_mds.stdout is search('laggy or crashed'))

@@ -1,0 +1,18 @@
+---
+
+- name: Get interfaces
+  include_role:
+    name: util_ifaces
+    tasks_from: main
+
+- name: Create essential ovs bridges - br-provider
+  shell: |
+    ovs-vsctl add-br br-provider
+    ovs-vsctl add-port br-provider {{ inf_assignment_2_NICs.inf_provider }}
+    ifconfig br-provider up
+    ifconfig {{ inf_assignment_2_NICs.inf_provider }} 0
+    ifdown {{ inf_assignment_2_NICs.inf_mgmt }} && ifup {{ inf_assignment_2_NICs.inf_mgmt }}
+    ifdown {{ inf_assignment_2_NICs.inf_provider }} && ifup {{ inf_assignment_2_NICs.inf_provider }}
+    ifconfig br-provider {{ provider_ip }} netmask {{ provider_netmask }}
+    route add default gw {{ provider_gw }}
+  ignore_errors: yes

@@ -1,0 +1,74 @@
+- name: "force create osd check output file: /tmp/ceph_versions"
+  local_action:
+    module: copy
+    content: ""
+    dest: "/tmp/ceph_versions"
+    force: yes
+    
+- name: collect version monitors
+  shell: "timeout 5 docker exec {{mon_name}} ceph versions " 
+  register: result
+  failed_when: false
+  until: result.rc == 0
+  retries: "{{retries_mon}}"
+  delay: "{{delay_retries_mon}}"
+  when: inventory_hostname in groups.ceph_mon
+
+- debug: msg="{{result.stdout}}"
+
+- name: "print to file  "
+  local_action:
+    module: lineinfile
+    path: "/tmp/ceph_versions"
+    line: "{{result.stdout_lines}} \n"
+  when: inventory_hostname in groups.ceph_mon
+
+# - name: "force create osd check output file: /tmp/ceph_<hostname>_versions"
+#   local_action:
+#     module: copy
+#     content: ""
+#     dest: "/tmp/ceph_{{inventory_hostname}}_versions"
+#     force: yes
+    
+# - name: collect version monitors
+#   shell: "timeout 5 docker exec {{mon_name}} ceph version | awk '{ print $3}' " 
+#   register: result_mon
+#   ignore_errors: yes
+#   when: inventory_hostname in groups.ceph_mon
+
+# - name: "print to file  "
+#   local_action:
+#     module: lineinfile
+#     path: "/tmp/ceph_{{inventory_hostname}}_versions"
+#     line: "===monitor's container result: \n {{mon_name}} {{result_mon.stdout}} \n"
+#   when: inventory_hostname in groups.ceph_mon
+  
+# - name: collect version mgr
+#   shell: "timeout 5 docker exec {{mgr_name}} ceph version | awk '{ print $3}' " 
+#   register: result_mgr
+#   ignore_errors: yes
+#   when: inventory_hostname in groups.ceph_mgr
+  
+# - name: "print to file "
+#   local_action:
+#     module: lineinfile
+#     path: "/tmp/ceph_{{inventory_hostname}}_versions"
+#     line: "===mgr's container result: \n {{mgr_name}} {{result_mgr.stdout}} \n"
+#   when: inventory_hostname in groups.ceph_mgr 
+
+# - name: "print to file "
+#   local_action:
+#     module: lineinfile
+#     path: "/tmp/ceph_{{inventory_hostname}}_versions"
+#     line: "===osds's container result: \n "
+#   when: inventory_hostname in groups.ceph_osd 
+    
+# - name: collect verison osds
+#   include_role: 
+#     name: ceph-upgrade
+#     tasks_from: version_collect_osd
+#   vars: 
+#     listitem: "{{ item }}"
+#   loop: "{{ osd_nodes }}"
+#   when: inventory_hostname in groups.ceph_osd
+  

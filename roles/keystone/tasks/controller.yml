@@ -1,0 +1,27 @@
+---
+
+- name: Remove Keystone container
+  docker_container:
+    name: keystone 
+    state: absent
+
+- include_role:
+    name: keystone
+    tasks_from: config
+
+- name: Start Keystone 
+  docker_container:
+    name: keystone
+    image: "{{ docker_reg_host }}:{{ docker_host_port }}/keystone:{{ docker_images_tag }}"
+    pull: yes
+    restart_policy: unless-stopped 
+    state: started
+    user: root
+    volumes:
+      - "{{ docker_shared_conf_dir }}/keystone/:{{ docker_shared_conf_dir }}/keystone/"
+      - /var/log/apache2:/var/log/apache2
+      - /etc/keystone/credential-keys:/etc/keystone/credential-keys
+      - /etc/keystone/fernet-keys:/etc/keystone/fernet-keys
+      - /etc/localtime:/etc/localtime
+    env: "{{ identity_env | merge({ 'KEYSTONE_START': 'START_KEYSTONE' }) }}"
+    network_mode: host

@@ -1,0 +1,8 @@
+---
+
+- name: Create flavor 
+  shell: |
+    {{ docker_openstack_client }} flavor create {{ flavor.name }} --ram {{ flavor.ram }} --disk {{ flavor.disk }} --vcpus {{ flavor.vcpus }} -c id -f value
+  environment: "{{ ops_client_env }}"
+  register: flavor_id
+  ignore_errors: yes 

@@ -1,0 +1,5 @@
+---
+# vars file for ceilometer
+zk_server:
+  id: 0
+  server: controller

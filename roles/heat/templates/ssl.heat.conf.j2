@@ -1,0 +1,89 @@
+[DEFAULT]
+heat_metadata_server_url = http://{{ orchestration_env.CONTROLLER_HOST }}:8000
+heat_waitcondition_server_url = http://{{ orchestration_env.CONTROLLER_HOST }}:8000/v1/waitcondition
+stack_domain_admin = heat_domain_admin
+stack_domain_admin_password = {{ orchestration_env.HEAT_DOMAIN_PASS }}
+stack_user_domain_name = heat
+transport_url = {{ orchestration_env.TRANSPORT_URL }}
+log_dir = /var/log/heat
+[auth_password]
+[clients]
+[clients_aodh]
+[clients_barbican]
+[clients_ceilometer]
+[clients_cinder]
+cafile = /usr/share/docker/heat/openstack.crt
+insecure = true
+http_log_debug = true
+[clients_designate]
+[clients_glance]
+cafile = /usr/share/docker/heat/openstack.crt
+insecure = true
+[clients_heat]
+[clients_keystone]
+auth_uri = https://{{ orchestration_env.CONTROLLER_HOST }}:35357
+cafile = /usr/share/docker/heat/openstack.crt
+insecure = true
+[clients_magnum]
+[clients_manila]
+[clients_mistral]
+[clients_monasca]
+[clients_neutron]
+cafile = /usr/share/docker/heat/openstack.crt
+insecure = true
+[clients_nova]
+cafile = /usr/share/docker/heat/openstack.crt
+insecure = true
+[clients_sahara]
+[clients_senlin]
+[clients_swift]
+[clients_trove]
+[clients_zaqar]
+[cors]
+[cors.subdomain]
+[database]
+connection = mysql+pymysql://heat:{{ orchestration_env.HEAT_DBPASS }}@{{ mysql_host }}/heat
+[ec2authtoken]
+auth_uri = https://{{ orchestration_env.CONTROLLER_HOST }}:5000
+cafile = /usr/share/docker/heat/openstack.crt
+insecure = true
+[eventlet_opts]
+[healthcheck]
+[heat_api]
+bind_host = {{ orchestration_env.MY_IP }}
+[heat_api_cfn]
+bind_host = {{ orchestration_env.MY_IP }}
+[heat_api_cloudwatch]
+[keystone_authtoken]
+auth_uri = https://{{ orchestration_env.CONTROLLER_HOST }}:5000
+auth_url = https://{{ orchestration_env.CONTROLLER_HOST }}:35357
+cafile = /usr/share/docker/heat/openstack.crt
+insecure = true
+memcached_servers = {{ orchestration_env.MEMCACHED_SERVERS }}
+auth_type = password
+project_domain_name = default
+user_domain_name = default
+project_name = service
+username = heat
+password = {{ orchestration_env.HEAT_PASS }}
+[matchmaker_redis]
+[oslo_messaging_amqp]
+[oslo_messaging_kafka]
+[oslo_messaging_notifications]
+driver = messagingv2
+[oslo_messaging_rabbit]
+[oslo_messaging_zmq]
+[oslo_middleware]
+[oslo_policy]
+[paste_deploy]
+[profiler]
+[revision]
+[ssl]
+[trustee]
+auth_type = password
+auth_url = https://{{ orchestration_env.CONTROLLER_HOST }}:35357
+cafile = /usr/share/docker/heat/openstack.crt
+username = heat
+password = {{ orchestration_env.HEAT_PASS }}
+user_domain_name = default
+[volumes]

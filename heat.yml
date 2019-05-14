@@ -1,0 +1,20 @@
+---
+
+- name: Bootstrap Heat
+  hosts: current_controller:&hub
+  tasks:
+    - include_role:
+        name: heat 
+        tasks_from: setup
+  become: true
+
+- name: Setup heat on Controller Nodes 
+  hosts: current_controller
+  tasks:
+    - include_role:
+        name: heat 
+        tasks_from: "{{ item }}"
+      with_items:
+        - controller
+        - haproxy 
+  become: true

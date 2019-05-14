@@ -1,0 +1,10 @@
+---
+
+- name: Configure keepalived
+  template: src=keepalived.conf.update.j2 dest="{{ docker_shared_conf_dir }}/keepalived/hosts/{{ keepalived_conf }}" backup=yes
+
+- name: Restart keepalived 
+  docker_container:
+    name: keepalived 
+    state: started
+    restart: yes

@@ -1,0 +1,6 @@
+---
+
+- name: Create OpenStack databases 
+  shell: |
+    {{ sql_cli }} "CREATE DATABASE IF NOT EXISTS {{ item.name }}; GRANT ALL PRIVILEGES ON {{ item.name }}.* TO '{{ item.user }}'@'localhost' IDENTIFIED BY '{{ item.passwd }}'; GRANT ALL PRIVILEGES ON {{ item.name }}.* TO '{{ item.user }}'@'%' IDENTIFIED BY '{{ item.passwd }}';"
+  with_items: "{{ dbs }}"

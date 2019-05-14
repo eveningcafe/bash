@@ -1,0 +1,92 @@
+Listen 5000
+Listen 35357
+
+<VirtualHost *:5000>
+    WSGIScriptAlias / /usr/bin/keystone-wsgi-public
+    WSGIDaemonProcess keystone-public processes=12 threads=12 user=keystone group=keystone display-name=%{GROUP}
+    WSGIProcessGroup keystone-public
+    WSGIApplicationGroup %{GLOBAL}
+    WSGIPassAuthorization On
+    LimitRequestBody 114688
+
+    SSLEngine On
+    # Remember to replace certificates and keys with valid paths in your environment
+    SSLCertificateFile /etc/apache2/sites-available/openstack.crt
+    SSLCertificateKeyFile /etc/apache2/sites-available/openstack.key
+
+    <IfVersion >= 2.4>
+      ErrorLogFormat "%{cu}t %M"
+    </IfVersion>
+
+    ErrorLog "|/usr/bin/rotatelogs /var/log/apache2/keystone_error_%Y-%m-%d.log 86400"
+    CustomLog "|/usr/bin/rotatelogs /var/log/apache2/keystone_access_%Y-%m-%d.log 86400" vt_combined
+
+    <Directory /usr/bin>
+        <IfVersion >= 2.4>
+            Require all granted
+        </IfVersion>
+        <IfVersion < 2.4>
+            Order allow,deny
+            Allow from all
+        </IfVersion>
+        <LimitExcept GET POST HEAD PUT DELETE OPTIONS PATCH>
+            Deny from all
+        </LimitExcept>
+        Options -Indexes
+    </Directory>
+</VirtualHost>
+
+<VirtualHost *:35357>
+    WSGIScriptAlias / /usr/bin/keystone-wsgi-admin
+    WSGIDaemonProcess keystone-admin processes=12 threads=12 user=keystone group=keystone display-name=%{GROUP}
+    WSGIProcessGroup keystone-admin
+    WSGIApplicationGroup %{GLOBAL}
+    WSGIPassAuthorization On
+    LimitRequestBody 114688
+
+    SSLEngine On
+    # Remember to replace certificates and keys with valid paths in your environment
+    SSLCertificateFile /etc/apache2/sites-available/openstack.crt
+    SSLCertificateKeyFile /etc/apache2/sites-available/openstack.key
+
+    <IfVersion >= 2.4>
+      ErrorLogFormat "%{cu}t %M"
+    </IfVersion>
+
+    ErrorLog "|/usr/bin/rotatelogs /var/log/apache2/keystone_error_%Y-%m-%d.log 86400"
+    CustomLog "|/usr/bin/rotatelogs /var/log/apache2/keystone_access_%Y-%m-%d.log 86400" vt_combined
+
+    <Directory /usr/bin>
+        <IfVersion >= 2.4>
+            Require all granted
+        </IfVersion>
+        <IfVersion < 2.4>
+            Order allow,deny
+            Allow from all
+        </IfVersion>
+        <LimitExcept GET POST HEAD PUT DELETE OPTIONS PATCH>
+            Deny from all
+        </LimitExcept>
+        Options -Indexes
+    </Directory>
+</VirtualHost>
+
+Alias /identity /usr/bin/keystone-wsgi-public
+<Location /identity>
+    SetHandler wsgi-script
+    Options +ExecCGI
+
+    WSGIProcessGroup keystone-public
+    WSGIApplicationGroup %{GLOBAL}
+    WSGIPassAuthorization On
+</Location>
+
+Alias /identity_admin /usr/bin/keystone-wsgi-admin
+<Location /identity_admin>
+    SetHandler wsgi-script
+    Options +ExecCGI
+
+    WSGIProcessGroup keystone-admin
+    WSGIApplicationGroup %{GLOBAL}
+    WSGIPassAuthorization On
+</Location>

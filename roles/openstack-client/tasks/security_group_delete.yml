@@ -1,0 +1,7 @@
+---
+
+- name: Delete security group 
+  shell: |
+    {{ docker_openstack_client }} security group delete {{ security_group.name }}
+  environment: "{{ ops_client_env }}"
+  ignore_errors: yes 

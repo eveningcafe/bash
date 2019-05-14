@@ -1,0 +1,49 @@
+Listen 443
+Listen 80
+<VirtualHost *:80>
+  <IfModule mod_rewrite.c>
+  RewriteEngine On
+  RewriteCond %{HTTPS} off
+  RewriteRule (.*) https://%{HTTP_HOST}%{REQUEST_URI}
+  </IfModule>
+  <IfModule !mod_rewrite.c>
+      RedirectPermanent / https://{{ horizon_env.CONTROLLER_HOST }}
+  </IfModule>
+</VirtualHost>
+<VirtualHost *:443>
+    SSLEngine On
+    # Remember to replace certificates and keys with valid paths in your environment
+    SSLCertificateFile /etc/apache2/conf-enabled/openstack.crt
+    SSLCertificateKeyFile /etc/apache2/conf-enabled/openstack.key
+    #SetEnvIf User-Agent ".*MSIE.*" nokeepalive ssl-unclean-shutdown
+    #Header add Strict-Transport-Security "max-age=15768000"
+
+    LogLevel warn
+    ErrorLog "|/usr/bin/rotatelogs /var/log/apache2/horizon_error_%Y-%m-%d.log 86400"
+    CustomLog "|/usr/bin/rotatelogs /var/log/apache2/horizon_access_%Y-%m-%d.log 86400" vt_combined
+
+    WSGIScriptAlias / /usr/local/horizon/openstack_dashboard/wsgi/django.wsgi process-group=horizon
+    WSGIDaemonProcess horizon user=www-data group=www-data processes=3 threads=10 display-name=%{GROUP}
+    WSGIProcessGroup horizon
+    WSGIApplicationGroup %{GLOBAL}
+
+    Alias /static /usr/local/horizon/static/
+    #Alias /horizon/static /usr/local/horizon/static/
+
+    <Directory /usr/local/horizon/openstack_dashboard/wsgi>
+        Require all granted
+        <LimitExcept GET POST HEAD PUT DELETE OPTIONS PATCH>
+            Deny from all
+        </LimitExcept>
+        Options -Indexes
+    </Directory>
+
+    <Directory /usr/local/horizon/static>
+        Require all granted
+        <LimitExcept GET POST HEAD PUT DELETE OPTIONS PATCH>
+            Deny from all
+        </LimitExcept>
+        Options -Indexes
+    </Directory>
+</VirtualHost>
+

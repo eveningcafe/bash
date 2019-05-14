@@ -1,0 +1,13 @@
+---
+
+- name: Start memcached 
+  docker_container:
+    name: memcached
+    image: "{{ memcached_env.IMAGE }}"
+    pull: yes
+    restart_policy: unless-stopped
+    state: started
+    volumes:
+      - /etc/localtime:/etc/localtime
+    env: "{{ memcached_env }}"
+    network_mode: host

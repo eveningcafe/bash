@@ -1,0 +1,15 @@
+# docker rm -f ceph-mds
+# docker container rename ceph-mds.backup ceph-mds
+# docker start ceph-mds
+---
+
+- name: get list mds upgraded
+  shell: |
+    docker ps -a | grep backup | grep ceph-mds| grep "{{ceph_current_version}}" | awk '{print $NF}' |  awk -F. '{ print $1 }'
+  register: result
+
+- name: rollback mdss
+  include_role:
+    name: ceph-rollback
+    tasks_from: rollback-mds
+  with_items: "{{ result.stdout_lines }}"

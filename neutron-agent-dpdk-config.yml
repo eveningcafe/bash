@@ -1,0 +1,23 @@
+---
+
+- name: Setup neutron-ovs-agent on Compute Nodes
+  hosts: ovs-dpdk
+  tasks:
+    - include_role:
+        name: neutron
+        tasks_from: "{{ item }}"
+      with_items:
+        - config_dpdk
+      vars:
+        bridge_mappings:
+          - network: dcn_net 
+            bridge: br-dcn
+            dp_type: netdev
+          - network: public_net 
+            bridge: br-dpdk
+            dp_type: netdev
+    - name: Restart agents 
+      shell: |
+        docker restart neutron-dhcp-agent neutron-metadata-agent neutron-ovs-agent
+      ignore_errors: yes
+  become: true

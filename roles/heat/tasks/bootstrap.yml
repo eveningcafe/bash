@@ -1,0 +1,30 @@
+---
+
+- name: Remove Heat bootstrap container
+  docker_container:
+    name: heat-bootstrap
+    state: absent
+
+- include_role:
+    name: heat
+    tasks_from: config
+
+- name: Bootstrap Heat
+  docker_container:
+    name: heat-bootstrap
+    image: "{{ docker_reg_host }}:{{ docker_host_port }}/heat:{{ docker_images_tag }}"
+    pull: yes
+    privileged: yes
+    state: started
+    user: root 
+    volumes:
+      - "{{ docker_shared_conf_dir }}/heat/:{{ docker_shared_conf_dir }}/heat/"
+      - /var/log/heat:/var/log/heat
+      - /var/lib/heat:/var/lib/heat
+      - /etc/localtime:/etc/localtime
+    env: "{{ orchestration_env | merge({ 'HEAT_START': 'BOOTSTRAP' }) }}"
+    network_mode: host
+
+- name: Waiting for Heat bootstrap done
+  shell: |
+    docker wait heat-bootstrap

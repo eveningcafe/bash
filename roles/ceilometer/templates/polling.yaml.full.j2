@@ -1,0 +1,97 @@
+---
+sources:
+    - name: some_pollsters
+      interval: 60
+      meters:
+        - memory
+        - memory.usage
+        - memory.resident
+        - cpu
+        - cpu.delta
+        - cpu_util
+        - vcpus
+        - disk.read.requests
+        - disk.read.requests.rate
+        - disk.write.requests
+        - disk.write.requests.rate
+        - disk.read.bytes
+        - disk.read.bytes.rate
+        - disk.write.bytes
+        - disk.write.bytes.rate
+        - disk.device.read.requests
+        - disk.device.read.requests.rate
+        - disk.device.write.requests
+        - disk.device.write.requests.rate
+        - disk.device.read.bytes
+        - disk.device.read.bytes .rate
+        - disk.device.write.bytes
+        - disk.device.write.bytes .rate
+        - disk.root.size
+        - disk.ephemeral.size
+        - disk.latency
+        - disk.iops
+        - disk.device.latency
+        - disk.device.iops
+        - disk.capacity
+        - disk.allocation
+        - disk.usage
+        - disk.device.capacity
+        - disk.device.allocation
+        - disk.device.usage
+        - network.incoming.bytes
+        - network.incoming.bytes.rate
+        - network.outgoing.bytes
+        - network.outgoing.bytes.rate
+        - network.incoming.packets
+        - network.incoming.packets.rate
+        - network.outgoing.packets
+        - network.outgoing.packets.rate
+        - cpu_l3_cache
+        - memory.bandwidth.total
+        - memory.bandwidth.local
+        - perf.cpu.cycles
+        - perf.instructions
+        - perf.cache.references
+        - perf.cache.misses
+        - instance
+        - network.incoming.packets.drop
+        - network.outgoing.packets.drop
+        - network.incoming.packets.error
+        - network.outgoing.packets.error
+        - memory.swap.in
+        - memory.swap.out
+        - compute.node.cpu.frequency
+        - compute.node.cpu.kernel.time
+        - compute.node.cpu.idle.time
+        - compute.node.cpu.user.time
+        - compute.node.cpu.iowait.time
+        - compute.node.cpu.kernel.percent
+        - compute.node.cpu.idle.percent
+        - compute.node.cpu.user.percent
+        - compute.node.cpu.iowait.percent
+        - compute.node.cpu.percent
+      sinks:
+        - instance_sink
+    - name: memory_source
+      interval: 60
+      meters:
+        - memory.usage
+        - memory
+      sinks:
+        - memory_sink
+sinks:
+    - name: instance_sink 
+      transformers:
+      publishers:
+        - gnocchi://
+    - name: memory_sink
+      transformers:
+          - name: "arithmetic"
+            parameters:
+              target:
+                name: "memory_util"
+                unit: "%"
+                type: "gauge"
+                expr: "100 * $(memory.usage) / $(memory)"
+      publishers:
+        - gnocchi://

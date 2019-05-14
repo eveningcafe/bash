@@ -1,0 +1,45 @@
+---
+
+rbd_secret_uuid: 94019c72-1928-4303-8364-c339592c8cdb
+
+ceph:
+  glance:
+    enabled: 1
+    user: images 
+    keyring: AQB6oUJcJ9yXGBAAVd52M1UW98fLgrtrJPWH+g==
+    keyring_path: ceph.client.images.keyring
+    pool: images 
+    rbd_secret_uuid: "{{ rbd_secret_uuid }}"
+    client:
+      config_path: /etc/ceph/glance.xml
+      key_path: /etc/ceph/client.images.key
+  cinder:
+    enabled: 1
+    user: volumes 
+    keyring: AQB7oUJcZA0iBRAAQ1cLHNbMGbMyIRarzwEySg==
+    keyring_path: ceph.client.volumes.keyring
+    pool: volumes 
+    rbd_secret_uuid: "{{ rbd_secret_uuid }}"
+    client:
+      config_path: /etc/ceph/cinder.xml
+      key_path: /etc/ceph/client.volumes.key
+  nova:
+    enabled: 1
+    user: volumes 
+    keyring: AQB7oUJcZA0iBRAAQ1cLHNbMGbMyIRarzwEySg==
+    keyring_path: ceph.client.volumes.keyring
+    pool: vms 
+    rbd_secret_uuid: "{{ rbd_secret_uuid }}"
+    client:
+      config_path: /etc/ceph/nova.xml
+      key_path: /etc/ceph/client.volumes.key
+  gnocchi:
+    enabled: 1
+    user: gnocchi 
+    keyring: AQB7oUJcC2ggLBAA/aN4Qu0OSDxyX5vkKOxZhw==
+    keyring_path: ceph.client.gnocchi.keyring
+    pool: gnocchi 
+    rbd_secret_uuid: "{{ rbd_secret_uuid }}"
+    client:
+      config_path: /etc/ceph/gnocchi.xml
+      key_path: /etc/ceph/client.gnocchi.key

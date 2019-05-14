@@ -1,0 +1,36 @@
+---
+
+- include_role:
+    name: sql
+    tasks_from: drop 
+  vars:
+    db_update:
+      name: aodh
+
+- include_role:
+    name: openstack-client
+    tasks_from: service_delete
+  vars:
+    domain:
+      name: default
+    service:
+      name: aodh
+
+- include_role:
+    name: openstack-client
+    tasks_from: user_delete
+  vars:
+    service:
+      user: aodh
+
+- name: Remove aodh containers
+  docker_container:
+    name: "{{ item }}" 
+    state: absent
+  with_items:
+    - aodh-api
+    - aodh-evaluator
+    - aodh-notifier
+    - aodh-listener
+    - aodh-expirer
+  ignore_errors: yes

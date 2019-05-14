@@ -1,0 +1,19 @@
+---
+
+- name: Create cluster corosync & pacemaker 
+  hosts: pcmk_cluster 
+  tasks:
+    - include_role:
+        name: cluster 
+        tasks_from: "{{ item }}"
+      with_items:
+        - bootstrap
+        - controller
+  become: true
+
+- hosts: hub
+  tasks:
+    - include_role:
+        name: cluster 
+        tasks_from: add_remote
+  become: true

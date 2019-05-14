@@ -1,0 +1,31 @@
+---
+
+- name: Get service endpoints
+  shell: |
+    {{ docker_openstack_client }} endpoint list | grep {{ service.name }} | awk '{ print $2 }'
+  register: endpoints_out 
+  environment: "{{ ops_client_env }}"
+
+- set_fact: endpoints="{{ endpoints_out.stdout_lines }}"
+
+- name: Get services 
+  shell: |
+    {{ docker_openstack_client }} service list | grep {{ service.name }} | awk '{ print $2 }'
+  register: services_out
+  environment: "{{ ops_client_env }}"
+
+- set_fact: services="{{ services_out.stdout_lines }}"
+
+- name: Delete service endpoints
+  shell: |
+    {{ docker_openstack_client }} endpoint delete {{ item }}
+  with_items: "{{ endpoints }}"
+  environment: "{{ ops_client_env }}"
+  ignore_errors: yes
+
+- name: Delete service
+  shell: |
+    {{ docker_openstack_client }} service delete {{ item }}
+  with_items: "{{ services }}"
+  environment: "{{ ops_client_env }}"
+  ignore_errors: yes

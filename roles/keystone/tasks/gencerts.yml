@@ -1,0 +1,4 @@
+---
+
+- name: Generate self signed certificate 
+  local_action: "shell openssl req -newkey rsa:2048 -nodes -keyout {{ playbook_dir }}/roles/keystone/files/openstack.key -x509 -days 3650 -out {{ playbook_dir }}/roles/keystone/files/openstack.crt -subj '/C={{ keystone_env.SSL_CERT.COUNTRY }}/ST={{ keystone_env.SSL_CERT.STATE }}/L={{ keystone_env.SSL_CERT.LOCALITY }}/O={{ keystone_env.SSL_CERT.ORGANIZATION }}/CN={{ keystone_env.SSL_CERT.COMMON_NAME }}'"

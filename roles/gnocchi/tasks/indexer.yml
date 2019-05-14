@@ -1,0 +1,35 @@
+---
+
+- name: Create gnocchi indexer database
+  include_role:
+    name: sql
+    tasks_from: tmp_update
+    #tasks_from: update
+  vars:
+    db_update:
+      name: gnocchi 
+      user: gnocchi
+      passwd: "{{ gnocchi_env.GNOCCHI_DBPASS }}"
+  when: (inventory_hostname in groups['hub']) and (gnocchi_env.GNOCCHI_INDEXER == "mysql")
+
+- name: Create gnocchi indexer database (postgres master-slave)
+  include_role:
+    name: postgres 
+    tasks_from: update
+  vars:
+    db_update:
+      name: gnocchi
+      user: gnocchi
+      passwd: "{{ gnocchi_env.GNOCCHI_DBPASS }}"
+  when: (inventory_hostname in groups['hub']) and (gnocchi_env.GNOCCHI_INDEXER == "postgresql") and (gnocchi_env.GNOCCHI_INDEXER_MODE == "master_slave")
+
+- name: Create gnocchi indexer database (postgres master-master)
+  include_role:
+    name: postgres
+    tasks_from: update_bdr
+  vars:
+    db_update:
+      name: gnocchi
+      user: gnocchi
+      passwd: "{{ gnocchi_env.GNOCCHI_DBPASS }}"
+  when: (gnocchi_env.GNOCCHI_INDEXER == "postgresql") and (gnocchi_env.GNOCCHI_INDEXER_MODE == "master_master")

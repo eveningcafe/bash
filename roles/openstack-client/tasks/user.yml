@@ -1,0 +1,7 @@
+---
+
+- name: Create service user
+  shell: |
+    {{ docker_openstack_client }} user create --domain {{ domain.name }} --password {{ service.pass }} {{ service.user }}
+    {{ docker_openstack_client }} role add --project service --user {{ service.user }} admin
+  environment: "{{ ops_client_env }}"

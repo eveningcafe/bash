@@ -1,0 +1,28 @@
+---
+
+- name: Bootstrap OpenStack projects
+  hosts: current_controller:&hub
+  tasks:
+    - include_role:
+        name: nova 
+        tasks_from: setup
+  become: true
+
+- name: Start OpenStack Controller Nodes
+  hosts: current_controller
+  tasks:
+    - include_role:
+        name: nova 
+        tasks_from: "{{ item }}"
+      with_items:
+        - controller
+        - haproxy 
+  become: true
+
+- name: Create ssh keys for nova user
+  hosts: localhost
+  tasks:
+    - include_role:
+        name: live_migration-ssh-cfg
+        tasks_from: nova_keypair
+  become: true

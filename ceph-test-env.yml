@@ -1,0 +1,9 @@
+---
+- import_playbook: common.yml
+- import_playbook: etcd-keepalived.yml
+- import_playbook: clean-old-ceph.yml
+- import_playbook: ceph-mon.yml
+- import_playbook: ceph-mon-update.yml
+- import_playbook: ceph-mgr.yml
+- import_playbook: ceph-osd.yml
+- import_playbook: ceph-conf.yml

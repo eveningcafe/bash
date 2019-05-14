@@ -1,0 +1,8 @@
+---
+
+- name: Delete {{ docker_openstack_client }} keypair
+  shell: |
+    {{ docker_openstack_client }} keypair delete {{ keypair.name }}
+    rm -f {{ keypair.path }}
+  environment: "{{ ops_client_env }}"
+  ignore_errors: yes

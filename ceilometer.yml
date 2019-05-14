@@ -1,0 +1,19 @@
+---
+
+- name: Bootstrap OpenStack projects
+  hosts: controller:&hub
+  tasks:
+    - include_role:
+        name: ceilometer 
+        tasks_from: setup
+  become: true
+
+- name: Setup ceilometer on Controller Nodes 
+  hosts: controller 
+  tasks:
+    - include_role:
+        name: ceilometer 
+        tasks_from: "{{ item }}"
+      with_items:
+        - controller 
+  become: true

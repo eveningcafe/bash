@@ -1,0 +1,26 @@
+---
+
+- name: Config gnocchi (file system as backend storage)
+  template: src="gnocchi.conf.fs.j2" dest="{{ docker_shared_conf_dir }}/gnocchi/gnocchi/gnocchi.conf" backup=yes
+  when: (ceph.gnocchi.enabled == 0) and (gnocchi_env.SSL_ENABLED == 0)
+
+- name: Config gnocchi (file system as backend storage)
+  template: src="ssl.gnocchi.conf.fs.j2" dest="{{ docker_shared_conf_dir }}/gnocchi/gnocchi/gnocchi.conf" backup=yes
+  when: (ceph.gnocchi.enabled == 0) and (gnocchi_env.SSL_ENABLED == 1)
+
+- name: Config gnocchi (ceph as backend storage)
+  template: src="gnocchi.conf.ceph.j2" dest="{{ docker_shared_conf_dir }}/gnocchi/gnocchi/gnocchi.conf" backup=yes
+  when: (ceph.gnocchi.enabled == 1) and (gnocchi_env.SSL_ENABLED == 0)
+
+- name: Config gnocchi (ceph as backend storage)
+  template: src="ssl.gnocchi.conf.ceph.j2" dest="{{ docker_shared_conf_dir }}/gnocchi/gnocchi/gnocchi.conf" backup=yes
+  when: (ceph.gnocchi.enabled == 1) and (gnocchi_env.SSL_ENABLED == 1)
+
+- name: Restart gnocchi
+  docker_container:
+    name: "{{ item }}"
+    state: started
+    restart: yes
+  with_items:
+    - gnocchi-api
+    - gnocchi-metricd

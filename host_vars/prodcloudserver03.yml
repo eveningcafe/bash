@@ -1,0 +1,112 @@
+---
+
+networking:
+  dhcp:
+    enabled: false
+    data:
+      - interface: bond0
+  static:
+    enabled: true
+    data:
+      - interface: bond3.350
+        address: 192.168.10.162
+        netmask: 255.255.255.0
+        gateway:
+        nameservers:
+        vlan:
+          enabled: true
+          vlan_raw_device: bond3
+      - interface: bond3.400
+        address: 192.168.20.162
+        netmask: 255.255.255.0
+        gateway:
+        nameservers:
+        vlan:
+          enabled: true
+          vlan_raw_device: bond3
+  promisc:
+    enabled: false
+    data:
+      - interface: bond1
+      - interface: bond2
+  bond:
+    enabled: true
+    data:
+      manual:
+        enabled: true
+        data:
+          - master: bond3
+            slaves:
+              - ens4f0
+              - ens4f1
+      promisc:
+        enabled: false 
+        data:
+          - master: bond1
+            slaves:
+              - eno3
+              - eno4
+          - master: bond2
+            slaves:
+              - ens1f0
+              - ens1f1
+
+postgres_hostvars:
+  NODE_ID: 3 
+
+zk_server:
+  id: 3
+  server: "{{ groups['zkcluster'][0] }}:2888:3888,{{ groups['zkcluster'][1] }}:2888:3888,0.0.0.0:2888:3888"
+
+dpdk_config:
+  reserved_mem: 65536
+  cpu_set: 12,13,26-55
+  grub:
+    default_hugepagesz: 2M
+    hugepagesz: 2M
+    isolcpus: 8-13,22-55
+
+keepalived:
+  haproxy:
+    iface: bond0
+    state: BACKUP
+    vrrp_prior: 90 
+  mysql:
+    iface: bond0
+    state: BACKUP
+    vrrp_prior: 80 
+  gnocchi_indexer:
+    iface: bond0
+    state: BACKUP
+    vrrp_prior: 100 
+  postgres:
+    iface: bond0
+    state: BACKUP
+    vrrp_prior: 100 
+  etcd:
+    iface: ens3
+    state: BACKUP 
+    vrrp_prior: 80 
+
+# CEPH VARIABLES
+#mon
+mon_name: ceph-mon
+mon_ip: 192.168.2.193
+
+#mgr 
+mgr_name: ceph-mgr
+
+#osd
+device_prepare:
+  - name: sdb
+    path: /dev/sdb
+  - name: sdc
+    path: /dev/sdc
+
+osd_nodes:
+  - name: ceph-osd-sdb
+    primary_disk: /dev/sdb
+  - name: ceph-osd-sdc
+    primary_disk: /dev/sdc
+#mds
+mds_name: ceph-mds

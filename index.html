@@ -1,0 +1,7236 @@
+
+
+<!DOCTYPE html>
+
+<html>
+
+<head>
+    <title>Ceph</title>
+
+    <meta content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no"
+          name="viewport">
+    <link rel="stylesheet"
+          href="/static/AdminLTE-2.3.7/bootstrap/css/bootstrap.min.css">
+    <link rel="stylesheet"
+          href="/static/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+    <link rel="stylesheet"
+          href="/static/AdminLTE-2.3.7/dist/css/AdminLTE.min.css">
+    <link rel="stylesheet"
+          href="/static/AdminLTE-2.3.7/dist/css/skins/skin-blue.min.css">
+    <link rel="stylesheet"
+          href="/static/AdminLTE-2.3.7/plugins/datatables/jquery.dataTables.min.css">
+
+    <script src="/static/AdminLTE-2.3.7/plugins/jQuery/jquery-2.2.3.min.js"></script>
+    <script src="/static/AdminLTE-2.3.7/plugins/sparkline/jquery.sparkline.min.js"></script>
+
+    <script src="/static/libs/rivets/0.9.6/rivets.bundled.min.js"></script>
+    <script src="/static/libs/underscore.js/1.8.3/underscore-min.js"></script>
+
+    <script src="/static/AdminLTE-2.3.7/bootstrap/js/bootstrap.min.js"></script>
+    <script src="/static/AdminLTE-2.3.7/dist/js/app.min.js"></script>
+    <script src="/static/AdminLTE-2.3.7/plugins/datatables/jquery.dataTables.min.js"></script>
+
+    <script src="/static/libs/moment.js/2.17.1/moment.min.js"></script>
+    <script src="/static/libs/Chart.js/2.4.0/Chart.min.js"></script>
+
+      <script>
+        $(document).ready(function(){
+            var toplevel_data = {
+  "rbd_pools": [
+    {
+      "url": "/rbd_pool/volumes/", 
+      "name": "volumes"
+    }
+  ], 
+  "health_status": "HEALTH_OK", 
+  "filesystems": [], 
+  "rbd_mirroring": {
+    "errors": 0, 
+    "warnings": 0
+  }
+};
+            var refresh_interval = 5000;
+
+            var refresh = function() {
+                $.get("/toplevel_data", function(data) {
+                    _.extend(toplevel_data, data);
+                    setTimeout(refresh, refresh_interval);
+                });
+            };
+
+            rivets.configure({
+                preloadData: true,
+                prefix: "rv",
+                templateDelimiters: ["{", "}"]
+            });
+
+            rivets.formatters.health_color = function(status_str) {
+                if (status_str == "HEALTH_OK") {
+                    return "color: #00bb00;";
+                } else if (status_str == "HEALTH_WARN") {
+                    return "color: #FFC200;";
+                } else if (status_str == "HEALTH_ERR") {
+                    return "color: #ff0000;"
+                }
+            }
+
+            rivets.formatters.health_ok = function(status_str) {
+                if (status_str == "HEALTH_OK") {
+                    return true;
+                } else {
+                    return false;
+                }
+            }
+
+            var truncate = function(n, max_width) {
+                var stringized = n.toString();
+                var parts = stringized.split(".");
+                if (parts.length == 1) {
+                    // Just an int
+                    return stringized;
+                } else {
+                    var fractional_digits = max_width - parts[0].length - 1;
+                    if (fractional_digits <= 0) {
+                        // No width available for the fractional part, drop
+                        // it and the decimal point
+                        return parts[0];
+                    } else {
+                        return stringized.substring(0, max_width);
+                    }
+                }
+            }
+
+            var format_number = function(n, divisor, units) {
+                var width=4;
+                var unit = 0;
+
+                if (n == null) {
+                    // People shouldn't really be passing null, but let's
+                    // do something sensible instead of barfing.
+                    return "-";
+                }
+
+                while (Math.floor(n / (divisor**unit)).toString().length > width - 1) {
+                    unit = unit + 1;
+                }
+
+                var truncated_float;
+                if (unit > 0) {
+                    truncated_float = truncate((n / Math.pow(divisor, unit)).toString(), width);
+                } else {
+                    truncated_float = truncate(n, width);
+                }
+
+                return truncated_float + units[unit];
+            }
+
+            rivets.formatters.dimless = function(n){
+                return format_number(n, 1000, [' ', 'k', 'M', 'G', 'T', 'P'])
+            };
+            rivets.formatters.dimless_binary = function(n){
+                return format_number(n, 1024, ['B', 'KiB', 'MiB', 'GiB', 'TiB', 'PiB']);
+            };
+
+            rivets.formatters.block_health_color = function(rbd_mirroring) {
+                if (rbd_mirroring.errors > 0) {
+                    return "color: #ff0000";
+                } else if (rbd_mirroring.warnings > 0) {
+                    return "color: #ffc200";
+                }
+                return "";
+            };
+
+            rivets.formatters.short_version = function(version) {
+                // Expect "ceph version 1.2.3-g9asdasd (as98d7a0s8d7)"
+                var result = /ceph version\s+([^ ]+)\s+\(.+\)/.exec(version);
+                if (result) {
+                    // Return the "1.2.3-g9asdasd" part
+                    return result[1];
+                } else {
+                    // Unexpected format, pass it through
+                    return version;
+                }
+                return
+            };
+
+            /* This is useful if you need to display some alternative text
+             * when a collection is empty using rv-hide */
+            rivets.formatters.length = function(val) {
+              return val.length;
+            }
+
+            rivets.formatters.hide_count_box = function(value) {
+                value = +value
+                return (isNaN(value) || value == 0)
+            };
+
+            rivets.bind($("#health"), toplevel_data);
+            rivets.bind($("section.sidebar"), toplevel_data);
+            setTimeout(refresh, refresh_interval);
+        });
+      </script>
+
+      <link rel="shortcut icon" href="https://ceph.com/wp-content/themes/cephTheme/Resources/Favicons/favicon-96x96.png">
+      <link rel="shortcut icon" href="/static/favicon.ico">
+
+    <style>
+        div.box {
+            background-color: #222d32;
+            color: #fff;
+        }
+
+        div.info-box {
+            background-color: #222d32;
+            color: #fff;
+        }
+
+        .box {
+            border-top-color: #b8c7ce;
+        }
+
+        div.box-header {
+            color: #b8c7ce;
+        }
+
+        a.logo {
+            background-color: #222d32;
+        }
+
+        body {
+            background-color: #222d32;
+        }
+
+        .navbar {
+            background-color: #222d32;
+            color: #222d32;
+        }
+
+        div#content {
+            background-color: #424d52;
+            color: #ddd;
+        }
+
+        div.progress-bar {
+            border-width: 1px;
+            border-color: #ddd;
+        }
+
+        .ceph-log {
+            font-family: monospace;
+            background-color: #333;
+            color: #ddd;
+        }
+
+        .nav-tabs>li.active>a {
+            background-color: #424d52;
+            color: #ddd;
+        }
+
+        .navbar a {
+            color: #b8c7ce;
+        }
+
+        .ceph-none-found {
+            color: #8aa4af;
+            font-style: italic;
+            padding-left: 15px;
+            padding-right: 5px;
+            padding-top: 5px;
+            padding-bottom: 5px;
+        }
+
+        table.ceph-chartbox {
+            margin-left: 40px;
+        }
+
+        .ceph-chartbox td {
+            padding-left: 35px;
+            text-align: center;
+            font-weight: bold;
+        }
+
+        .chart-container {
+            width: 100%;
+            height: 100%;
+        }
+
+        .dataTables_wrapper .dataTables_filter {
+            color: #ddd
+        }
+
+        .dataTables_wrapper .dataTables_filter input {
+            color: #222d32
+        }
+
+        .dataTables_wrapper tbody td {
+            background-color: #424d52;
+            color: #ddd;
+        }
+
+        .dataTables_wrapper .dataTables_paginate .ellipsis {
+            color: #ddd !important
+        }
+
+        .dataTables_wrapper .dataTables_paginate .paginate_button {
+            color: #ddd !important
+        }
+
+        .dataTables_wrapper .dataTables_paginate .paginate_button.disabled {
+            color: #424d52 !important
+        }
+
+        .nav-tabs-custom {
+            background-color: #222d32;
+            color: #ddd;
+        }
+        .nav-tabs-custom>.nav-tabs>li{
+            margin-right: 0;
+        }
+        .nav-tabs-custom>.nav-tabs>li>a{
+            border-bottom-color: transparent;
+            color: #aaa;
+        }
+        .nav-tabs-custom>.nav-tabs>li.active>a{
+            background-color: #424d52;
+            color: #eee;
+        }
+        .nav-tabs-custom>.nav-tabs>li.active:hover>a{
+            background-color: #66777f;
+            color: #eee;
+        }
+        .nav-tabs-custom>.tab-content {
+            background-color: #424d52;
+            color: #eee;
+        }
+
+    </style>
+
+</head>
+
+<body class="hold-transition sidebar-mini sidebar-collapse">
+<div class="wrapper">
+
+    <!-- Main Header -->
+    <header class="main-header">
+        <!-- Logo -->
+        <a href="/" class="logo">
+      <span class="logo-lg">
+        <img src="/static/Ceph_Logo_Standard_RGB_White_120411_fa.png"
+             width="123px" height="34px"/>
+          </span>
+      <span class="logo-mini">
+        <img src="/static/logo-mini.png"
+             width="34px" height="34px"/>
+          </span>
+        </a>
+
+        <!-- Header Navbar -->
+        <nav class="navbar navbar-static-top" role="navigation">
+            <!-- Sidebar toggle button-->
+            <a href="#" class="sidebar-toggle" data-toggle="offcanvas"
+               role="button">
+                <span class="sr-only">Toggle navigation</span>
+            </a>
+
+            <div id="health" style="font-size: 18px; padding: 12px 12px;">
+                <span rv-hide="health_status | health_ok" >
+                    <span rv-style="health_status | health_color">
+                        {health_status}
+                    </span>
+                </span>
+            </div>
+
+            <!-- Navbar Right Menu -->
+            <div class="navbar-custom-menu">
+                <ul class="nav navbar-nav">
+
+                </ul>
+            </div>
+        </nav>
+    </header>
+  <!-- Left side column. contains the logo and sidebar -->
+  <aside class="main-sidebar skin-blue">
+
+    <!-- sidebar: style can be found in sidebar.less -->
+    <section class="sidebar">
+      <!-- Sidebar Menu -->
+      <ul class="sidebar-menu">
+        <!-- Optionally, you can add icons to the links -->
+        <li class="active">
+            <a href="/health">
+            <i class="fa fa-heartbeat" rv-style="health_status | health_color"></i>
+            <span>Cluster health</span></a>
+        </li>
+        <li class="treeview">
+          <a href="#"><i class="fa fa-server"></i> <span>Cluster</span>
+            <span class="pull-right-container">
+              <i class="fa fa-angle-left pull-right"></i>
+            </span>
+          </a>
+          <ul class="treeview-menu menu-open">
+            <li>
+                <a href="/servers">Servers</a>
+            </li>
+            <li>
+                <a href="/osd">OSDs</a>
+            </li>
+          </ul>
+        </li>
+        <li class="treeview">
+          <a href="#">
+            <i class="fa fa-hdd-o" rv-style="rbd_mirroring | block_health_color"></i> <span>Block</span>
+            <span class="pull-right-container">
+              <i class="fa fa-angle-left pull-right"></i>
+            </span>
+          </a>
+          <ul class="treeview-menu menu-open">
+            <li>
+              <a href="/rbd_mirroring">
+                <i class="fa fa-exchange"></i> Mirroring
+                <span class="pull-right-container">
+                    <small rv-hide="rbd_mirroring.warnings | hide_count_box" class="label pull-right bg-yellow">{rbd_mirroring.warnings}</small>
+                    <small rv-hide="rbd_mirroring.errors | hide_count_box" class="label pull-right bg-red">{rbd_mirroring.errors}</small>
+                </span>
+              </a>
+            </li>
+            <li>
+              <a href="/rbd_iscsi">
+                <i class="fa fa-upload"></i> iSCSI
+                <span class="pull-right-container" />
+              </a>
+            </li>
+            <li class="treeview">
+              <a href="#">
+                <i class="fa fa-dot-circle-o"></i> <span>Pools</span>
+                <span class="pull-right-container">
+                  <i class="fa fa-angle-left pull-right"></i>
+                </span>
+              </a>
+              <ul class="treeview-menu">
+                <li rv-each-pool="rbd_pools">
+                  <a rv-href="pool.url"><i class="fa fa-circle-o"></i> {pool.name}</a>
+                </li>
+                <li class="ceph-none-found" rv-hide="rbd_pools | length">None found</li>
+              </ul>
+            </li>
+          </ul>
+        </li>
+        <li class="treeview">
+          <a href="#"><i class="fa fa-folder"></i> <span>Filesystems</span>
+            <span class="pull-right-container">
+              <i class="fa fa-angle-left pull-right"></i>
+            </span>
+          </a>
+          <ul class="treeview-menu menu-open">
+            <li rv-each-filesystem="filesystems">
+                <a rv-href="filesystem.url">{filesystem.name}</a>
+            </li>
+            <li class="ceph-none-found" rv-hide="filesystems | length">None found</li>
+          </ul>
+        </li>
+      </ul>
+      <!-- /.sidebar-menu -->
+    </section>
+    <!-- /.sidebar -->
+  </aside>
+
+  <div id="content" class="content-wrapper">
+
+      
+
+        <script>
+        $(document).ready(function(){
+            // Pre-populated initial data at page load
+            var content_data = {
+  "df": {
+    "pools": [
+      {
+        "stats": {
+          "wr": 0, 
+          "quota_objects": 0, 
+          "bytes_used": 0, 
+          "max_avail": 16452538368, 
+          "rd": 0, 
+          "rd_bytes": 0, 
+          "objects": 0, 
+          "percent_used": "0.00", 
+          "kb_used": 0, 
+          "quota_bytes": 0, 
+          "raw_bytes_used": 0, 
+          "wr_bytes": 0, 
+          "dirty": 0
+        }, 
+        "name": "images", 
+        "id": 1
+      }, 
+      {
+        "stats": {
+          "wr": 11911, 
+          "quota_objects": 0, 
+          "bytes_used": 2199146886, 
+          "max_avail": 16452538368, 
+          "rd": 47987, 
+          "rd_bytes": 303815680, 
+          "objects": 540, 
+          "percent_used": "11.79", 
+          "kb_used": 2147605, 
+          "quota_bytes": 0, 
+          "raw_bytes_used": 6597441024, 
+          "wr_bytes": 2310426624, 
+          "dirty": 540
+        }, 
+        "name": "volumes", 
+        "id": 2
+      }, 
+      {
+        "stats": {
+          "wr": 0, 
+          "quota_objects": 0, 
+          "bytes_used": 0, 
+          "max_avail": 16452538368, 
+          "rd": 0, 
+          "rd_bytes": 0, 
+          "objects": 0, 
+          "percent_used": "0.00", 
+          "kb_used": 0, 
+          "quota_bytes": 0, 
+          "raw_bytes_used": 0, 
+          "wr_bytes": 0, 
+          "dirty": 0
+        }, 
+        "name": "vms", 
+        "id": 3
+      }, 
+      {
+        "stats": {
+          "wr": 0, 
+          "quota_objects": 0, 
+          "bytes_used": 0, 
+          "max_avail": 16452538368, 
+          "rd": 0, 
+          "rd_bytes": 0, 
+          "objects": 0, 
+          "percent_used": "0.00", 
+          "kb_used": 0, 
+          "quota_bytes": 0, 
+          "raw_bytes_used": 0, 
+          "wr_bytes": 0, 
+          "dirty": 0
+        }, 
+        "name": "doom", 
+        "id": 4
+      }
+    ], 
+    "stats": {
+      "total_objects": 540, 
+      "total_used_bytes": 9750712320, 
+      "total_bytes": 62219292672, 
+      "total_avail_bytes": 52468580352
+    }
+  }, 
+  "mon_status": {
+    "election_epoch": 1396, 
+    "features": {
+      "quorum_con": "4611087853745930235", 
+      "quorum_mon": [
+        "kraken", 
+        "luminous"
+      ], 
+      "required_mon": [
+        "kraken", 
+        "luminous"
+      ], 
+      "required_con": "153140804152475648"
+    }, 
+    "outside_quorum": [], 
+    "rank": 2, 
+    "monmap": {
+      "features": {
+        "optional": [], 
+        "persistent": [
+          "kraken", 
+          "luminous"
+        ]
+      }, 
+      "created": "2018-12-26 11:02:17.380498", 
+      "modified": "2018-12-26 11:04:22.923146", 
+      "epoch": 147, 
+      "mons": [
+        {
+          "public_addr": "192.168.2.191:6789/0", 
+          "name": "controller", 
+          "rank": 0, 
+          "addr": "192.168.2.191:6789/0"
+        }, 
+        {
+          "public_addr": "192.168.2.192:6789/0", 
+          "name": "compute03", 
+          "rank": 1, 
+          "addr": "192.168.2.192:6789/0"
+        }, 
+        {
+          "public_addr": "192.168.2.193:6789/0", 
+          "name": "compute04", 
+          "rank": 2, 
+          "addr": "192.168.2.193:6789/0"
+        }
+      ], 
+      "fsid": "769593d6-d64e-4e60-a993-9fbbdf75c12a"
+    }, 
+    "state": "peon", 
+    "extra_probe_peers": [], 
+    "feature_map": {
+      "client": {
+        "group": {
+          "release": "luminous", 
+          "num": 1, 
+          "features": "0x1ffddff8eea4fffb"
+        }
+      }, 
+      "mon": {
+        "group": {
+          "release": "luminous", 
+          "num": 1, 
+          "features": "0x3ffddff8eea4fffb"
+        }
+      }
+    }, 
+    "quorum": [
+      0, 
+      1, 
+      2
+    ], 
+    "sync_provider": [], 
+    "name": "compute04"
+  }, 
+  "osd_map": {
+    "nearfull_ratio": 0.8500000238418579, 
+    "backfillfull_ratio": 0.8999999761581421, 
+    "osd_metadata": {
+      "1": {
+        "bluefs_slow_type": "hdd", 
+        "bluestore_bdev_dev": "8:16", 
+        "bluefs_db_size": "104857600", 
+        "bluestore_bdev_rotational": "1", 
+        "bluefs_wal_dev": "8:16", 
+        "bluefs_db_dev_node": "sdb", 
+        "bluefs_slow_rotational": "1", 
+        "bluestore_bdev_access_mode": "blk", 
+        "bluefs_db_rotational": "1", 
+        "bluefs_db_access_mode": "blk", 
+        "journal_rotational": "1", 
+        "bluestore_bdev_type": "hdd", 
+        "mem_swap_kb": "6289404", 
+        "bluefs_db_partition_path": "/dev/sdb3", 
+        "bluestore_bdev_size": "20739764224", 
+        "bluefs_wal_size": "524288000", 
+        "back_addr": "192.168.100.193:6800/965", 
+        "bluefs_db_dev": "8:16", 
+        "bluefs_db_block_size": "4096", 
+        "bluefs_slow_model": "QEMU HARDDISK   ", 
+        "bluefs_single_shared_device": "0", 
+        "bluefs_slow_access_mode": "blk", 
+        "hostname": "compute04", 
+        "distro_version": "7", 
+        "bluefs_slow_dev_node": "sdb", 
+        "bluefs_wal_rotational": "1", 
+        "bluestore_bdev_block_size": "4096", 
+        "bluefs_wal_dev_node": "sdb", 
+        "bluefs_wal_block_size": "4096", 
+        "bluefs_slow_size": "20739764224", 
+        "bluestore_bdev_model": "QEMU HARDDISK   ", 
+        "bluefs_wal_type": "hdd", 
+        "bluefs_db_model": "QEMU HARDDISK   ", 
+        "back_iface": "ens5", 
+        "bluefs_slow_partition_path": "/dev/sdb2", 
+        "bluefs_wal_model": "QEMU HARDDISK   ", 
+        "osd_objectstore": "bluestore", 
+        "bluefs_wal_partition_path": "/dev/sdb4", 
+        "rotational": "1", 
+        "hb_back_addr": "192.168.100.193:6801/965", 
+        "bluefs_slow_block_size": "4096", 
+        "bluefs_slow_driver": "KernelDevice", 
+        "bluefs_db_type": "hdd", 
+        "arch": "x86_64", 
+        "hb_front_addr": "192.168.2.193:6801/965", 
+        "bluefs_db_driver": "KernelDevice", 
+        "distro_description": "CentOS Linux 7 (Core)", 
+        "front_addr": "192.168.2.193:6800/965", 
+        "bluefs_wal_driver": "KernelDevice", 
+        "front_iface": "ens3", 
+        "kernel_version": "4.4.0-137-generic", 
+        "mem_total_kb": "6110512", 
+        "bluefs": "1", 
+        "bluestore_bdev_driver": "KernelDevice", 
+        "kernel_description": "#163-Ubuntu SMP Mon Sep 24 13:14:43 UTC 2018", 
+        "bluestore_bdev_partition_path": "/dev/sdb2", 
+        "bluefs_slow_dev": "8:16", 
+        "default_device_class": "hdd", 
+        "bluefs_wal_access_mode": "blk", 
+        "distro": "centos", 
+        "bluestore_bdev_dev_node": "sdb", 
+        "cpu": "Intel Core Processor (Broadwell)", 
+        "os": "Linux", 
+        "ceph_version": "ceph version 12.2.10 (177915764b752804194937482a39e95e0ca3de94) luminous (stable)", 
+        "osd_data": "/var/lib/ceph/osd/ceph-1"
+      }, 
+      "0": {
+        "bluefs_slow_type": "hdd", 
+        "bluestore_bdev_dev": "8:16", 
+        "bluefs_db_size": "104857600", 
+        "bluestore_bdev_rotational": "1", 
+        "bluefs_wal_dev": "8:16", 
+        "bluefs_db_dev_node": "sdb", 
+        "bluefs_slow_rotational": "1", 
+        "bluestore_bdev_access_mode": "blk", 
+        "bluefs_db_rotational": "1", 
+        "bluefs_db_access_mode": "blk", 
+        "journal_rotational": "1", 
+        "bluestore_bdev_type": "hdd", 
+        "mem_swap_kb": "6289404", 
+        "bluefs_db_partition_path": "/dev/sdb3", 
+        "bluestore_bdev_size": "20739764224", 
+        "bluefs_wal_size": "524288000", 
+        "back_addr": "192.168.100.191:6800/6153", 
+        "bluefs_db_dev": "8:16", 
+        "bluefs_db_block_size": "4096", 
+        "bluefs_slow_model": "QEMU HARDDISK   ", 
+        "bluefs_single_shared_device": "0", 
+        "bluefs_slow_access_mode": "blk", 
+        "hostname": "controller", 
+        "distro_version": "7", 
+        "bluefs_slow_dev_node": "sdb", 
+        "bluefs_wal_rotational": "1", 
+        "bluestore_bdev_block_size": "4096", 
+        "bluefs_wal_dev_node": "sdb", 
+        "bluefs_wal_block_size": "4096", 
+        "bluefs_slow_size": "20739764224", 
+        "bluestore_bdev_model": "QEMU HARDDISK   ", 
+        "bluefs_wal_type": "hdd", 
+        "bluefs_db_model": "QEMU HARDDISK   ", 
+        "back_iface": "ens5", 
+        "bluefs_slow_partition_path": "/dev/sdb2", 
+        "bluefs_wal_model": "QEMU HARDDISK   ", 
+        "osd_objectstore": "bluestore", 
+        "bluefs_wal_partition_path": "/dev/sdb4", 
+        "rotational": "1", 
+        "hb_back_addr": "192.168.100.191:6801/6153", 
+        "bluefs_slow_block_size": "4096", 
+        "bluefs_slow_driver": "KernelDevice", 
+        "bluefs_db_type": "hdd", 
+        "arch": "x86_64", 
+        "hb_front_addr": "192.168.2.191:6801/6153", 
+        "bluefs_db_driver": "KernelDevice", 
+        "distro_description": "CentOS Linux 7 (Core)", 
+        "front_addr": "192.168.2.191:6800/6153", 
+        "bluefs_wal_driver": "KernelDevice", 
+        "front_iface": "ens3", 
+        "kernel_version": "4.4.0-135-generic", 
+        "mem_total_kb": "10238992", 
+        "bluefs": "1", 
+        "bluestore_bdev_driver": "KernelDevice", 
+        "kernel_description": "#161-Ubuntu SMP Mon Aug 27 10:45:01 UTC 2018", 
+        "bluestore_bdev_partition_path": "/dev/sdb2", 
+        "bluefs_slow_dev": "8:16", 
+        "default_device_class": "hdd", 
+        "bluefs_wal_access_mode": "blk", 
+        "distro": "centos", 
+        "bluestore_bdev_dev_node": "sdb", 
+        "cpu": "Intel Core Processor (Broadwell)", 
+        "os": "Linux", 
+        "ceph_version": "ceph version 12.2.10 (177915764b752804194937482a39e95e0ca3de94) luminous (stable)", 
+        "osd_data": "/var/lib/ceph/osd/ceph-0"
+      }, 
+      "6": {
+        "bluefs_slow_type": "hdd", 
+        "bluestore_bdev_dev": "8:16", 
+        "bluefs_db_size": "104857600", 
+        "bluestore_bdev_rotational": "1", 
+        "bluefs_wal_dev": "8:16", 
+        "bluefs_db_dev_node": "sdb", 
+        "bluefs_slow_rotational": "1", 
+        "bluestore_bdev_access_mode": "blk", 
+        "bluefs_db_rotational": "1", 
+        "bluefs_db_access_mode": "blk", 
+        "journal_rotational": "1", 
+        "bluestore_bdev_type": "hdd", 
+        "mem_swap_kb": "6289404", 
+        "bluefs_db_partition_path": "/dev/sdb3", 
+        "bluestore_bdev_size": "20739764224", 
+        "bluefs_wal_size": "524288000", 
+        "back_addr": "192.168.100.192:6800/31264", 
+        "bluefs_db_dev": "8:16", 
+        "bluefs_db_block_size": "4096", 
+        "bluefs_slow_model": "QEMU HARDDISK   ", 
+        "bluefs_single_shared_device": "0", 
+        "bluefs_slow_access_mode": "blk", 
+        "hostname": "compute03", 
+        "distro_version": "7", 
+        "bluefs_slow_dev_node": "sdb", 
+        "bluefs_wal_rotational": "1", 
+        "bluestore_bdev_block_size": "4096", 
+        "bluefs_wal_dev_node": "sdb", 
+        "bluefs_wal_block_size": "4096", 
+        "bluefs_slow_size": "20739764224", 
+        "bluestore_bdev_model": "QEMU HARDDISK   ", 
+        "bluefs_wal_type": "hdd", 
+        "bluefs_db_model": "QEMU HARDDISK   ", 
+        "back_iface": "ens5", 
+        "bluefs_slow_partition_path": "/dev/sdb2", 
+        "bluefs_wal_model": "QEMU HARDDISK   ", 
+        "osd_objectstore": "bluestore", 
+        "bluefs_wal_partition_path": "/dev/sdb4", 
+        "rotational": "1", 
+        "hb_back_addr": "192.168.100.192:6801/31264", 
+        "bluefs_slow_block_size": "4096", 
+        "bluefs_slow_driver": "KernelDevice", 
+        "bluefs_db_type": "hdd", 
+        "arch": "x86_64", 
+        "hb_front_addr": "192.168.2.192:6801/31264", 
+        "bluefs_db_driver": "KernelDevice", 
+        "distro_description": "CentOS Linux 7 (Core)", 
+        "front_addr": "192.168.2.192:6800/31264", 
+        "bluefs_wal_driver": "KernelDevice", 
+        "front_iface": "ens3", 
+        "kernel_version": "4.4.0-137-generic", 
+        "mem_total_kb": "6110512", 
+        "bluefs": "1", 
+        "bluestore_bdev_driver": "KernelDevice", 
+        "kernel_description": "#163-Ubuntu SMP Mon Sep 24 13:14:43 UTC 2018", 
+        "bluestore_bdev_partition_path": "/dev/sdb2", 
+        "bluefs_slow_dev": "8:16", 
+        "default_device_class": "hdd", 
+        "bluefs_wal_access_mode": "blk", 
+        "distro": "centos", 
+        "bluestore_bdev_dev_node": "sdb", 
+        "cpu": "Intel Core Processor (Broadwell)", 
+        "os": "Linux", 
+        "ceph_version": "ceph version 12.2.10 (177915764b752804194937482a39e95e0ca3de94) luminous (stable)", 
+        "osd_data": "/var/lib/ceph/osd/ceph-6"
+      }
+    }, 
+    "full_ratio": 0.949999988079071, 
+    "cluster_snapshot": "", 
+    "pg_upmap": [], 
+    "erasure_code_profiles": {
+      "default": {
+        "k": "2", 
+        "technique": "reed_sol_van", 
+        "m": "1", 
+        "plugin": "jerasure"
+      }
+    }, 
+    "crush_map_text": {}, 
+    "osds": [
+      {
+        "heartbeat_back_addr": "192.168.100.191:6801/6153", 
+        "uuid": "5e2c01ab-ba0d-49bd-9b92-f500e39e6282", 
+        "weight": 1.0, 
+        "up_from": 170, 
+        "heartbeat_front_addr": "192.168.2.191:6801/6153", 
+        "down_at": 169, 
+        "up": 1, 
+        "lost_at": 0, 
+        "primary_affinity": 1.0, 
+        "state": [
+          "exists", 
+          "up"
+        ], 
+        "last_clean_begin": 164, 
+        "last_clean_end": 168, 
+        "in": 1, 
+        "public_addr": "192.168.2.191:6800/6153", 
+        "up_thru": 191, 
+        "cluster_addr": "192.168.100.191:6800/6153", 
+        "osd": 0
+      }, 
+      {
+        "heartbeat_back_addr": "192.168.100.193:6801/965", 
+        "uuid": "3f3dc78f-33b8-441c-8479-3f0c40309b32", 
+        "weight": 1.0, 
+        "up_from": 168, 
+        "heartbeat_front_addr": "192.168.2.193:6801/965", 
+        "down_at": 167, 
+        "up": 1, 
+        "lost_at": 0, 
+        "primary_affinity": 1.0, 
+        "state": [
+          "exists", 
+          "up"
+        ], 
+        "last_clean_begin": 160, 
+        "last_clean_end": 166, 
+        "in": 1, 
+        "public_addr": "192.168.2.193:6800/965", 
+        "up_thru": 191, 
+        "cluster_addr": "192.168.100.193:6800/965", 
+        "osd": 1
+      }, 
+      {
+        "heartbeat_back_addr": "192.168.100.192:6801/31264", 
+        "uuid": "8c21896a-da21-4d56-9800-5674470b58ba", 
+        "weight": 1.0, 
+        "up_from": 166, 
+        "heartbeat_front_addr": "192.168.2.192:6801/31264", 
+        "down_at": 165, 
+        "up": 1, 
+        "lost_at": 0, 
+        "primary_affinity": 1.0, 
+        "state": [
+          "exists", 
+          "up"
+        ], 
+        "last_clean_begin": 158, 
+        "last_clean_end": 164, 
+        "in": 1, 
+        "public_addr": "192.168.2.192:6800/31264", 
+        "up_thru": 191, 
+        "cluster_addr": "192.168.100.192:6800/31264", 
+        "osd": 6
+      }
+    ], 
+    "crush": {
+      "tunables": {
+        "profile": "jewel", 
+        "minimum_required_version": "jewel", 
+        "has_v3_rules": 0, 
+        "has_v4_buckets": 1, 
+        "choose_total_tries": 50, 
+        "require_feature_tunables3": 1, 
+        "require_feature_tunables5": 1, 
+        "legacy_tunables": 0, 
+        "chooseleaf_descend_once": 1, 
+        "chooseleaf_stable": 1, 
+        "choose_local_fallback_tries": 0, 
+        "has_v2_rules": 0, 
+        "straw_calc_version": 1, 
+        "allowed_bucket_algs": 54, 
+        "has_v5_rules": 0, 
+        "require_feature_tunables2": 1, 
+        "optimal_tunables": 1, 
+        "choose_local_tries": 0, 
+        "chooseleaf_vary_r": 1, 
+        "require_feature_tunables": 1
+      }, 
+      "rules": [
+        {
+          "min_size": 1, 
+          "rule_name": "replicated_rule", 
+          "steps": [
+            {
+              "item_name": "default", 
+              "item": -1, 
+              "op": "take"
+            }, 
+            {
+              "num": 0, 
+              "type": "host", 
+              "op": "chooseleaf_firstn"
+            }, 
+            {
+              "op": "emit"
+            }
+          ], 
+          "ruleset": 0, 
+          "type": 1, 
+          "rule_id": 0, 
+          "max_size": 10
+        }, 
+        {
+          "min_size": 1, 
+          "rule_name": "default", 
+          "steps": [
+            {
+              "item_name": "default~hdd", 
+              "item": -2, 
+              "op": "take"
+            }, 
+            {
+              "num": 0, 
+              "type": "host", 
+              "op": "chooseleaf_firstn"
+            }, 
+            {
+              "op": "emit"
+            }
+          ], 
+          "ruleset": 1, 
+          "type": 1, 
+          "rule_id": 1, 
+          "max_size": 10
+        }
+      ], 
+      "buckets": [
+        {
+          "hash": "rjenkins1", 
+          "name": "default", 
+          "weight": 3735, 
+          "type_id": 10, 
+          "alg": "straw2", 
+          "type_name": "root", 
+          "items": [
+            {
+              "id": -3, 
+              "weight": 1245, 
+              "pos": 0
+            }, 
+            {
+              "id": -5, 
+              "weight": 1245, 
+              "pos": 1
+            }, 
+            {
+              "id": -7, 
+              "weight": 1245, 
+              "pos": 2
+            }
+          ], 
+          "id": -1
+        }, 
+        {
+          "hash": "rjenkins1", 
+          "name": "default~hdd", 
+          "weight": 3735, 
+          "type_id": 10, 
+          "alg": "straw2", 
+          "type_name": "root", 
+          "items": [
+            {
+              "id": -4, 
+              "weight": 1245, 
+              "pos": 0
+            }, 
+            {
+              "id": -6, 
+              "weight": 1245, 
+              "pos": 1
+            }, 
+            {
+              "id": -8, 
+              "weight": 1245, 
+              "pos": 2
+            }
+          ], 
+          "id": -2
+        }, 
+        {
+          "hash": "rjenkins1", 
+          "name": "controller", 
+          "weight": 1245, 
+          "type_id": 1, 
+          "alg": "straw2", 
+          "type_name": "host", 
+          "items": [
+            {
+              "id": 0, 
+              "weight": 1245, 
+              "pos": 0
+            }
+          ], 
+          "id": -3
+        }, 
+        {
+          "hash": "rjenkins1", 
+          "name": "controller~hdd", 
+          "weight": 1245, 
+          "type_id": 1, 
+          "alg": "straw2", 
+          "type_name": "host", 
+          "items": [
+            {
+              "id": 0, 
+              "weight": 1245, 
+              "pos": 0
+            }
+          ], 
+          "id": -4
+        }, 
+        {
+          "hash": "rjenkins1", 
+          "name": "compute04", 
+          "weight": 1245, 
+          "type_id": 1, 
+          "alg": "straw2", 
+          "type_name": "host", 
+          "items": [
+            {
+              "id": 1, 
+              "weight": 1245, 
+              "pos": 0
+            }
+          ], 
+          "id": -5
+        }, 
+        {
+          "hash": "rjenkins1", 
+          "name": "compute04~hdd", 
+          "weight": 1245, 
+          "type_id": 1, 
+          "alg": "straw2", 
+          "type_name": "host", 
+          "items": [
+            {
+              "id": 1, 
+              "weight": 1245, 
+              "pos": 0
+            }
+          ], 
+          "id": -6
+        }, 
+        {
+          "hash": "rjenkins1", 
+          "name": "compute03", 
+          "weight": 1245, 
+          "type_id": 1, 
+          "alg": "straw2", 
+          "type_name": "host", 
+          "items": [
+            {
+              "id": 6, 
+              "weight": 1245, 
+              "pos": 0
+            }
+          ], 
+          "id": -7
+        }, 
+        {
+          "hash": "rjenkins1", 
+          "name": "compute03~hdd", 
+          "weight": 1245, 
+          "type_id": 1, 
+          "alg": "straw2", 
+          "type_name": "host", 
+          "items": [
+            {
+              "id": 6, 
+              "weight": 1245, 
+              "pos": 0
+            }
+          ], 
+          "id": -8
+        }
+      ], 
+      "devices": [
+        {
+          "class": "hdd", 
+          "id": 0, 
+          "name": "osd.0"
+        }, 
+        {
+          "class": "hdd", 
+          "id": 1, 
+          "name": "osd.1"
+        }, 
+        {
+          "id": 2, 
+          "name": "device2"
+        }, 
+        {
+          "id": 3, 
+          "name": "device3"
+        }, 
+        {
+          "id": 4, 
+          "name": "device4"
+        }, 
+        {
+          "id": 5, 
+          "name": "device5"
+        }, 
+        {
+          "class": "hdd", 
+          "id": 6, 
+          "name": "osd.6"
+        }
+      ], 
+      "choose_args": {}, 
+      "types": [
+        {
+          "name": "osd", 
+          "type_id": 0
+        }, 
+        {
+          "name": "host", 
+          "type_id": 1
+        }, 
+        {
+          "name": "chassis", 
+          "type_id": 2
+        }, 
+        {
+          "name": "rack", 
+          "type_id": 3
+        }, 
+        {
+          "name": "row", 
+          "type_id": 4
+        }, 
+        {
+          "name": "pdu", 
+          "type_id": 5
+        }, 
+        {
+          "name": "pod", 
+          "type_id": 6
+        }, 
+        {
+          "name": "room", 
+          "type_id": 7
+        }, 
+        {
+          "name": "datacenter", 
+          "type_id": 8
+        }, 
+        {
+          "name": "region", 
+          "type_id": 9
+        }, 
+        {
+          "name": "root", 
+          "type_id": 10
+        }
+      ]
+    }, 
+    "epoch": 193, 
+    "require_min_compat_client": "jewel", 
+    "crush_version": 20, 
+    "primary_temp": [], 
+    "pool_max": 4, 
+    "max_osd": 7, 
+    "require_osd_release": "luminous", 
+    "min_compat_client": "jewel", 
+    "osd_xinfo": [
+      {
+        "laggy_probability": 0.0, 
+        "laggy_interval": 0, 
+        "features": 4611087853745930235, 
+        "old_weight": 0, 
+        "down_stamp": "2018-12-27 08:09:33.442531", 
+        "osd": 0
+      }, 
+      {
+        "laggy_probability": 0.0, 
+        "laggy_interval": 0, 
+        "features": 4611087853745930235, 
+        "old_weight": 0, 
+        "down_stamp": "2018-12-27 08:06:31.456420", 
+        "osd": 1
+      }, 
+      {
+        "laggy_probability": 0.0, 
+        "laggy_interval": 0, 
+        "features": 4611087853745930235, 
+        "old_weight": 0, 
+        "down_stamp": "2018-12-27 08:06:12.949446", 
+        "osd": 6
+      }
+    ], 
+    "blacklist": {}, 
+    "fsid": "769593d6-d64e-4e60-a993-9fbbdf75c12a", 
+    "created": "2018-12-26 11:02:17.485503", 
+    "tree": {
+      "nodes": [
+        {
+          "children": [
+            -3, 
+            -5, 
+            -7
+          ], 
+          "type_id": 10, 
+          "type": "root", 
+          "id": -1, 
+          "name": "default"
+        }, 
+        {
+          "name": "compute03", 
+          "type_id": 1, 
+          "id": -7, 
+          "pool_weights": {}, 
+          "type": "host", 
+          "children": [
+            6
+          ]
+        }, 
+        {
+          "status": "up", 
+          "name": "osd.6", 
+          "exists": 1, 
+          "type_id": 0, 
+          "reweight": 1.0, 
+          "crush_weight": 0.0189971923828125, 
+          "pool_weights": {}, 
+          "primary_affinity": 1.0, 
+          "depth": 2, 
+          "device_class": "hdd", 
+          "type": "osd", 
+          "id": 6
+        }, 
+        {
+          "name": "compute04", 
+          "type_id": 1, 
+          "id": -5, 
+          "pool_weights": {}, 
+          "type": "host", 
+          "children": [
+            1
+          ]
+        }, 
+        {
+          "status": "up", 
+          "name": "osd.1", 
+          "exists": 1, 
+          "type_id": 0, 
+          "reweight": 1.0, 
+          "crush_weight": 0.0189971923828125, 
+          "pool_weights": {}, 
+          "primary_affinity": 1.0, 
+          "depth": 2, 
+          "device_class": "hdd", 
+          "type": "osd", 
+          "id": 1
+        }, 
+        {
+          "name": "controller", 
+          "type_id": 1, 
+          "id": -3, 
+          "pool_weights": {}, 
+          "type": "host", 
+          "children": [
+            0
+          ]
+        }, 
+        {
+          "status": "up", 
+          "name": "osd.0", 
+          "exists": 1, 
+          "type_id": 0, 
+          "reweight": 1.0, 
+          "crush_weight": 0.0189971923828125, 
+          "pool_weights": {}, 
+          "primary_affinity": 1.0, 
+          "depth": 2, 
+          "device_class": "hdd", 
+          "type": "osd", 
+          "id": 0
+        }
+      ], 
+      "stray": []
+    }, 
+    "modified": "2018-12-28 08:07:27.685231", 
+    "flags": "sortbitwise,recovery_deletes,purged_snapdirs", 
+    "pg_upmap_items": [], 
+    "pools": [
+      {
+        "cache_target_full_ratio_micro": 800000, 
+        "fast_read": false, 
+        "stripe_width": 0, 
+        "flags_names": "hashpspool", 
+        "tier_of": -1, 
+        "hit_set_grade_decay_rate": 0, 
+        "pg_placement_num": 8, 
+        "use_gmt_hitset": true, 
+        "last_force_op_resend_preluminous": "0", 
+        "quota_max_bytes": 0, 
+        "erasure_code_profile": "default", 
+        "expected_num_objects": 0, 
+        "size": 3, 
+        "snap_seq": 0, 
+        "auid": 0, 
+        "cache_min_flush_age": 0, 
+        "stats": {
+          "quota_objects": {
+            "series": [
+              [
+                1545960273.844574, 
+                0
+              ], 
+              [
+                1545960268.84411, 
+                0
+              ], 
+              [
+                1545960263.837204, 
+                0
+              ], 
+              [
+                1545960258.836678, 
+                0
+              ], 
+              [
+                1545960253.828483, 
+                0
+              ], 
+              [
+                1545960248.827809, 
+                0
+              ], 
+              [
+                1545960243.822333, 
+                0
+              ], 
+              [
+                1545960238.805436, 
+                0
+              ], 
+              [
+                1545960233.802559, 
+                0
+              ], 
+              [
+                1545960228.804293, 
+                0
+              ]
+            ], 
+            "rate": 0.0, 
+            "latest": 0
+          }, 
+          "bytes_used": {
+            "series": [
+              [
+                1545960273.844574, 
+                0
+              ], 
+              [
+                1545960268.84411, 
+                0
+              ], 
+              [
+                1545960263.837204, 
+                0
+              ], 
+              [
+                1545960258.836678, 
+                0
+              ], 
+              [
+                1545960253.828483, 
+                0
+              ], 
+              [
+                1545960248.827809, 
+                0
+              ], 
+              [
+                1545960243.822333, 
+                0
+              ], 
+              [
+                1545960238.805436, 
+                0
+              ], 
+              [
+                1545960233.802559, 
+                0
+              ], 
+              [
+                1545960228.804293, 
+                0
+              ]
+            ], 
+            "rate": 0.0, 
+            "latest": 0
+          }, 
+          "max_avail": {
+            "series": [
+              [
+                1545960273.844574, 
+                16452538368
+              ], 
+              [
+                1545960268.84411, 
+                16452538368
+              ], 
+              [
+                1545960263.837204, 
+                16452538368
+              ], 
+              [
+                1545960258.836678, 
+                16452538368
+              ], 
+              [
+                1545960253.828483, 
+                16452538368
+              ], 
+              [
+                1545960248.827809, 
+                16452538368
+              ], 
+              [
+                1545960243.822333, 
+                16452538368
+              ], 
+              [
+                1545960238.805436, 
+                16452538368
+              ], 
+              [
+                1545960233.802559, 
+                16452538368
+              ], 
+              [
+                1545960228.804293, 
+                16452538368
+              ]
+            ], 
+            "rate": 0.0, 
+            "latest": 16452538368
+          }, 
+          "rd": {
+            "series": [
+              [
+                1545960273.844574, 
+                0
+              ], 
+              [
+                1545960268.84411, 
+                0
+              ], 
+              [
+                1545960263.837204, 
+                0
+              ], 
+              [
+                1545960258.836678, 
+                0
+              ], 
+              [
+                1545960253.828483, 
+                0
+              ], 
+              [
+                1545960248.827809, 
+                0
+              ], 
+              [
+                1545960243.822333, 
+                0
+              ], 
+              [
+                1545960238.805436, 
+                0
+              ], 
+              [
+                1545960233.802559, 
+                0
+              ], 
+              [
+                1545960228.804293, 
+                0
+              ]
+            ], 
+            "rate": 0.0, 
+            "latest": 0
+          }, 
+          "percent_used": {
+            "series": [
+              [
+                1545960273.844574, 
+                "0.00"
+              ], 
+              [
+                1545960268.84411, 
+                "0.00"
+              ], 
+              [
+                1545960263.837204, 
+                "0.00"
+              ], 
+              [
+                1545960258.836678, 
+                "0.00"
+              ], 
+              [
+                1545960253.828483, 
+                "0.00"
+              ], 
+              [
+                1545960248.827809, 
+                "0.00"
+              ], 
+              [
+                1545960243.822333, 
+                "0.00"
+              ], 
+              [
+                1545960238.805436, 
+                "0.00"
+              ], 
+              [
+                1545960233.802559, 
+                "0.00"
+              ], 
+              [
+                1545960228.804293, 
+                "0.00"
+              ]
+            ], 
+            "rate": 0.0, 
+            "latest": "0.00"
+          }, 
+          "rd_bytes": {
+            "series": [
+              [
+                1545960273.844574, 
+                0
+              ], 
+              [
+                1545960268.84411, 
+                0
+              ], 
+              [
+                1545960263.837204, 
+                0
+              ], 
+              [
+                1545960258.836678, 
+                0
+              ], 
+              [
+                1545960253.828483, 
+                0
+              ], 
+              [
+                1545960248.827809, 
+                0
+              ], 
+              [
+                1545960243.822333, 
+                0
+              ], 
+              [
+                1545960238.805436, 
+                0
+              ], 
+              [
+                1545960233.802559, 
+                0
+              ], 
+              [
+                1545960228.804293, 
+                0
+              ]
+            ], 
+            "rate": 0.0, 
+            "latest": 0
+          }, 
+          "objects": {
+            "series": [
+              [
+                1545960273.844574, 
+                0
+              ], 
+              [
+                1545960268.84411, 
+                0
+              ], 
+              [
+                1545960263.837204, 
+                0
+              ], 
+              [
+                1545960258.836678, 
+                0
+              ], 
+              [
+                1545960253.828483, 
+                0
+              ], 
+              [
+                1545960248.827809, 
+                0
+              ], 
+              [
+                1545960243.822333, 
+                0
+              ], 
+              [
+                1545960238.805436, 
+                0
+              ], 
+              [
+                1545960233.802559, 
+                0
+              ], 
+              [
+                1545960228.804293, 
+                0
+              ]
+            ], 
+            "rate": 0.0, 
+            "latest": 0
+          }, 
+          "dirty": {
+            "series": [
+              [
+                1545960273.844574, 
+                0
+              ], 
+              [
+                1545960268.84411, 
+                0
+              ], 
+              [
+                1545960263.837204, 
+                0
+              ], 
+              [
+                1545960258.836678, 
+                0
+              ], 
+              [
+                1545960253.828483, 
+                0
+              ], 
+              [
+                1545960248.827809, 
+                0
+              ], 
+              [
+                1545960243.822333, 
+                0
+              ], 
+              [
+                1545960238.805436, 
+                0
+              ], 
+              [
+                1545960233.802559, 
+                0
+              ], 
+              [
+                1545960228.804293, 
+                0
+              ]
+            ], 
+            "rate": 0.0, 
+            "latest": 0
+          }, 
+          "kb_used": {
+            "series": [
+              [
+                1545960273.844574, 
+                0
+              ], 
+              [
+                1545960268.84411, 
+                0
+              ], 
+              [
+                1545960263.837204, 
+                0
+              ], 
+              [
+                1545960258.836678, 
+                0
+              ], 
+              [
+                1545960253.828483, 
+                0
+              ], 
+              [
+                1545960248.827809, 
+                0
+              ], 
+              [
+                1545960243.822333, 
+                0
+              ], 
+              [
+                1545960238.805436, 
+                0
+              ], 
+              [
+                1545960233.802559, 
+                0
+              ], 
+              [
+                1545960228.804293, 
+                0
+              ]
+            ], 
+            "rate": 0.0, 
+            "latest": 0
+          }, 
+          "quota_bytes": {
+            "series": [
+              [
+                1545960273.844574, 
+                0
+              ], 
+              [
+                1545960268.84411, 
+                0
+              ], 
+              [
+                1545960263.837204, 
+                0
+              ], 
+              [
+                1545960258.836678, 
+                0
+              ], 
+              [
+                1545960253.828483, 
+                0
+              ], 
+              [
+                1545960248.827809, 
+                0
+              ], 
+              [
+                1545960243.822333, 
+                0
+              ], 
+              [
+                1545960238.805436, 
+                0
+              ], 
+              [
+                1545960233.802559, 
+                0
+              ], 
+              [
+                1545960228.804293, 
+                0
+              ]
+            ], 
+            "rate": 0.0, 
+            "latest": 0
+          }, 
+          "raw_bytes_used": {
+            "series": [
+              [
+                1545960273.844574, 
+                0
+              ], 
+              [
+                1545960268.84411, 
+                0
+              ], 
+              [
+                1545960263.837204, 
+                0
+              ], 
+              [
+                1545960258.836678, 
+                0
+              ], 
+              [
+                1545960253.828483, 
+                0
+              ], 
+              [
+                1545960248.827809, 
+                0
+              ], 
+              [
+                1545960243.822333, 
+                0
+              ], 
+              [
+                1545960238.805436, 
+                0
+              ], 
+              [
+                1545960233.802559, 
+                0
+              ], 
+              [
+                1545960228.804293, 
+                0
+              ]
+            ], 
+            "rate": 0.0, 
+            "latest": 0
+          }, 
+          "wr_bytes": {
+            "series": [
+              [
+                1545960273.844574, 
+                0
+              ], 
+              [
+                1545960268.84411, 
+                0
+              ], 
+              [
+                1545960263.837204, 
+                0
+              ], 
+              [
+                1545960258.836678, 
+                0
+              ], 
+              [
+                1545960253.828483, 
+                0
+              ], 
+              [
+                1545960248.827809, 
+                0
+              ], 
+              [
+                1545960243.822333, 
+                0
+              ], 
+              [
+                1545960238.805436, 
+                0
+              ], 
+              [
+                1545960233.802559, 
+                0
+              ], 
+              [
+                1545960228.804293, 
+                0
+              ]
+            ], 
+            "rate": 0.0, 
+            "latest": 0
+          }, 
+          "wr": {
+            "series": [
+              [
+                1545960273.844574, 
+                0
+              ], 
+              [
+                1545960268.84411, 
+                0
+              ], 
+              [
+                1545960263.837204, 
+                0
+              ], 
+              [
+                1545960258.836678, 
+                0
+              ], 
+              [
+                1545960253.828483, 
+                0
+              ], 
+              [
+                1545960248.827809, 
+                0
+              ], 
+              [
+                1545960243.822333, 
+                0
+              ], 
+              [
+                1545960238.805436, 
+                0
+              ], 
+              [
+                1545960233.802559, 
+                0
+              ], 
+              [
+                1545960228.804293, 
+                0
+              ]
+            ], 
+            "rate": 0.0, 
+            "latest": 0
+          }
+        }, 
+        "hit_set_period": 0, 
+        "min_read_recency_for_promote": 0, 
+        "target_max_objects": 0, 
+        "pg_num": 8, 
+        "type": 1, 
+        "grade_table": [], 
+        "pool_name": "images", 
+        "cache_min_evict_age": 0, 
+        "snap_mode": "selfmanaged", 
+        "cache_mode": "none", 
+        "min_size": 2, 
+        "cache_target_dirty_high_ratio_micro": 600000, 
+        "crash_replay_interval": 0, 
+        "object_hash": 2, 
+        "application_metadata": {
+          "rbd": {}
+        }, 
+        "write_tier": -1, 
+        "cache_target_dirty_ratio_micro": 400000, 
+        "pool": 1, 
+        "removed_snaps": "[]", 
+        "crush_rule": 1, 
+        "tiers": [], 
+        "hit_set_params": {
+          "type": "none"
+        }, 
+        "last_force_op_resend": "0", 
+        "pool_snaps": [], 
+        "quota_max_objects": 0, 
+        "options": {}, 
+        "hit_set_count": 0, 
+        "flags": 1, 
+        "pg_status": {
+          "active+clean": 8
+        }, 
+        "target_max_bytes": 0, 
+        "snap_epoch": 0, 
+        "hit_set_search_last_n": 0, 
+        "last_change": "186", 
+        "min_write_recency_for_promote": 0, 
+        "read_tier": -1
+      }, 
+      {
+        "cache_target_full_ratio_micro": 800000, 
+        "fast_read": false, 
+        "stripe_width": 0, 
+        "flags_names": "hashpspool", 
+        "tier_of": -1, 
+        "hit_set_grade_decay_rate": 0, 
+        "pg_placement_num": 8, 
+        "use_gmt_hitset": true, 
+        "last_force_op_resend_preluminous": "0", 
+        "quota_max_bytes": 0, 
+        "erasure_code_profile": "default", 
+        "expected_num_objects": 0, 
+        "size": 3, 
+        "snap_seq": 3, 
+        "auid": 0, 
+        "cache_min_flush_age": 0, 
+        "stats": {
+          "quota_objects": {
+            "series": [
+              [
+                1545960273.844574, 
+                0
+              ], 
+              [
+                1545960268.84411, 
+                0
+              ], 
+              [
+                1545960263.837204, 
+                0
+              ], 
+              [
+                1545960258.836678, 
+                0
+              ], 
+              [
+                1545960253.828483, 
+                0
+              ], 
+              [
+                1545960248.827809, 
+                0
+              ], 
+              [
+                1545960243.822333, 
+                0
+              ], 
+              [
+                1545960238.805436, 
+                0
+              ], 
+              [
+                1545960233.802559, 
+                0
+              ], 
+              [
+                1545960228.804293, 
+                0
+              ]
+            ], 
+            "rate": 0.0, 
+            "latest": 0
+          }, 
+          "bytes_used": {
+            "series": [
+              [
+                1545960273.844574, 
+                2199146886
+              ], 
+              [
+                1545960268.84411, 
+                2199146886
+              ], 
+              [
+                1545960263.837204, 
+                2199146886
+              ], 
+              [
+                1545960258.836678, 
+                2199146886
+              ], 
+              [
+                1545960253.828483, 
+                2199146886
+              ], 
+              [
+                1545960248.827809, 
+                2199146886
+              ], 
+              [
+                1545960243.822333, 
+                2199146886
+              ], 
+              [
+                1545960238.805436, 
+                2199146886
+              ], 
+              [
+                1545960233.802559, 
+                2199146886
+              ], 
+              [
+                1545960228.804293, 
+                2199146886
+              ]
+            ], 
+            "rate": 0.0, 
+            "latest": 2199146886
+          }, 
+          "max_avail": {
+            "series": [
+              [
+                1545960273.844574, 
+                16452538368
+              ], 
+              [
+                1545960268.84411, 
+                16452538368
+              ], 
+              [
+                1545960263.837204, 
+                16452538368
+              ], 
+              [
+                1545960258.836678, 
+                16452538368
+              ], 
+              [
+                1545960253.828483, 
+                16452538368
+              ], 
+              [
+                1545960248.827809, 
+                16452538368
+              ], 
+              [
+                1545960243.822333, 
+                16452538368
+              ], 
+              [
+                1545960238.805436, 
+                16452538368
+              ], 
+              [
+                1545960233.802559, 
+                16452538368
+              ], 
+              [
+                1545960228.804293, 
+                16452538368
+              ]
+            ], 
+            "rate": 0.0, 
+            "latest": 16452538368
+          }, 
+          "rd": {
+            "series": [
+              [
+                1545960273.844574, 
+                47987
+              ], 
+              [
+                1545960268.84411, 
+                47987
+              ], 
+              [
+                1545960263.837204, 
+                47987
+              ], 
+              [
+                1545960258.836678, 
+                47987
+              ], 
+              [
+                1545960253.828483, 
+                47987
+              ], 
+              [
+                1545960248.827809, 
+                47987
+              ], 
+              [
+                1545960243.822333, 
+                47987
+              ], 
+              [
+                1545960238.805436, 
+                47987
+              ], 
+              [
+                1545960233.802559, 
+                47987
+              ], 
+              [
+                1545960228.804293, 
+                47964
+              ]
+            ], 
+            "rate": 0.0, 
+            "latest": 47987
+          }, 
+          "percent_used": {
+            "series": [
+              [
+                1545960273.844574, 
+                "11.79"
+              ], 
+              [
+                1545960268.84411, 
+                "11.79"
+              ], 
+              [
+                1545960263.837204, 
+                "11.79"
+              ], 
+              [
+                1545960258.836678, 
+                "11.79"
+              ], 
+              [
+                1545960253.828483, 
+                "11.79"
+              ], 
+              [
+                1545960248.827809, 
+                "11.79"
+              ], 
+              [
+                1545960243.822333, 
+                "11.79"
+              ], 
+              [
+                1545960238.805436, 
+                "11.79"
+              ], 
+              [
+                1545960233.802559, 
+                "11.79"
+              ], 
+              [
+                1545960228.804293, 
+                "11.79"
+              ]
+            ], 
+            "rate": 0.0, 
+            "latest": "11.79"
+          }, 
+          "rd_bytes": {
+            "series": [
+              [
+                1545960273.844574, 
+                303815680
+              ], 
+              [
+                1545960268.84411, 
+                303815680
+              ], 
+              [
+                1545960263.837204, 
+                303815680
+              ], 
+              [
+                1545960258.836678, 
+                303815680
+              ], 
+              [
+                1545960253.828483, 
+                303815680
+              ], 
+              [
+                1545960248.827809, 
+                303815680
+              ], 
+              [
+                1545960243.822333, 
+                303815680
+              ], 
+              [
+                1545960238.805436, 
+                303815680
+              ], 
+              [
+                1545960233.802559, 
+                303815680
+              ], 
+              [
+                1545960228.804293, 
+                303796224
+              ]
+            ], 
+            "rate": 0.0, 
+            "latest": 303815680
+          }, 
+          "objects": {
+            "series": [
+              [
+                1545960273.844574, 
+                540
+              ], 
+              [
+                1545960268.84411, 
+                540
+              ], 
+              [
+                1545960263.837204, 
+                540
+              ], 
+              [
+                1545960258.836678, 
+                540
+              ], 
+              [
+                1545960253.828483, 
+                540
+              ], 
+              [
+                1545960248.827809, 
+                540
+              ], 
+              [
+                1545960243.822333, 
+                540
+              ], 
+              [
+                1545960238.805436, 
+                540
+              ], 
+              [
+                1545960233.802559, 
+                540
+              ], 
+              [
+                1545960228.804293, 
+                540
+              ]
+            ], 
+            "rate": 0.0, 
+            "latest": 540
+          }, 
+          "dirty": {
+            "series": [
+              [
+                1545960273.844574, 
+                540
+              ], 
+              [
+                1545960268.84411, 
+                540
+              ], 
+              [
+                1545960263.837204, 
+                540
+              ], 
+              [
+                1545960258.836678, 
+                540
+              ], 
+              [
+                1545960253.828483, 
+                540
+              ], 
+              [
+                1545960248.827809, 
+                540
+              ], 
+              [
+                1545960243.822333, 
+                540
+              ], 
+              [
+                1545960238.805436, 
+                540
+              ], 
+              [
+                1545960233.802559, 
+                540
+              ], 
+              [
+                1545960228.804293, 
+                540
+              ]
+            ], 
+            "rate": 0.0, 
+            "latest": 540
+          }, 
+          "kb_used": {
+            "series": [
+              [
+                1545960273.844574, 
+                2147605
+              ], 
+              [
+                1545960268.84411, 
+                2147605
+              ], 
+              [
+                1545960263.837204, 
+                2147605
+              ], 
+              [
+                1545960258.836678, 
+                2147605
+              ], 
+              [
+                1545960253.828483, 
+                2147605
+              ], 
+              [
+                1545960248.827809, 
+                2147605
+              ], 
+              [
+                1545960243.822333, 
+                2147605
+              ], 
+              [
+                1545960238.805436, 
+                2147605
+              ], 
+              [
+                1545960233.802559, 
+                2147605
+              ], 
+              [
+                1545960228.804293, 
+                2147605
+              ]
+            ], 
+            "rate": 0.0, 
+            "latest": 2147605
+          }, 
+          "quota_bytes": {
+            "series": [
+              [
+                1545960273.844574, 
+                0
+              ], 
+              [
+                1545960268.84411, 
+                0
+              ], 
+              [
+                1545960263.837204, 
+                0
+              ], 
+              [
+                1545960258.836678, 
+                0
+              ], 
+              [
+                1545960253.828483, 
+                0
+              ], 
+              [
+                1545960248.827809, 
+                0
+              ], 
+              [
+                1545960243.822333, 
+                0
+              ], 
+              [
+                1545960238.805436, 
+                0
+              ], 
+              [
+                1545960233.802559, 
+                0
+              ], 
+              [
+                1545960228.804293, 
+                0
+              ]
+            ], 
+            "rate": 0.0, 
+            "latest": 0
+          }, 
+          "raw_bytes_used": {
+            "series": [
+              [
+                1545960273.844574, 
+                6597441024
+              ], 
+              [
+                1545960268.84411, 
+                6597441024
+              ], 
+              [
+                1545960263.837204, 
+                6597441024
+              ], 
+              [
+                1545960258.836678, 
+                6597441024
+              ], 
+              [
+                1545960253.828483, 
+                6597441024
+              ], 
+              [
+                1545960248.827809, 
+                6597441024
+              ], 
+              [
+                1545960243.822333, 
+                6597441024
+              ], 
+              [
+                1545960238.805436, 
+                6597441024
+              ], 
+              [
+                1545960233.802559, 
+                6597441024
+              ], 
+              [
+                1545960228.804293, 
+                6597441024
+              ]
+            ], 
+            "rate": 0.0, 
+            "latest": 6597441024
+          }, 
+          "wr_bytes": {
+            "series": [
+              [
+                1545960273.844574, 
+                2310426624
+              ], 
+              [
+                1545960268.84411, 
+                2310426624
+              ], 
+              [
+                1545960263.837204, 
+                2310426624
+              ], 
+              [
+                1545960258.836678, 
+                2310426624
+              ], 
+              [
+                1545960253.828483, 
+                2310426624
+              ], 
+              [
+                1545960248.827809, 
+                2310426624
+              ], 
+              [
+                1545960243.822333, 
+                2310426624
+              ], 
+              [
+                1545960238.805436, 
+                2310426624
+              ], 
+              [
+                1545960233.802559, 
+                2310426624
+              ], 
+              [
+                1545960228.804293, 
+                2310426624
+              ]
+            ], 
+            "rate": 0.0, 
+            "latest": 2310426624
+          }, 
+          "wr": {
+            "series": [
+              [
+                1545960273.844574, 
+                11911
+              ], 
+              [
+                1545960268.84411, 
+                11911
+              ], 
+              [
+                1545960263.837204, 
+                11911
+              ], 
+              [
+                1545960258.836678, 
+                11911
+              ], 
+              [
+                1545960253.828483, 
+                11911
+              ], 
+              [
+                1545960248.827809, 
+                11911
+              ], 
+              [
+                1545960243.822333, 
+                11911
+              ], 
+              [
+                1545960238.805436, 
+                11911
+              ], 
+              [
+                1545960233.802559, 
+                11911
+              ], 
+              [
+                1545960228.804293, 
+                11911
+              ]
+            ], 
+            "rate": 0.0, 
+            "latest": 11911
+          }
+        }, 
+        "hit_set_period": 0, 
+        "min_read_recency_for_promote": 0, 
+        "target_max_objects": 0, 
+        "pg_num": 8, 
+        "type": 1, 
+        "grade_table": [], 
+        "pool_name": "volumes", 
+        "cache_min_evict_age": 0, 
+        "snap_mode": "selfmanaged", 
+        "cache_mode": "none", 
+        "min_size": 2, 
+        "cache_target_dirty_high_ratio_micro": 600000, 
+        "crash_replay_interval": 0, 
+        "object_hash": 2, 
+        "application_metadata": {
+          "rbd": {}
+        }, 
+        "write_tier": -1, 
+        "cache_target_dirty_ratio_micro": 400000, 
+        "pool": 2, 
+        "removed_snaps": "[1~3]", 
+        "crush_rule": 1, 
+        "tiers": [], 
+        "hit_set_params": {
+          "type": "none"
+        }, 
+        "last_force_op_resend": "0", 
+        "pool_snaps": [], 
+        "quota_max_objects": 0, 
+        "options": {}, 
+        "hit_set_count": 0, 
+        "flags": 1, 
+        "pg_status": {
+          "active+clean": 8
+        }, 
+        "target_max_bytes": 0, 
+        "snap_epoch": 190, 
+        "hit_set_search_last_n": 0, 
+        "last_change": "190", 
+        "min_write_recency_for_promote": 0, 
+        "read_tier": -1
+      }, 
+      {
+        "cache_target_full_ratio_micro": 800000, 
+        "fast_read": false, 
+        "stripe_width": 0, 
+        "flags_names": "hashpspool", 
+        "tier_of": -1, 
+        "hit_set_grade_decay_rate": 0, 
+        "pg_placement_num": 8, 
+        "use_gmt_hitset": true, 
+        "last_force_op_resend_preluminous": "0", 
+        "quota_max_bytes": 0, 
+        "erasure_code_profile": "default", 
+        "expected_num_objects": 0, 
+        "size": 3, 
+        "snap_seq": 0, 
+        "auid": 0, 
+        "cache_min_flush_age": 0, 
+        "stats": {
+          "quota_objects": {
+            "series": [
+              [
+                1545960273.844574, 
+                0
+              ], 
+              [
+                1545960268.84411, 
+                0
+              ], 
+              [
+                1545960263.837204, 
+                0
+              ], 
+              [
+                1545960258.836678, 
+                0
+              ], 
+              [
+                1545960253.828483, 
+                0
+              ], 
+              [
+                1545960248.827809, 
+                0
+              ], 
+              [
+                1545960243.822333, 
+                0
+              ], 
+              [
+                1545960238.805436, 
+                0
+              ], 
+              [
+                1545960233.802559, 
+                0
+              ], 
+              [
+                1545960228.804293, 
+                0
+              ]
+            ], 
+            "rate": 0.0, 
+            "latest": 0
+          }, 
+          "bytes_used": {
+            "series": [
+              [
+                1545960273.844574, 
+                0
+              ], 
+              [
+                1545960268.84411, 
+                0
+              ], 
+              [
+                1545960263.837204, 
+                0
+              ], 
+              [
+                1545960258.836678, 
+                0
+              ], 
+              [
+                1545960253.828483, 
+                0
+              ], 
+              [
+                1545960248.827809, 
+                0
+              ], 
+              [
+                1545960243.822333, 
+                0
+              ], 
+              [
+                1545960238.805436, 
+                0
+              ], 
+              [
+                1545960233.802559, 
+                0
+              ], 
+              [
+                1545960228.804293, 
+                0
+              ]
+            ], 
+            "rate": 0.0, 
+            "latest": 0
+          }, 
+          "max_avail": {
+            "series": [
+              [
+                1545960273.844574, 
+                16452538368
+              ], 
+              [
+                1545960268.84411, 
+                16452538368
+              ], 
+              [
+                1545960263.837204, 
+                16452538368
+              ], 
+              [
+                1545960258.836678, 
+                16452538368
+              ], 
+              [
+                1545960253.828483, 
+                16452538368
+              ], 
+              [
+                1545960248.827809, 
+                16452538368
+              ], 
+              [
+                1545960243.822333, 
+                16452538368
+              ], 
+              [
+                1545960238.805436, 
+                16452538368
+              ], 
+              [
+                1545960233.802559, 
+                16452538368
+              ], 
+              [
+                1545960228.804293, 
+                16452538368
+              ]
+            ], 
+            "rate": 0.0, 
+            "latest": 16452538368
+          }, 
+          "rd": {
+            "series": [
+              [
+                1545960273.844574, 
+                0
+              ], 
+              [
+                1545960268.84411, 
+                0
+              ], 
+              [
+                1545960263.837204, 
+                0
+              ], 
+              [
+                1545960258.836678, 
+                0
+              ], 
+              [
+                1545960253.828483, 
+                0
+              ], 
+              [
+                1545960248.827809, 
+                0
+              ], 
+              [
+                1545960243.822333, 
+                0
+              ], 
+              [
+                1545960238.805436, 
+                0
+              ], 
+              [
+                1545960233.802559, 
+                0
+              ], 
+              [
+                1545960228.804293, 
+                0
+              ]
+            ], 
+            "rate": 0.0, 
+            "latest": 0
+          }, 
+          "percent_used": {
+            "series": [
+              [
+                1545960273.844574, 
+                "0.00"
+              ], 
+              [
+                1545960268.84411, 
+                "0.00"
+              ], 
+              [
+                1545960263.837204, 
+                "0.00"
+              ], 
+              [
+                1545960258.836678, 
+                "0.00"
+              ], 
+              [
+                1545960253.828483, 
+                "0.00"
+              ], 
+              [
+                1545960248.827809, 
+                "0.00"
+              ], 
+              [
+                1545960243.822333, 
+                "0.00"
+              ], 
+              [
+                1545960238.805436, 
+                "0.00"
+              ], 
+              [
+                1545960233.802559, 
+                "0.00"
+              ], 
+              [
+                1545960228.804293, 
+                "0.00"
+              ]
+            ], 
+            "rate": 0.0, 
+            "latest": "0.00"
+          }, 
+          "rd_bytes": {
+            "series": [
+              [
+                1545960273.844574, 
+                0
+              ], 
+              [
+                1545960268.84411, 
+                0
+              ], 
+              [
+                1545960263.837204, 
+                0
+              ], 
+              [
+                1545960258.836678, 
+                0
+              ], 
+              [
+                1545960253.828483, 
+                0
+              ], 
+              [
+                1545960248.827809, 
+                0
+              ], 
+              [
+                1545960243.822333, 
+                0
+              ], 
+              [
+                1545960238.805436, 
+                0
+              ], 
+              [
+                1545960233.802559, 
+                0
+              ], 
+              [
+                1545960228.804293, 
+                0
+              ]
+            ], 
+            "rate": 0.0, 
+            "latest": 0
+          }, 
+          "objects": {
+            "series": [
+              [
+                1545960273.844574, 
+                0
+              ], 
+              [
+                1545960268.84411, 
+                0
+              ], 
+              [
+                1545960263.837204, 
+                0
+              ], 
+              [
+                1545960258.836678, 
+                0
+              ], 
+              [
+                1545960253.828483, 
+                0
+              ], 
+              [
+                1545960248.827809, 
+                0
+              ], 
+              [
+                1545960243.822333, 
+                0
+              ], 
+              [
+                1545960238.805436, 
+                0
+              ], 
+              [
+                1545960233.802559, 
+                0
+              ], 
+              [
+                1545960228.804293, 
+                0
+              ]
+            ], 
+            "rate": 0.0, 
+            "latest": 0
+          }, 
+          "dirty": {
+            "series": [
+              [
+                1545960273.844574, 
+                0
+              ], 
+              [
+                1545960268.84411, 
+                0
+              ], 
+              [
+                1545960263.837204, 
+                0
+              ], 
+              [
+                1545960258.836678, 
+                0
+              ], 
+              [
+                1545960253.828483, 
+                0
+              ], 
+              [
+                1545960248.827809, 
+                0
+              ], 
+              [
+                1545960243.822333, 
+                0
+              ], 
+              [
+                1545960238.805436, 
+                0
+              ], 
+              [
+                1545960233.802559, 
+                0
+              ], 
+              [
+                1545960228.804293, 
+                0
+              ]
+            ], 
+            "rate": 0.0, 
+            "latest": 0
+          }, 
+          "kb_used": {
+            "series": [
+              [
+                1545960273.844574, 
+                0
+              ], 
+              [
+                1545960268.84411, 
+                0
+              ], 
+              [
+                1545960263.837204, 
+                0
+              ], 
+              [
+                1545960258.836678, 
+                0
+              ], 
+              [
+                1545960253.828483, 
+                0
+              ], 
+              [
+                1545960248.827809, 
+                0
+              ], 
+              [
+                1545960243.822333, 
+                0
+              ], 
+              [
+                1545960238.805436, 
+                0
+              ], 
+              [
+                1545960233.802559, 
+                0
+              ], 
+              [
+                1545960228.804293, 
+                0
+              ]
+            ], 
+            "rate": 0.0, 
+            "latest": 0
+          }, 
+          "quota_bytes": {
+            "series": [
+              [
+                1545960273.844574, 
+                0
+              ], 
+              [
+                1545960268.84411, 
+                0
+              ], 
+              [
+                1545960263.837204, 
+                0
+              ], 
+              [
+                1545960258.836678, 
+                0
+              ], 
+              [
+                1545960253.828483, 
+                0
+              ], 
+              [
+                1545960248.827809, 
+                0
+              ], 
+              [
+                1545960243.822333, 
+                0
+              ], 
+              [
+                1545960238.805436, 
+                0
+              ], 
+              [
+                1545960233.802559, 
+                0
+              ], 
+              [
+                1545960228.804293, 
+                0
+              ]
+            ], 
+            "rate": 0.0, 
+            "latest": 0
+          }, 
+          "raw_bytes_used": {
+            "series": [
+              [
+                1545960273.844574, 
+                0
+              ], 
+              [
+                1545960268.84411, 
+                0
+              ], 
+              [
+                1545960263.837204, 
+                0
+              ], 
+              [
+                1545960258.836678, 
+                0
+              ], 
+              [
+                1545960253.828483, 
+                0
+              ], 
+              [
+                1545960248.827809, 
+                0
+              ], 
+              [
+                1545960243.822333, 
+                0
+              ], 
+              [
+                1545960238.805436, 
+                0
+              ], 
+              [
+                1545960233.802559, 
+                0
+              ], 
+              [
+                1545960228.804293, 
+                0
+              ]
+            ], 
+            "rate": 0.0, 
+            "latest": 0
+          }, 
+          "wr_bytes": {
+            "series": [
+              [
+                1545960273.844574, 
+                0
+              ], 
+              [
+                1545960268.84411, 
+                0
+              ], 
+              [
+                1545960263.837204, 
+                0
+              ], 
+              [
+                1545960258.836678, 
+                0
+              ], 
+              [
+                1545960253.828483, 
+                0
+              ], 
+              [
+                1545960248.827809, 
+                0
+              ], 
+              [
+                1545960243.822333, 
+                0
+              ], 
+              [
+                1545960238.805436, 
+                0
+              ], 
+              [
+                1545960233.802559, 
+                0
+              ], 
+              [
+                1545960228.804293, 
+                0
+              ]
+            ], 
+            "rate": 0.0, 
+            "latest": 0
+          }, 
+          "wr": {
+            "series": [
+              [
+                1545960273.844574, 
+                0
+              ], 
+              [
+                1545960268.84411, 
+                0
+              ], 
+              [
+                1545960263.837204, 
+                0
+              ], 
+              [
+                1545960258.836678, 
+                0
+              ], 
+              [
+                1545960253.828483, 
+                0
+              ], 
+              [
+                1545960248.827809, 
+                0
+              ], 
+              [
+                1545960243.822333, 
+                0
+              ], 
+              [
+                1545960238.805436, 
+                0
+              ], 
+              [
+                1545960233.802559, 
+                0
+              ], 
+              [
+                1545960228.804293, 
+                0
+              ]
+            ], 
+            "rate": 0.0, 
+            "latest": 0
+          }
+        }, 
+        "hit_set_period": 0, 
+        "min_read_recency_for_promote": 0, 
+        "target_max_objects": 0, 
+        "pg_num": 8, 
+        "type": 1, 
+        "grade_table": [], 
+        "pool_name": "vms", 
+        "cache_min_evict_age": 0, 
+        "snap_mode": "selfmanaged", 
+        "cache_mode": "none", 
+        "min_size": 2, 
+        "cache_target_dirty_high_ratio_micro": 600000, 
+        "crash_replay_interval": 0, 
+        "object_hash": 2, 
+        "application_metadata": {
+          "rbd": {}
+        }, 
+        "write_tier": -1, 
+        "cache_target_dirty_ratio_micro": 400000, 
+        "pool": 3, 
+        "removed_snaps": "[]", 
+        "crush_rule": 1, 
+        "tiers": [], 
+        "hit_set_params": {
+          "type": "none"
+        }, 
+        "last_force_op_resend": "0", 
+        "pool_snaps": [], 
+        "quota_max_objects": 0, 
+        "options": {}, 
+        "hit_set_count": 0, 
+        "flags": 1, 
+        "pg_status": {
+          "active+clean": 8
+        }, 
+        "target_max_bytes": 0, 
+        "snap_epoch": 0, 
+        "hit_set_search_last_n": 0, 
+        "last_change": "188", 
+        "min_write_recency_for_promote": 0, 
+        "read_tier": -1
+      }, 
+      {
+        "cache_target_full_ratio_micro": 800000, 
+        "fast_read": false, 
+        "stripe_width": 0, 
+        "flags_names": "hashpspool", 
+        "tier_of": -1, 
+        "hit_set_grade_decay_rate": 0, 
+        "pg_placement_num": 8, 
+        "use_gmt_hitset": true, 
+        "last_force_op_resend_preluminous": "0", 
+        "quota_max_bytes": 0, 
+        "erasure_code_profile": "", 
+        "expected_num_objects": 0, 
+        "size": 3, 
+        "snap_seq": 0, 
+        "auid": 0, 
+        "cache_min_flush_age": 0, 
+        "stats": {
+          "quota_objects": {
+            "series": [
+              [
+                1545960273.844574, 
+                0
+              ], 
+              [
+                1545960268.84411, 
+                0
+              ], 
+              [
+                1545960263.837204, 
+                0
+              ], 
+              [
+                1545960258.836678, 
+                0
+              ], 
+              [
+                1545960253.828483, 
+                0
+              ], 
+              [
+                1545960248.827809, 
+                0
+              ], 
+              [
+                1545960243.822333, 
+                0
+              ], 
+              [
+                1545960238.805436, 
+                0
+              ], 
+              [
+                1545960233.802559, 
+                0
+              ], 
+              [
+                1545960228.804293, 
+                0
+              ]
+            ], 
+            "rate": 0.0, 
+            "latest": 0
+          }, 
+          "bytes_used": {
+            "series": [
+              [
+                1545960273.844574, 
+                0
+              ], 
+              [
+                1545960268.84411, 
+                0
+              ], 
+              [
+                1545960263.837204, 
+                0
+              ], 
+              [
+                1545960258.836678, 
+                0
+              ], 
+              [
+                1545960253.828483, 
+                0
+              ], 
+              [
+                1545960248.827809, 
+                0
+              ], 
+              [
+                1545960243.822333, 
+                0
+              ], 
+              [
+                1545960238.805436, 
+                0
+              ], 
+              [
+                1545960233.802559, 
+                0
+              ], 
+              [
+                1545960228.804293, 
+                0
+              ]
+            ], 
+            "rate": 0.0, 
+            "latest": 0
+          }, 
+          "max_avail": {
+            "series": [
+              [
+                1545960273.844574, 
+                16452538368
+              ], 
+              [
+                1545960268.84411, 
+                16452538368
+              ], 
+              [
+                1545960263.837204, 
+                16452538368
+              ], 
+              [
+                1545960258.836678, 
+                16452538368
+              ], 
+              [
+                1545960253.828483, 
+                16452538368
+              ], 
+              [
+                1545960248.827809, 
+                16452538368
+              ], 
+              [
+                1545960243.822333, 
+                16452538368
+              ], 
+              [
+                1545960238.805436, 
+                16452538368
+              ], 
+              [
+                1545960233.802559, 
+                16452538368
+              ], 
+              [
+                1545960228.804293, 
+                16452538368
+              ]
+            ], 
+            "rate": 0.0, 
+            "latest": 16452538368
+          }, 
+          "rd": {
+            "series": [
+              [
+                1545960273.844574, 
+                0
+              ], 
+              [
+                1545960268.84411, 
+                0
+              ], 
+              [
+                1545960263.837204, 
+                0
+              ], 
+              [
+                1545960258.836678, 
+                0
+              ], 
+              [
+                1545960253.828483, 
+                0
+              ], 
+              [
+                1545960248.827809, 
+                0
+              ], 
+              [
+                1545960243.822333, 
+                0
+              ], 
+              [
+                1545960238.805436, 
+                0
+              ], 
+              [
+                1545960233.802559, 
+                0
+              ], 
+              [
+                1545960228.804293, 
+                0
+              ]
+            ], 
+            "rate": 0.0, 
+            "latest": 0
+          }, 
+          "percent_used": {
+            "series": [
+              [
+                1545960273.844574, 
+                "0.00"
+              ], 
+              [
+                1545960268.84411, 
+                "0.00"
+              ], 
+              [
+                1545960263.837204, 
+                "0.00"
+              ], 
+              [
+                1545960258.836678, 
+                "0.00"
+              ], 
+              [
+                1545960253.828483, 
+                "0.00"
+              ], 
+              [
+                1545960248.827809, 
+                "0.00"
+              ], 
+              [
+                1545960243.822333, 
+                "0.00"
+              ], 
+              [
+                1545960238.805436, 
+                "0.00"
+              ], 
+              [
+                1545960233.802559, 
+                "0.00"
+              ], 
+              [
+                1545960228.804293, 
+                "0.00"
+              ]
+            ], 
+            "rate": 0.0, 
+            "latest": "0.00"
+          }, 
+          "rd_bytes": {
+            "series": [
+              [
+                1545960273.844574, 
+                0
+              ], 
+              [
+                1545960268.84411, 
+                0
+              ], 
+              [
+                1545960263.837204, 
+                0
+              ], 
+              [
+                1545960258.836678, 
+                0
+              ], 
+              [
+                1545960253.828483, 
+                0
+              ], 
+              [
+                1545960248.827809, 
+                0
+              ], 
+              [
+                1545960243.822333, 
+                0
+              ], 
+              [
+                1545960238.805436, 
+                0
+              ], 
+              [
+                1545960233.802559, 
+                0
+              ], 
+              [
+                1545960228.804293, 
+                0
+              ]
+            ], 
+            "rate": 0.0, 
+            "latest": 0
+          }, 
+          "objects": {
+            "series": [
+              [
+                1545960273.844574, 
+                0
+              ], 
+              [
+                1545960268.84411, 
+                0
+              ], 
+              [
+                1545960263.837204, 
+                0
+              ], 
+              [
+                1545960258.836678, 
+                0
+              ], 
+              [
+                1545960253.828483, 
+                0
+              ], 
+              [
+                1545960248.827809, 
+                0
+              ], 
+              [
+                1545960243.822333, 
+                0
+              ], 
+              [
+                1545960238.805436, 
+                0
+              ], 
+              [
+                1545960233.802559, 
+                0
+              ], 
+              [
+                1545960228.804293, 
+                0
+              ]
+            ], 
+            "rate": 0.0, 
+            "latest": 0
+          }, 
+          "dirty": {
+            "series": [
+              [
+                1545960273.844574, 
+                0
+              ], 
+              [
+                1545960268.84411, 
+                0
+              ], 
+              [
+                1545960263.837204, 
+                0
+              ], 
+              [
+                1545960258.836678, 
+                0
+              ], 
+              [
+                1545960253.828483, 
+                0
+              ], 
+              [
+                1545960248.827809, 
+                0
+              ], 
+              [
+                1545960243.822333, 
+                0
+              ], 
+              [
+                1545960238.805436, 
+                0
+              ], 
+              [
+                1545960233.802559, 
+                0
+              ], 
+              [
+                1545960228.804293, 
+                0
+              ]
+            ], 
+            "rate": 0.0, 
+            "latest": 0
+          }, 
+          "kb_used": {
+            "series": [
+              [
+                1545960273.844574, 
+                0
+              ], 
+              [
+                1545960268.84411, 
+                0
+              ], 
+              [
+                1545960263.837204, 
+                0
+              ], 
+              [
+                1545960258.836678, 
+                0
+              ], 
+              [
+                1545960253.828483, 
+                0
+              ], 
+              [
+                1545960248.827809, 
+                0
+              ], 
+              [
+                1545960243.822333, 
+                0
+              ], 
+              [
+                1545960238.805436, 
+                0
+              ], 
+              [
+                1545960233.802559, 
+                0
+              ], 
+              [
+                1545960228.804293, 
+                0
+              ]
+            ], 
+            "rate": 0.0, 
+            "latest": 0
+          }, 
+          "quota_bytes": {
+            "series": [
+              [
+                1545960273.844574, 
+                0
+              ], 
+              [
+                1545960268.84411, 
+                0
+              ], 
+              [
+                1545960263.837204, 
+                0
+              ], 
+              [
+                1545960258.836678, 
+                0
+              ], 
+              [
+                1545960253.828483, 
+                0
+              ], 
+              [
+                1545960248.827809, 
+                0
+              ], 
+              [
+                1545960243.822333, 
+                0
+              ], 
+              [
+                1545960238.805436, 
+                0
+              ], 
+              [
+                1545960233.802559, 
+                0
+              ], 
+              [
+                1545960228.804293, 
+                0
+              ]
+            ], 
+            "rate": 0.0, 
+            "latest": 0
+          }, 
+          "raw_bytes_used": {
+            "series": [
+              [
+                1545960273.844574, 
+                0
+              ], 
+              [
+                1545960268.84411, 
+                0
+              ], 
+              [
+                1545960263.837204, 
+                0
+              ], 
+              [
+                1545960258.836678, 
+                0
+              ], 
+              [
+                1545960253.828483, 
+                0
+              ], 
+              [
+                1545960248.827809, 
+                0
+              ], 
+              [
+                1545960243.822333, 
+                0
+              ], 
+              [
+                1545960238.805436, 
+                0
+              ], 
+              [
+                1545960233.802559, 
+                0
+              ], 
+              [
+                1545960228.804293, 
+                0
+              ]
+            ], 
+            "rate": 0.0, 
+            "latest": 0
+          }, 
+          "wr_bytes": {
+            "series": [
+              [
+                1545960273.844574, 
+                0
+              ], 
+              [
+                1545960268.84411, 
+                0
+              ], 
+              [
+                1545960263.837204, 
+                0
+              ], 
+              [
+                1545960258.836678, 
+                0
+              ], 
+              [
+                1545960253.828483, 
+                0
+              ], 
+              [
+                1545960248.827809, 
+                0
+              ], 
+              [
+                1545960243.822333, 
+                0
+              ], 
+              [
+                1545960238.805436, 
+                0
+              ], 
+              [
+                1545960233.802559, 
+                0
+              ], 
+              [
+                1545960228.804293, 
+                0
+              ]
+            ], 
+            "rate": 0.0, 
+            "latest": 0
+          }, 
+          "wr": {
+            "series": [
+              [
+                1545960273.844574, 
+                0
+              ], 
+              [
+                1545960268.84411, 
+                0
+              ], 
+              [
+                1545960263.837204, 
+                0
+              ], 
+              [
+                1545960258.836678, 
+                0
+              ], 
+              [
+                1545960253.828483, 
+                0
+              ], 
+              [
+                1545960248.827809, 
+                0
+              ], 
+              [
+                1545960243.822333, 
+                0
+              ], 
+              [
+                1545960238.805436, 
+                0
+              ], 
+              [
+                1545960233.802559, 
+                0
+              ], 
+              [
+                1545960228.804293, 
+                0
+              ]
+            ], 
+            "rate": 0.0, 
+            "latest": 0
+          }
+        }, 
+        "hit_set_period": 0, 
+        "min_read_recency_for_promote": 0, 
+        "target_max_objects": 0, 
+        "pg_num": 8, 
+        "type": 1, 
+        "grade_table": [], 
+        "pool_name": "doom", 
+        "cache_min_evict_age": 0, 
+        "snap_mode": "selfmanaged", 
+        "cache_mode": "none", 
+        "min_size": 2, 
+        "cache_target_dirty_high_ratio_micro": 600000, 
+        "crash_replay_interval": 0, 
+        "object_hash": 2, 
+        "application_metadata": {}, 
+        "write_tier": -1, 
+        "cache_target_dirty_ratio_micro": 400000, 
+        "pool": 4, 
+        "removed_snaps": "[]", 
+        "crush_rule": 0, 
+        "tiers": [], 
+        "hit_set_params": {
+          "type": "none"
+        }, 
+        "last_force_op_resend": "0", 
+        "pool_snaps": [], 
+        "quota_max_objects": 0, 
+        "options": {}, 
+        "hit_set_count": 0, 
+        "flags": 1, 
+        "pg_status": {
+          "active+clean": 8
+        }, 
+        "target_max_bytes": 0, 
+        "snap_epoch": 0, 
+        "hit_set_search_last_n": 0, 
+        "last_change": "191", 
+        "min_write_recency_for_promote": 0, 
+        "read_tier": -1
+      }
+    ]
+  }, 
+  "clog": [
+    {
+      "name": "mon.controller", 
+      "seq": 1926, 
+      "stamp": "2018-12-28 08:22:48.781214", 
+      "who": "mon.0 192.168.2.191:6789/0", 
+      "priority": "[INF]", 
+      "message": "Manager daemon controller is now available", 
+      "channel": "cluster"
+    }, 
+    {
+      "name": "mon.controller", 
+      "seq": 1918, 
+      "stamp": "2018-12-28 08:22:47.633323", 
+      "who": "mon.0 192.168.2.191:6789/0", 
+      "priority": "[INF]", 
+      "message": "Activating manager daemon controller", 
+      "channel": "cluster"
+    }, 
+    {
+      "name": "mon.controller", 
+      "seq": 1917, 
+      "stamp": "2018-12-28 08:22:47.633244", 
+      "who": "mon.0 192.168.2.191:6789/0", 
+      "priority": "[INF]", 
+      "message": "Active manager daemon controller restarted", 
+      "channel": "cluster"
+    }, 
+    {
+      "name": "mon.controller", 
+      "seq": 1902, 
+      "stamp": "2018-12-28 08:18:40.259507", 
+      "who": "mon.0 192.168.2.191:6789/0", 
+      "priority": "[INF]", 
+      "message": "Manager daemon controller is now available", 
+      "channel": "cluster"
+    }, 
+    {
+      "name": "mon.controller", 
+      "seq": 1898, 
+      "stamp": "2018-12-28 08:18:39.245193", 
+      "who": "mon.0 192.168.2.191:6789/0", 
+      "priority": "[INF]", 
+      "message": "Activating manager daemon controller", 
+      "channel": "cluster"
+    }, 
+    {
+      "name": "mon.controller", 
+      "seq": 1897, 
+      "stamp": "2018-12-28 08:18:39.245134", 
+      "who": "mon.0 192.168.2.191:6789/0", 
+      "priority": "[INF]", 
+      "message": "Active manager daemon controller restarted", 
+      "channel": "cluster"
+    }, 
+    {
+      "name": "mon.controller", 
+      "seq": 1892, 
+      "stamp": "2018-12-28 08:18:07.058903", 
+      "who": "mon.0 192.168.2.191:6789/0", 
+      "priority": "[INF]", 
+      "message": "Manager daemon controller is now available", 
+      "channel": "cluster"
+    }, 
+    {
+      "name": "mon.controller", 
+      "seq": 1885, 
+      "stamp": "2018-12-28 08:18:05.956645", 
+      "who": "mon.0 192.168.2.191:6789/0", 
+      "priority": "[INF]", 
+      "message": "Activating manager daemon controller", 
+      "channel": "cluster"
+    }, 
+    {
+      "name": "mon.controller", 
+      "seq": 1884, 
+      "stamp": "2018-12-28 08:18:05.956355", 
+      "who": "mon.0 192.168.2.191:6789/0", 
+      "priority": "[INF]", 
+      "message": "Active manager daemon controller restarted", 
+      "channel": "cluster"
+    }
+  ], 
+  "health": {
+    "status": "HEALTH_OK", 
+    "detail": [
+      "'ceph health' JSON format has changed in luminous. If you see this your monitoring system is scraping the wrong fields. Disable this with 'mon health preluminous compat warning = false'"
+    ], 
+    "overall_status": "HEALTH_WARN", 
+    "checks": [], 
+    "summary": [
+      {
+        "severity": "HEALTH_WARN", 
+        "summary": "'ceph health' JSON format has changed in luminous. If you see this your monitoring system is scraping the wrong fields. Disable this with 'mon health preluminous compat warning = false'"
+      }
+    ]
+  }, 
+  "fs_map": {
+    "compat": {
+      "compat": {}, 
+      "ro_compat": {}, 
+      "incompat": {
+        "feature_8": "no anchor table", 
+        "feature_9": "file layout v2", 
+        "feature_2": "client writeable ranges", 
+        "feature_3": "default file layouts on dirs", 
+        "feature_1": "base v0.20", 
+        "feature_6": "dirfrag is stored in omap", 
+        "feature_4": "dir inode in separate object", 
+        "feature_5": "mds uses versioned encoding"
+      }
+    }, 
+    "epoch": 1, 
+    "feature_flags": {
+      "ever_enabled_multiple": false, 
+      "enable_multiple": false
+    }, 
+    "standbys": [], 
+    "filesystems": []
+  }, 
+  "pools": [
+    {
+      "cache_target_full_ratio_micro": 800000, 
+      "fast_read": false, 
+      "stripe_width": 0, 
+      "flags_names": "hashpspool", 
+      "tier_of": -1, 
+      "hit_set_grade_decay_rate": 0, 
+      "pg_placement_num": 8, 
+      "use_gmt_hitset": true, 
+      "last_force_op_resend_preluminous": "0", 
+      "quota_max_bytes": 0, 
+      "erasure_code_profile": "default", 
+      "expected_num_objects": 0, 
+      "size": 3, 
+      "snap_seq": 0, 
+      "auid": 0, 
+      "cache_min_flush_age": 0, 
+      "stats": {
+        "quota_objects": {
+          "series": [
+            [
+              1545960273.844574, 
+              0
+            ], 
+            [
+              1545960268.84411, 
+              0
+            ], 
+            [
+              1545960263.837204, 
+              0
+            ], 
+            [
+              1545960258.836678, 
+              0
+            ], 
+            [
+              1545960253.828483, 
+              0
+            ], 
+            [
+              1545960248.827809, 
+              0
+            ], 
+            [
+              1545960243.822333, 
+              0
+            ], 
+            [
+              1545960238.805436, 
+              0
+            ], 
+            [
+              1545960233.802559, 
+              0
+            ], 
+            [
+              1545960228.804293, 
+              0
+            ]
+          ], 
+          "rate": 0.0, 
+          "latest": 0
+        }, 
+        "bytes_used": {
+          "series": [
+            [
+              1545960273.844574, 
+              0
+            ], 
+            [
+              1545960268.84411, 
+              0
+            ], 
+            [
+              1545960263.837204, 
+              0
+            ], 
+            [
+              1545960258.836678, 
+              0
+            ], 
+            [
+              1545960253.828483, 
+              0
+            ], 
+            [
+              1545960248.827809, 
+              0
+            ], 
+            [
+              1545960243.822333, 
+              0
+            ], 
+            [
+              1545960238.805436, 
+              0
+            ], 
+            [
+              1545960233.802559, 
+              0
+            ], 
+            [
+              1545960228.804293, 
+              0
+            ]
+          ], 
+          "rate": 0.0, 
+          "latest": 0
+        }, 
+        "max_avail": {
+          "series": [
+            [
+              1545960273.844574, 
+              16452538368
+            ], 
+            [
+              1545960268.84411, 
+              16452538368
+            ], 
+            [
+              1545960263.837204, 
+              16452538368
+            ], 
+            [
+              1545960258.836678, 
+              16452538368
+            ], 
+            [
+              1545960253.828483, 
+              16452538368
+            ], 
+            [
+              1545960248.827809, 
+              16452538368
+            ], 
+            [
+              1545960243.822333, 
+              16452538368
+            ], 
+            [
+              1545960238.805436, 
+              16452538368
+            ], 
+            [
+              1545960233.802559, 
+              16452538368
+            ], 
+            [
+              1545960228.804293, 
+              16452538368
+            ]
+          ], 
+          "rate": 0.0, 
+          "latest": 16452538368
+        }, 
+        "rd": {
+          "series": [
+            [
+              1545960273.844574, 
+              0
+            ], 
+            [
+              1545960268.84411, 
+              0
+            ], 
+            [
+              1545960263.837204, 
+              0
+            ], 
+            [
+              1545960258.836678, 
+              0
+            ], 
+            [
+              1545960253.828483, 
+              0
+            ], 
+            [
+              1545960248.827809, 
+              0
+            ], 
+            [
+              1545960243.822333, 
+              0
+            ], 
+            [
+              1545960238.805436, 
+              0
+            ], 
+            [
+              1545960233.802559, 
+              0
+            ], 
+            [
+              1545960228.804293, 
+              0
+            ]
+          ], 
+          "rate": 0.0, 
+          "latest": 0
+        }, 
+        "percent_used": {
+          "series": [
+            [
+              1545960273.844574, 
+              "0.00"
+            ], 
+            [
+              1545960268.84411, 
+              "0.00"
+            ], 
+            [
+              1545960263.837204, 
+              "0.00"
+            ], 
+            [
+              1545960258.836678, 
+              "0.00"
+            ], 
+            [
+              1545960253.828483, 
+              "0.00"
+            ], 
+            [
+              1545960248.827809, 
+              "0.00"
+            ], 
+            [
+              1545960243.822333, 
+              "0.00"
+            ], 
+            [
+              1545960238.805436, 
+              "0.00"
+            ], 
+            [
+              1545960233.802559, 
+              "0.00"
+            ], 
+            [
+              1545960228.804293, 
+              "0.00"
+            ]
+          ], 
+          "rate": 0.0, 
+          "latest": "0.00"
+        }, 
+        "rd_bytes": {
+          "series": [
+            [
+              1545960273.844574, 
+              0
+            ], 
+            [
+              1545960268.84411, 
+              0
+            ], 
+            [
+              1545960263.837204, 
+              0
+            ], 
+            [
+              1545960258.836678, 
+              0
+            ], 
+            [
+              1545960253.828483, 
+              0
+            ], 
+            [
+              1545960248.827809, 
+              0
+            ], 
+            [
+              1545960243.822333, 
+              0
+            ], 
+            [
+              1545960238.805436, 
+              0
+            ], 
+            [
+              1545960233.802559, 
+              0
+            ], 
+            [
+              1545960228.804293, 
+              0
+            ]
+          ], 
+          "rate": 0.0, 
+          "latest": 0
+        }, 
+        "objects": {
+          "series": [
+            [
+              1545960273.844574, 
+              0
+            ], 
+            [
+              1545960268.84411, 
+              0
+            ], 
+            [
+              1545960263.837204, 
+              0
+            ], 
+            [
+              1545960258.836678, 
+              0
+            ], 
+            [
+              1545960253.828483, 
+              0
+            ], 
+            [
+              1545960248.827809, 
+              0
+            ], 
+            [
+              1545960243.822333, 
+              0
+            ], 
+            [
+              1545960238.805436, 
+              0
+            ], 
+            [
+              1545960233.802559, 
+              0
+            ], 
+            [
+              1545960228.804293, 
+              0
+            ]
+          ], 
+          "rate": 0.0, 
+          "latest": 0
+        }, 
+        "dirty": {
+          "series": [
+            [
+              1545960273.844574, 
+              0
+            ], 
+            [
+              1545960268.84411, 
+              0
+            ], 
+            [
+              1545960263.837204, 
+              0
+            ], 
+            [
+              1545960258.836678, 
+              0
+            ], 
+            [
+              1545960253.828483, 
+              0
+            ], 
+            [
+              1545960248.827809, 
+              0
+            ], 
+            [
+              1545960243.822333, 
+              0
+            ], 
+            [
+              1545960238.805436, 
+              0
+            ], 
+            [
+              1545960233.802559, 
+              0
+            ], 
+            [
+              1545960228.804293, 
+              0
+            ]
+          ], 
+          "rate": 0.0, 
+          "latest": 0
+        }, 
+        "kb_used": {
+          "series": [
+            [
+              1545960273.844574, 
+              0
+            ], 
+            [
+              1545960268.84411, 
+              0
+            ], 
+            [
+              1545960263.837204, 
+              0
+            ], 
+            [
+              1545960258.836678, 
+              0
+            ], 
+            [
+              1545960253.828483, 
+              0
+            ], 
+            [
+              1545960248.827809, 
+              0
+            ], 
+            [
+              1545960243.822333, 
+              0
+            ], 
+            [
+              1545960238.805436, 
+              0
+            ], 
+            [
+              1545960233.802559, 
+              0
+            ], 
+            [
+              1545960228.804293, 
+              0
+            ]
+          ], 
+          "rate": 0.0, 
+          "latest": 0
+        }, 
+        "quota_bytes": {
+          "series": [
+            [
+              1545960273.844574, 
+              0
+            ], 
+            [
+              1545960268.84411, 
+              0
+            ], 
+            [
+              1545960263.837204, 
+              0
+            ], 
+            [
+              1545960258.836678, 
+              0
+            ], 
+            [
+              1545960253.828483, 
+              0
+            ], 
+            [
+              1545960248.827809, 
+              0
+            ], 
+            [
+              1545960243.822333, 
+              0
+            ], 
+            [
+              1545960238.805436, 
+              0
+            ], 
+            [
+              1545960233.802559, 
+              0
+            ], 
+            [
+              1545960228.804293, 
+              0
+            ]
+          ], 
+          "rate": 0.0, 
+          "latest": 0
+        }, 
+        "raw_bytes_used": {
+          "series": [
+            [
+              1545960273.844574, 
+              0
+            ], 
+            [
+              1545960268.84411, 
+              0
+            ], 
+            [
+              1545960263.837204, 
+              0
+            ], 
+            [
+              1545960258.836678, 
+              0
+            ], 
+            [
+              1545960253.828483, 
+              0
+            ], 
+            [
+              1545960248.827809, 
+              0
+            ], 
+            [
+              1545960243.822333, 
+              0
+            ], 
+            [
+              1545960238.805436, 
+              0
+            ], 
+            [
+              1545960233.802559, 
+              0
+            ], 
+            [
+              1545960228.804293, 
+              0
+            ]
+          ], 
+          "rate": 0.0, 
+          "latest": 0
+        }, 
+        "wr_bytes": {
+          "series": [
+            [
+              1545960273.844574, 
+              0
+            ], 
+            [
+              1545960268.84411, 
+              0
+            ], 
+            [
+              1545960263.837204, 
+              0
+            ], 
+            [
+              1545960258.836678, 
+              0
+            ], 
+            [
+              1545960253.828483, 
+              0
+            ], 
+            [
+              1545960248.827809, 
+              0
+            ], 
+            [
+              1545960243.822333, 
+              0
+            ], 
+            [
+              1545960238.805436, 
+              0
+            ], 
+            [
+              1545960233.802559, 
+              0
+            ], 
+            [
+              1545960228.804293, 
+              0
+            ]
+          ], 
+          "rate": 0.0, 
+          "latest": 0
+        }, 
+        "wr": {
+          "series": [
+            [
+              1545960273.844574, 
+              0
+            ], 
+            [
+              1545960268.84411, 
+              0
+            ], 
+            [
+              1545960263.837204, 
+              0
+            ], 
+            [
+              1545960258.836678, 
+              0
+            ], 
+            [
+              1545960253.828483, 
+              0
+            ], 
+            [
+              1545960248.827809, 
+              0
+            ], 
+            [
+              1545960243.822333, 
+              0
+            ], 
+            [
+              1545960238.805436, 
+              0
+            ], 
+            [
+              1545960233.802559, 
+              0
+            ], 
+            [
+              1545960228.804293, 
+              0
+            ]
+          ], 
+          "rate": 0.0, 
+          "latest": 0
+        }
+      }, 
+      "hit_set_period": 0, 
+      "min_read_recency_for_promote": 0, 
+      "target_max_objects": 0, 
+      "pg_num": 8, 
+      "type": 1, 
+      "grade_table": [], 
+      "pool_name": "images", 
+      "cache_min_evict_age": 0, 
+      "snap_mode": "selfmanaged", 
+      "cache_mode": "none", 
+      "min_size": 2, 
+      "cache_target_dirty_high_ratio_micro": 600000, 
+      "crash_replay_interval": 0, 
+      "object_hash": 2, 
+      "application_metadata": {
+        "rbd": {}
+      }, 
+      "write_tier": -1, 
+      "cache_target_dirty_ratio_micro": 400000, 
+      "pool": 1, 
+      "removed_snaps": "[]", 
+      "crush_rule": 1, 
+      "tiers": [], 
+      "hit_set_params": {
+        "type": "none"
+      }, 
+      "last_force_op_resend": "0", 
+      "pool_snaps": [], 
+      "quota_max_objects": 0, 
+      "options": {}, 
+      "hit_set_count": 0, 
+      "flags": 1, 
+      "pg_status": {
+        "active+clean": 8
+      }, 
+      "target_max_bytes": 0, 
+      "snap_epoch": 0, 
+      "hit_set_search_last_n": 0, 
+      "last_change": "186", 
+      "min_write_recency_for_promote": 0, 
+      "read_tier": -1
+    }, 
+    {
+      "cache_target_full_ratio_micro": 800000, 
+      "fast_read": false, 
+      "stripe_width": 0, 
+      "flags_names": "hashpspool", 
+      "tier_of": -1, 
+      "hit_set_grade_decay_rate": 0, 
+      "pg_placement_num": 8, 
+      "use_gmt_hitset": true, 
+      "last_force_op_resend_preluminous": "0", 
+      "quota_max_bytes": 0, 
+      "erasure_code_profile": "default", 
+      "expected_num_objects": 0, 
+      "size": 3, 
+      "snap_seq": 3, 
+      "auid": 0, 
+      "cache_min_flush_age": 0, 
+      "stats": {
+        "quota_objects": {
+          "series": [
+            [
+              1545960273.844574, 
+              0
+            ], 
+            [
+              1545960268.84411, 
+              0
+            ], 
+            [
+              1545960263.837204, 
+              0
+            ], 
+            [
+              1545960258.836678, 
+              0
+            ], 
+            [
+              1545960253.828483, 
+              0
+            ], 
+            [
+              1545960248.827809, 
+              0
+            ], 
+            [
+              1545960243.822333, 
+              0
+            ], 
+            [
+              1545960238.805436, 
+              0
+            ], 
+            [
+              1545960233.802559, 
+              0
+            ], 
+            [
+              1545960228.804293, 
+              0
+            ]
+          ], 
+          "rate": 0.0, 
+          "latest": 0
+        }, 
+        "bytes_used": {
+          "series": [
+            [
+              1545960273.844574, 
+              2199146886
+            ], 
+            [
+              1545960268.84411, 
+              2199146886
+            ], 
+            [
+              1545960263.837204, 
+              2199146886
+            ], 
+            [
+              1545960258.836678, 
+              2199146886
+            ], 
+            [
+              1545960253.828483, 
+              2199146886
+            ], 
+            [
+              1545960248.827809, 
+              2199146886
+            ], 
+            [
+              1545960243.822333, 
+              2199146886
+            ], 
+            [
+              1545960238.805436, 
+              2199146886
+            ], 
+            [
+              1545960233.802559, 
+              2199146886
+            ], 
+            [
+              1545960228.804293, 
+              2199146886
+            ]
+          ], 
+          "rate": 0.0, 
+          "latest": 2199146886
+        }, 
+        "max_avail": {
+          "series": [
+            [
+              1545960273.844574, 
+              16452538368
+            ], 
+            [
+              1545960268.84411, 
+              16452538368
+            ], 
+            [
+              1545960263.837204, 
+              16452538368
+            ], 
+            [
+              1545960258.836678, 
+              16452538368
+            ], 
+            [
+              1545960253.828483, 
+              16452538368
+            ], 
+            [
+              1545960248.827809, 
+              16452538368
+            ], 
+            [
+              1545960243.822333, 
+              16452538368
+            ], 
+            [
+              1545960238.805436, 
+              16452538368
+            ], 
+            [
+              1545960233.802559, 
+              16452538368
+            ], 
+            [
+              1545960228.804293, 
+              16452538368
+            ]
+          ], 
+          "rate": 0.0, 
+          "latest": 16452538368
+        }, 
+        "rd": {
+          "series": [
+            [
+              1545960273.844574, 
+              47987
+            ], 
+            [
+              1545960268.84411, 
+              47987
+            ], 
+            [
+              1545960263.837204, 
+              47987
+            ], 
+            [
+              1545960258.836678, 
+              47987
+            ], 
+            [
+              1545960253.828483, 
+              47987
+            ], 
+            [
+              1545960248.827809, 
+              47987
+            ], 
+            [
+              1545960243.822333, 
+              47987
+            ], 
+            [
+              1545960238.805436, 
+              47987
+            ], 
+            [
+              1545960233.802559, 
+              47987
+            ], 
+            [
+              1545960228.804293, 
+              47964
+            ]
+          ], 
+          "rate": 0.0, 
+          "latest": 47987
+        }, 
+        "percent_used": {
+          "series": [
+            [
+              1545960273.844574, 
+              "11.79"
+            ], 
+            [
+              1545960268.84411, 
+              "11.79"
+            ], 
+            [
+              1545960263.837204, 
+              "11.79"
+            ], 
+            [
+              1545960258.836678, 
+              "11.79"
+            ], 
+            [
+              1545960253.828483, 
+              "11.79"
+            ], 
+            [
+              1545960248.827809, 
+              "11.79"
+            ], 
+            [
+              1545960243.822333, 
+              "11.79"
+            ], 
+            [
+              1545960238.805436, 
+              "11.79"
+            ], 
+            [
+              1545960233.802559, 
+              "11.79"
+            ], 
+            [
+              1545960228.804293, 
+              "11.79"
+            ]
+          ], 
+          "rate": 0.0, 
+          "latest": "11.79"
+        }, 
+        "rd_bytes": {
+          "series": [
+            [
+              1545960273.844574, 
+              303815680
+            ], 
+            [
+              1545960268.84411, 
+              303815680
+            ], 
+            [
+              1545960263.837204, 
+              303815680
+            ], 
+            [
+              1545960258.836678, 
+              303815680
+            ], 
+            [
+              1545960253.828483, 
+              303815680
+            ], 
+            [
+              1545960248.827809, 
+              303815680
+            ], 
+            [
+              1545960243.822333, 
+              303815680
+            ], 
+            [
+              1545960238.805436, 
+              303815680
+            ], 
+            [
+              1545960233.802559, 
+              303815680
+            ], 
+            [
+              1545960228.804293, 
+              303796224
+            ]
+          ], 
+          "rate": 0.0, 
+          "latest": 303815680
+        }, 
+        "objects": {
+          "series": [
+            [
+              1545960273.844574, 
+              540
+            ], 
+            [
+              1545960268.84411, 
+              540
+            ], 
+            [
+              1545960263.837204, 
+              540
+            ], 
+            [
+              1545960258.836678, 
+              540
+            ], 
+            [
+              1545960253.828483, 
+              540
+            ], 
+            [
+              1545960248.827809, 
+              540
+            ], 
+            [
+              1545960243.822333, 
+              540
+            ], 
+            [
+              1545960238.805436, 
+              540
+            ], 
+            [
+              1545960233.802559, 
+              540
+            ], 
+            [
+              1545960228.804293, 
+              540
+            ]
+          ], 
+          "rate": 0.0, 
+          "latest": 540
+        }, 
+        "dirty": {
+          "series": [
+            [
+              1545960273.844574, 
+              540
+            ], 
+            [
+              1545960268.84411, 
+              540
+            ], 
+            [
+              1545960263.837204, 
+              540
+            ], 
+            [
+              1545960258.836678, 
+              540
+            ], 
+            [
+              1545960253.828483, 
+              540
+            ], 
+            [
+              1545960248.827809, 
+              540
+            ], 
+            [
+              1545960243.822333, 
+              540
+            ], 
+            [
+              1545960238.805436, 
+              540
+            ], 
+            [
+              1545960233.802559, 
+              540
+            ], 
+            [
+              1545960228.804293, 
+              540
+            ]
+          ], 
+          "rate": 0.0, 
+          "latest": 540
+        }, 
+        "kb_used": {
+          "series": [
+            [
+              1545960273.844574, 
+              2147605
+            ], 
+            [
+              1545960268.84411, 
+              2147605
+            ], 
+            [
+              1545960263.837204, 
+              2147605
+            ], 
+            [
+              1545960258.836678, 
+              2147605
+            ], 
+            [
+              1545960253.828483, 
+              2147605
+            ], 
+            [
+              1545960248.827809, 
+              2147605
+            ], 
+            [
+              1545960243.822333, 
+              2147605
+            ], 
+            [
+              1545960238.805436, 
+              2147605
+            ], 
+            [
+              1545960233.802559, 
+              2147605
+            ], 
+            [
+              1545960228.804293, 
+              2147605
+            ]
+          ], 
+          "rate": 0.0, 
+          "latest": 2147605
+        }, 
+        "quota_bytes": {
+          "series": [
+            [
+              1545960273.844574, 
+              0
+            ], 
+            [
+              1545960268.84411, 
+              0
+            ], 
+            [
+              1545960263.837204, 
+              0
+            ], 
+            [
+              1545960258.836678, 
+              0
+            ], 
+            [
+              1545960253.828483, 
+              0
+            ], 
+            [
+              1545960248.827809, 
+              0
+            ], 
+            [
+              1545960243.822333, 
+              0
+            ], 
+            [
+              1545960238.805436, 
+              0
+            ], 
+            [
+              1545960233.802559, 
+              0
+            ], 
+            [
+              1545960228.804293, 
+              0
+            ]
+          ], 
+          "rate": 0.0, 
+          "latest": 0
+        }, 
+        "raw_bytes_used": {
+          "series": [
+            [
+              1545960273.844574, 
+              6597441024
+            ], 
+            [
+              1545960268.84411, 
+              6597441024
+            ], 
+            [
+              1545960263.837204, 
+              6597441024
+            ], 
+            [
+              1545960258.836678, 
+              6597441024
+            ], 
+            [
+              1545960253.828483, 
+              6597441024
+            ], 
+            [
+              1545960248.827809, 
+              6597441024
+            ], 
+            [
+              1545960243.822333, 
+              6597441024
+            ], 
+            [
+              1545960238.805436, 
+              6597441024
+            ], 
+            [
+              1545960233.802559, 
+              6597441024
+            ], 
+            [
+              1545960228.804293, 
+              6597441024
+            ]
+          ], 
+          "rate": 0.0, 
+          "latest": 6597441024
+        }, 
+        "wr_bytes": {
+          "series": [
+            [
+              1545960273.844574, 
+              2310426624
+            ], 
+            [
+              1545960268.84411, 
+              2310426624
+            ], 
+            [
+              1545960263.837204, 
+              2310426624
+            ], 
+            [
+              1545960258.836678, 
+              2310426624
+            ], 
+            [
+              1545960253.828483, 
+              2310426624
+            ], 
+            [
+              1545960248.827809, 
+              2310426624
+            ], 
+            [
+              1545960243.822333, 
+              2310426624
+            ], 
+            [
+              1545960238.805436, 
+              2310426624
+            ], 
+            [
+              1545960233.802559, 
+              2310426624
+            ], 
+            [
+              1545960228.804293, 
+              2310426624
+            ]
+          ], 
+          "rate": 0.0, 
+          "latest": 2310426624
+        }, 
+        "wr": {
+          "series": [
+            [
+              1545960273.844574, 
+              11911
+            ], 
+            [
+              1545960268.84411, 
+              11911
+            ], 
+            [
+              1545960263.837204, 
+              11911
+            ], 
+            [
+              1545960258.836678, 
+              11911
+            ], 
+            [
+              1545960253.828483, 
+              11911
+            ], 
+            [
+              1545960248.827809, 
+              11911
+            ], 
+            [
+              1545960243.822333, 
+              11911
+            ], 
+            [
+              1545960238.805436, 
+              11911
+            ], 
+            [
+              1545960233.802559, 
+              11911
+            ], 
+            [
+              1545960228.804293, 
+              11911
+            ]
+          ], 
+          "rate": 0.0, 
+          "latest": 11911
+        }
+      }, 
+      "hit_set_period": 0, 
+      "min_read_recency_for_promote": 0, 
+      "target_max_objects": 0, 
+      "pg_num": 8, 
+      "type": 1, 
+      "grade_table": [], 
+      "pool_name": "volumes", 
+      "cache_min_evict_age": 0, 
+      "snap_mode": "selfmanaged", 
+      "cache_mode": "none", 
+      "min_size": 2, 
+      "cache_target_dirty_high_ratio_micro": 600000, 
+      "crash_replay_interval": 0, 
+      "object_hash": 2, 
+      "application_metadata": {
+        "rbd": {}
+      }, 
+      "write_tier": -1, 
+      "cache_target_dirty_ratio_micro": 400000, 
+      "pool": 2, 
+      "removed_snaps": "[1~3]", 
+      "crush_rule": 1, 
+      "tiers": [], 
+      "hit_set_params": {
+        "type": "none"
+      }, 
+      "last_force_op_resend": "0", 
+      "pool_snaps": [], 
+      "quota_max_objects": 0, 
+      "options": {}, 
+      "hit_set_count": 0, 
+      "flags": 1, 
+      "pg_status": {
+        "active+clean": 8
+      }, 
+      "target_max_bytes": 0, 
+      "snap_epoch": 190, 
+      "hit_set_search_last_n": 0, 
+      "last_change": "190", 
+      "min_write_recency_for_promote": 0, 
+      "read_tier": -1
+    }, 
+    {
+      "cache_target_full_ratio_micro": 800000, 
+      "fast_read": false, 
+      "stripe_width": 0, 
+      "flags_names": "hashpspool", 
+      "tier_of": -1, 
+      "hit_set_grade_decay_rate": 0, 
+      "pg_placement_num": 8, 
+      "use_gmt_hitset": true, 
+      "last_force_op_resend_preluminous": "0", 
+      "quota_max_bytes": 0, 
+      "erasure_code_profile": "default", 
+      "expected_num_objects": 0, 
+      "size": 3, 
+      "snap_seq": 0, 
+      "auid": 0, 
+      "cache_min_flush_age": 0, 
+      "stats": {
+        "quota_objects": {
+          "series": [
+            [
+              1545960273.844574, 
+              0
+            ], 
+            [
+              1545960268.84411, 
+              0
+            ], 
+            [
+              1545960263.837204, 
+              0
+            ], 
+            [
+              1545960258.836678, 
+              0
+            ], 
+            [
+              1545960253.828483, 
+              0
+            ], 
+            [
+              1545960248.827809, 
+              0
+            ], 
+            [
+              1545960243.822333, 
+              0
+            ], 
+            [
+              1545960238.805436, 
+              0
+            ], 
+            [
+              1545960233.802559, 
+              0
+            ], 
+            [
+              1545960228.804293, 
+              0
+            ]
+          ], 
+          "rate": 0.0, 
+          "latest": 0
+        }, 
+        "bytes_used": {
+          "series": [
+            [
+              1545960273.844574, 
+              0
+            ], 
+            [
+              1545960268.84411, 
+              0
+            ], 
+            [
+              1545960263.837204, 
+              0
+            ], 
+            [
+              1545960258.836678, 
+              0
+            ], 
+            [
+              1545960253.828483, 
+              0
+            ], 
+            [
+              1545960248.827809, 
+              0
+            ], 
+            [
+              1545960243.822333, 
+              0
+            ], 
+            [
+              1545960238.805436, 
+              0
+            ], 
+            [
+              1545960233.802559, 
+              0
+            ], 
+            [
+              1545960228.804293, 
+              0
+            ]
+          ], 
+          "rate": 0.0, 
+          "latest": 0
+        }, 
+        "max_avail": {
+          "series": [
+            [
+              1545960273.844574, 
+              16452538368
+            ], 
+            [
+              1545960268.84411, 
+              16452538368
+            ], 
+            [
+              1545960263.837204, 
+              16452538368
+            ], 
+            [
+              1545960258.836678, 
+              16452538368
+            ], 
+            [
+              1545960253.828483, 
+              16452538368
+            ], 
+            [
+              1545960248.827809, 
+              16452538368
+            ], 
+            [
+              1545960243.822333, 
+              16452538368
+            ], 
+            [
+              1545960238.805436, 
+              16452538368
+            ], 
+            [
+              1545960233.802559, 
+              16452538368
+            ], 
+            [
+              1545960228.804293, 
+              16452538368
+            ]
+          ], 
+          "rate": 0.0, 
+          "latest": 16452538368
+        }, 
+        "rd": {
+          "series": [
+            [
+              1545960273.844574, 
+              0
+            ], 
+            [
+              1545960268.84411, 
+              0
+            ], 
+            [
+              1545960263.837204, 
+              0
+            ], 
+            [
+              1545960258.836678, 
+              0
+            ], 
+            [
+              1545960253.828483, 
+              0
+            ], 
+            [
+              1545960248.827809, 
+              0
+            ], 
+            [
+              1545960243.822333, 
+              0
+            ], 
+            [
+              1545960238.805436, 
+              0
+            ], 
+            [
+              1545960233.802559, 
+              0
+            ], 
+            [
+              1545960228.804293, 
+              0
+            ]
+          ], 
+          "rate": 0.0, 
+          "latest": 0
+        }, 
+        "percent_used": {
+          "series": [
+            [
+              1545960273.844574, 
+              "0.00"
+            ], 
+            [
+              1545960268.84411, 
+              "0.00"
+            ], 
+            [
+              1545960263.837204, 
+              "0.00"
+            ], 
+            [
+              1545960258.836678, 
+              "0.00"
+            ], 
+            [
+              1545960253.828483, 
+              "0.00"
+            ], 
+            [
+              1545960248.827809, 
+              "0.00"
+            ], 
+            [
+              1545960243.822333, 
+              "0.00"
+            ], 
+            [
+              1545960238.805436, 
+              "0.00"
+            ], 
+            [
+              1545960233.802559, 
+              "0.00"
+            ], 
+            [
+              1545960228.804293, 
+              "0.00"
+            ]
+          ], 
+          "rate": 0.0, 
+          "latest": "0.00"
+        }, 
+        "rd_bytes": {
+          "series": [
+            [
+              1545960273.844574, 
+              0
+            ], 
+            [
+              1545960268.84411, 
+              0
+            ], 
+            [
+              1545960263.837204, 
+              0
+            ], 
+            [
+              1545960258.836678, 
+              0
+            ], 
+            [
+              1545960253.828483, 
+              0
+            ], 
+            [
+              1545960248.827809, 
+              0
+            ], 
+            [
+              1545960243.822333, 
+              0
+            ], 
+            [
+              1545960238.805436, 
+              0
+            ], 
+            [
+              1545960233.802559, 
+              0
+            ], 
+            [
+              1545960228.804293, 
+              0
+            ]
+          ], 
+          "rate": 0.0, 
+          "latest": 0
+        }, 
+        "objects": {
+          "series": [
+            [
+              1545960273.844574, 
+              0
+            ], 
+            [
+              1545960268.84411, 
+              0
+            ], 
+            [
+              1545960263.837204, 
+              0
+            ], 
+            [
+              1545960258.836678, 
+              0
+            ], 
+            [
+              1545960253.828483, 
+              0
+            ], 
+            [
+              1545960248.827809, 
+              0
+            ], 
+            [
+              1545960243.822333, 
+              0
+            ], 
+            [
+              1545960238.805436, 
+              0
+            ], 
+            [
+              1545960233.802559, 
+              0
+            ], 
+            [
+              1545960228.804293, 
+              0
+            ]
+          ], 
+          "rate": 0.0, 
+          "latest": 0
+        }, 
+        "dirty": {
+          "series": [
+            [
+              1545960273.844574, 
+              0
+            ], 
+            [
+              1545960268.84411, 
+              0
+            ], 
+            [
+              1545960263.837204, 
+              0
+            ], 
+            [
+              1545960258.836678, 
+              0
+            ], 
+            [
+              1545960253.828483, 
+              0
+            ], 
+            [
+              1545960248.827809, 
+              0
+            ], 
+            [
+              1545960243.822333, 
+              0
+            ], 
+            [
+              1545960238.805436, 
+              0
+            ], 
+            [
+              1545960233.802559, 
+              0
+            ], 
+            [
+              1545960228.804293, 
+              0
+            ]
+          ], 
+          "rate": 0.0, 
+          "latest": 0
+        }, 
+        "kb_used": {
+          "series": [
+            [
+              1545960273.844574, 
+              0
+            ], 
+            [
+              1545960268.84411, 
+              0
+            ], 
+            [
+              1545960263.837204, 
+              0
+            ], 
+            [
+              1545960258.836678, 
+              0
+            ], 
+            [
+              1545960253.828483, 
+              0
+            ], 
+            [
+              1545960248.827809, 
+              0
+            ], 
+            [
+              1545960243.822333, 
+              0
+            ], 
+            [
+              1545960238.805436, 
+              0
+            ], 
+            [
+              1545960233.802559, 
+              0
+            ], 
+            [
+              1545960228.804293, 
+              0
+            ]
+          ], 
+          "rate": 0.0, 
+          "latest": 0
+        }, 
+        "quota_bytes": {
+          "series": [
+            [
+              1545960273.844574, 
+              0
+            ], 
+            [
+              1545960268.84411, 
+              0
+            ], 
+            [
+              1545960263.837204, 
+              0
+            ], 
+            [
+              1545960258.836678, 
+              0
+            ], 
+            [
+              1545960253.828483, 
+              0
+            ], 
+            [
+              1545960248.827809, 
+              0
+            ], 
+            [
+              1545960243.822333, 
+              0
+            ], 
+            [
+              1545960238.805436, 
+              0
+            ], 
+            [
+              1545960233.802559, 
+              0
+            ], 
+            [
+              1545960228.804293, 
+              0
+            ]
+          ], 
+          "rate": 0.0, 
+          "latest": 0
+        }, 
+        "raw_bytes_used": {
+          "series": [
+            [
+              1545960273.844574, 
+              0
+            ], 
+            [
+              1545960268.84411, 
+              0
+            ], 
+            [
+              1545960263.837204, 
+              0
+            ], 
+            [
+              1545960258.836678, 
+              0
+            ], 
+            [
+              1545960253.828483, 
+              0
+            ], 
+            [
+              1545960248.827809, 
+              0
+            ], 
+            [
+              1545960243.822333, 
+              0
+            ], 
+            [
+              1545960238.805436, 
+              0
+            ], 
+            [
+              1545960233.802559, 
+              0
+            ], 
+            [
+              1545960228.804293, 
+              0
+            ]
+          ], 
+          "rate": 0.0, 
+          "latest": 0
+        }, 
+        "wr_bytes": {
+          "series": [
+            [
+              1545960273.844574, 
+              0
+            ], 
+            [
+              1545960268.84411, 
+              0
+            ], 
+            [
+              1545960263.837204, 
+              0
+            ], 
+            [
+              1545960258.836678, 
+              0
+            ], 
+            [
+              1545960253.828483, 
+              0
+            ], 
+            [
+              1545960248.827809, 
+              0
+            ], 
+            [
+              1545960243.822333, 
+              0
+            ], 
+            [
+              1545960238.805436, 
+              0
+            ], 
+            [
+              1545960233.802559, 
+              0
+            ], 
+            [
+              1545960228.804293, 
+              0
+            ]
+          ], 
+          "rate": 0.0, 
+          "latest": 0
+        }, 
+        "wr": {
+          "series": [
+            [
+              1545960273.844574, 
+              0
+            ], 
+            [
+              1545960268.84411, 
+              0
+            ], 
+            [
+              1545960263.837204, 
+              0
+            ], 
+            [
+              1545960258.836678, 
+              0
+            ], 
+            [
+              1545960253.828483, 
+              0
+            ], 
+            [
+              1545960248.827809, 
+              0
+            ], 
+            [
+              1545960243.822333, 
+              0
+            ], 
+            [
+              1545960238.805436, 
+              0
+            ], 
+            [
+              1545960233.802559, 
+              0
+            ], 
+            [
+              1545960228.804293, 
+              0
+            ]
+          ], 
+          "rate": 0.0, 
+          "latest": 0
+        }
+      }, 
+      "hit_set_period": 0, 
+      "min_read_recency_for_promote": 0, 
+      "target_max_objects": 0, 
+      "pg_num": 8, 
+      "type": 1, 
+      "grade_table": [], 
+      "pool_name": "vms", 
+      "cache_min_evict_age": 0, 
+      "snap_mode": "selfmanaged", 
+      "cache_mode": "none", 
+      "min_size": 2, 
+      "cache_target_dirty_high_ratio_micro": 600000, 
+      "crash_replay_interval": 0, 
+      "object_hash": 2, 
+      "application_metadata": {
+        "rbd": {}
+      }, 
+      "write_tier": -1, 
+      "cache_target_dirty_ratio_micro": 400000, 
+      "pool": 3, 
+      "removed_snaps": "[]", 
+      "crush_rule": 1, 
+      "tiers": [], 
+      "hit_set_params": {
+        "type": "none"
+      }, 
+      "last_force_op_resend": "0", 
+      "pool_snaps": [], 
+      "quota_max_objects": 0, 
+      "options": {}, 
+      "hit_set_count": 0, 
+      "flags": 1, 
+      "pg_status": {
+        "active+clean": 8
+      }, 
+      "target_max_bytes": 0, 
+      "snap_epoch": 0, 
+      "hit_set_search_last_n": 0, 
+      "last_change": "188", 
+      "min_write_recency_for_promote": 0, 
+      "read_tier": -1
+    }, 
+    {
+      "cache_target_full_ratio_micro": 800000, 
+      "fast_read": false, 
+      "stripe_width": 0, 
+      "flags_names": "hashpspool", 
+      "tier_of": -1, 
+      "hit_set_grade_decay_rate": 0, 
+      "pg_placement_num": 8, 
+      "use_gmt_hitset": true, 
+      "last_force_op_resend_preluminous": "0", 
+      "quota_max_bytes": 0, 
+      "erasure_code_profile": "", 
+      "expected_num_objects": 0, 
+      "size": 3, 
+      "snap_seq": 0, 
+      "auid": 0, 
+      "cache_min_flush_age": 0, 
+      "stats": {
+        "quota_objects": {
+          "series": [
+            [
+              1545960273.844574, 
+              0
+            ], 
+            [
+              1545960268.84411, 
+              0
+            ], 
+            [
+              1545960263.837204, 
+              0
+            ], 
+            [
+              1545960258.836678, 
+              0
+            ], 
+            [
+              1545960253.828483, 
+              0
+            ], 
+            [
+              1545960248.827809, 
+              0
+            ], 
+            [
+              1545960243.822333, 
+              0
+            ], 
+            [
+              1545960238.805436, 
+              0
+            ], 
+            [
+              1545960233.802559, 
+              0
+            ], 
+            [
+              1545960228.804293, 
+              0
+            ]
+          ], 
+          "rate": 0.0, 
+          "latest": 0
+        }, 
+        "bytes_used": {
+          "series": [
+            [
+              1545960273.844574, 
+              0
+            ], 
+            [
+              1545960268.84411, 
+              0
+            ], 
+            [
+              1545960263.837204, 
+              0
+            ], 
+            [
+              1545960258.836678, 
+              0
+            ], 
+            [
+              1545960253.828483, 
+              0
+            ], 
+            [
+              1545960248.827809, 
+              0
+            ], 
+            [
+              1545960243.822333, 
+              0
+            ], 
+            [
+              1545960238.805436, 
+              0
+            ], 
+            [
+              1545960233.802559, 
+              0
+            ], 
+            [
+              1545960228.804293, 
+              0
+            ]
+          ], 
+          "rate": 0.0, 
+          "latest": 0
+        }, 
+        "max_avail": {
+          "series": [
+            [
+              1545960273.844574, 
+              16452538368
+            ], 
+            [
+              1545960268.84411, 
+              16452538368
+            ], 
+            [
+              1545960263.837204, 
+              16452538368
+            ], 
+            [
+              1545960258.836678, 
+              16452538368
+            ], 
+            [
+              1545960253.828483, 
+              16452538368
+            ], 
+            [
+              1545960248.827809, 
+              16452538368
+            ], 
+            [
+              1545960243.822333, 
+              16452538368
+            ], 
+            [
+              1545960238.805436, 
+              16452538368
+            ], 
+            [
+              1545960233.802559, 
+              16452538368
+            ], 
+            [
+              1545960228.804293, 
+              16452538368
+            ]
+          ], 
+          "rate": 0.0, 
+          "latest": 16452538368
+        }, 
+        "rd": {
+          "series": [
+            [
+              1545960273.844574, 
+              0
+            ], 
+            [
+              1545960268.84411, 
+              0
+            ], 
+            [
+              1545960263.837204, 
+              0
+            ], 
+            [
+              1545960258.836678, 
+              0
+            ], 
+            [
+              1545960253.828483, 
+              0
+            ], 
+            [
+              1545960248.827809, 
+              0
+            ], 
+            [
+              1545960243.822333, 
+              0
+            ], 
+            [
+              1545960238.805436, 
+              0
+            ], 
+            [
+              1545960233.802559, 
+              0
+            ], 
+            [
+              1545960228.804293, 
+              0
+            ]
+          ], 
+          "rate": 0.0, 
+          "latest": 0
+        }, 
+        "percent_used": {
+          "series": [
+            [
+              1545960273.844574, 
+              "0.00"
+            ], 
+            [
+              1545960268.84411, 
+              "0.00"
+            ], 
+            [
+              1545960263.837204, 
+              "0.00"
+            ], 
+            [
+              1545960258.836678, 
+              "0.00"
+            ], 
+            [
+              1545960253.828483, 
+              "0.00"
+            ], 
+            [
+              1545960248.827809, 
+              "0.00"
+            ], 
+            [
+              1545960243.822333, 
+              "0.00"
+            ], 
+            [
+              1545960238.805436, 
+              "0.00"
+            ], 
+            [
+              1545960233.802559, 
+              "0.00"
+            ], 
+            [
+              1545960228.804293, 
+              "0.00"
+            ]
+          ], 
+          "rate": 0.0, 
+          "latest": "0.00"
+        }, 
+        "rd_bytes": {
+          "series": [
+            [
+              1545960273.844574, 
+              0
+            ], 
+            [
+              1545960268.84411, 
+              0
+            ], 
+            [
+              1545960263.837204, 
+              0
+            ], 
+            [
+              1545960258.836678, 
+              0
+            ], 
+            [
+              1545960253.828483, 
+              0
+            ], 
+            [
+              1545960248.827809, 
+              0
+            ], 
+            [
+              1545960243.822333, 
+              0
+            ], 
+            [
+              1545960238.805436, 
+              0
+            ], 
+            [
+              1545960233.802559, 
+              0
+            ], 
+            [
+              1545960228.804293, 
+              0
+            ]
+          ], 
+          "rate": 0.0, 
+          "latest": 0
+        }, 
+        "objects": {
+          "series": [
+            [
+              1545960273.844574, 
+              0
+            ], 
+            [
+              1545960268.84411, 
+              0
+            ], 
+            [
+              1545960263.837204, 
+              0
+            ], 
+            [
+              1545960258.836678, 
+              0
+            ], 
+            [
+              1545960253.828483, 
+              0
+            ], 
+            [
+              1545960248.827809, 
+              0
+            ], 
+            [
+              1545960243.822333, 
+              0
+            ], 
+            [
+              1545960238.805436, 
+              0
+            ], 
+            [
+              1545960233.802559, 
+              0
+            ], 
+            [
+              1545960228.804293, 
+              0
+            ]
+          ], 
+          "rate": 0.0, 
+          "latest": 0
+        }, 
+        "dirty": {
+          "series": [
+            [
+              1545960273.844574, 
+              0
+            ], 
+            [
+              1545960268.84411, 
+              0
+            ], 
+            [
+              1545960263.837204, 
+              0
+            ], 
+            [
+              1545960258.836678, 
+              0
+            ], 
+            [
+              1545960253.828483, 
+              0
+            ], 
+            [
+              1545960248.827809, 
+              0
+            ], 
+            [
+              1545960243.822333, 
+              0
+            ], 
+            [
+              1545960238.805436, 
+              0
+            ], 
+            [
+              1545960233.802559, 
+              0
+            ], 
+            [
+              1545960228.804293, 
+              0
+            ]
+          ], 
+          "rate": 0.0, 
+          "latest": 0
+        }, 
+        "kb_used": {
+          "series": [
+            [
+              1545960273.844574, 
+              0
+            ], 
+            [
+              1545960268.84411, 
+              0
+            ], 
+            [
+              1545960263.837204, 
+              0
+            ], 
+            [
+              1545960258.836678, 
+              0
+            ], 
+            [
+              1545960253.828483, 
+              0
+            ], 
+            [
+              1545960248.827809, 
+              0
+            ], 
+            [
+              1545960243.822333, 
+              0
+            ], 
+            [
+              1545960238.805436, 
+              0
+            ], 
+            [
+              1545960233.802559, 
+              0
+            ], 
+            [
+              1545960228.804293, 
+              0
+            ]
+          ], 
+          "rate": 0.0, 
+          "latest": 0
+        }, 
+        "quota_bytes": {
+          "series": [
+            [
+              1545960273.844574, 
+              0
+            ], 
+            [
+              1545960268.84411, 
+              0
+            ], 
+            [
+              1545960263.837204, 
+              0
+            ], 
+            [
+              1545960258.836678, 
+              0
+            ], 
+            [
+              1545960253.828483, 
+              0
+            ], 
+            [
+              1545960248.827809, 
+              0
+            ], 
+            [
+              1545960243.822333, 
+              0
+            ], 
+            [
+              1545960238.805436, 
+              0
+            ], 
+            [
+              1545960233.802559, 
+              0
+            ], 
+            [
+              1545960228.804293, 
+              0
+            ]
+          ], 
+          "rate": 0.0, 
+          "latest": 0
+        }, 
+        "raw_bytes_used": {
+          "series": [
+            [
+              1545960273.844574, 
+              0
+            ], 
+            [
+              1545960268.84411, 
+              0
+            ], 
+            [
+              1545960263.837204, 
+              0
+            ], 
+            [
+              1545960258.836678, 
+              0
+            ], 
+            [
+              1545960253.828483, 
+              0
+            ], 
+            [
+              1545960248.827809, 
+              0
+            ], 
+            [
+              1545960243.822333, 
+              0
+            ], 
+            [
+              1545960238.805436, 
+              0
+            ], 
+            [
+              1545960233.802559, 
+              0
+            ], 
+            [
+              1545960228.804293, 
+              0
+            ]
+          ], 
+          "rate": 0.0, 
+          "latest": 0
+        }, 
+        "wr_bytes": {
+          "series": [
+            [
+              1545960273.844574, 
+              0
+            ], 
+            [
+              1545960268.84411, 
+              0
+            ], 
+            [
+              1545960263.837204, 
+              0
+            ], 
+            [
+              1545960258.836678, 
+              0
+            ], 
+            [
+              1545960253.828483, 
+              0
+            ], 
+            [
+              1545960248.827809, 
+              0
+            ], 
+            [
+              1545960243.822333, 
+              0
+            ], 
+            [
+              1545960238.805436, 
+              0
+            ], 
+            [
+              1545960233.802559, 
+              0
+            ], 
+            [
+              1545960228.804293, 
+              0
+            ]
+          ], 
+          "rate": 0.0, 
+          "latest": 0
+        }, 
+        "wr": {
+          "series": [
+            [
+              1545960273.844574, 
+              0
+            ], 
+            [
+              1545960268.84411, 
+              0
+            ], 
+            [
+              1545960263.837204, 
+              0
+            ], 
+            [
+              1545960258.836678, 
+              0
+            ], 
+            [
+              1545960253.828483, 
+              0
+            ], 
+            [
+              1545960248.827809, 
+              0
+            ], 
+            [
+              1545960243.822333, 
+              0
+            ], 
+            [
+              1545960238.805436, 
+              0
+            ], 
+            [
+              1545960233.802559, 
+              0
+            ], 
+            [
+              1545960228.804293, 
+              0
+            ]
+          ], 
+          "rate": 0.0, 
+          "latest": 0
+        }
+      }, 
+      "hit_set_period": 0, 
+      "min_read_recency_for_promote": 0, 
+      "target_max_objects": 0, 
+      "pg_num": 8, 
+      "type": 1, 
+      "grade_table": [], 
+      "pool_name": "doom", 
+      "cache_min_evict_age": 0, 
+      "snap_mode": "selfmanaged", 
+      "cache_mode": "none", 
+      "min_size": 2, 
+      "cache_target_dirty_high_ratio_micro": 600000, 
+      "crash_replay_interval": 0, 
+      "object_hash": 2, 
+      "application_metadata": {}, 
+      "write_tier": -1, 
+      "cache_target_dirty_ratio_micro": 400000, 
+      "pool": 4, 
+      "removed_snaps": "[]", 
+      "crush_rule": 0, 
+      "tiers": [], 
+      "hit_set_params": {
+        "type": "none"
+      }, 
+      "last_force_op_resend": "0", 
+      "pool_snaps": [], 
+      "quota_max_objects": 0, 
+      "options": {}, 
+      "hit_set_count": 0, 
+      "flags": 1, 
+      "pg_status": {
+        "active+clean": 8
+      }, 
+      "target_max_bytes": 0, 
+      "snap_epoch": 0, 
+      "hit_set_search_last_n": 0, 
+      "last_change": "191", 
+      "min_write_recency_for_promote": 0, 
+      "read_tier": -1
+    }
+  ], 
+  "mgr_map": {
+    "available": true, 
+    "available_modules": [
+      "balancer", 
+      "dashboard", 
+      "influx", 
+      "localpool", 
+      "prometheus", 
+      "restful", 
+      "selftest", 
+      "status", 
+      "zabbix"
+    ], 
+    "modules": [
+      "dashboard"
+    ], 
+    "active_name": "controller", 
+    "epoch": 1180, 
+    "active_addr": "192.168.2.191:6802/849", 
+    "standbys": [
+      {
+        "gid": 1081503, 
+        "name": "compute03", 
+        "available_modules": [
+          "balancer", 
+          "dashboard", 
+          "influx", 
+          "localpool", 
+          "prometheus", 
+          "restful", 
+          "selftest", 
+          "status", 
+          "zabbix"
+        ]
+      }
+    ], 
+    "services": {
+      "dashboard": "http://controller:7000/"
+    }, 
+    "active_gid": 1081506
+  }, 
+  "audit_log": [
+    {
+      "name": "mon.controller", 
+      "seq": 1915, 
+      "stamp": "2018-12-28 08:22:47.540135", 
+      "who": "mon.0 192.168.2.191:6789/0", 
+      "priority": "[INF]", 
+      "message": "from='client.? 192.168.2.191:0/3466516172' entity='client.admin' cmd='[{\"prefix\": \"mgr module enable\", \"module\": \"dashboard\"}]': finished", 
+      "channel": "audit"
+    }, 
+    {
+      "name": "mon.controller", 
+      "seq": 1914, 
+      "stamp": "2018-12-28 08:22:46.779879", 
+      "who": "mon.0 192.168.2.191:6789/0", 
+      "priority": "[INF]", 
+      "message": "from='client.? 192.168.2.191:0/3466516172' entity='client.admin' cmd=[{\"prefix\": \"mgr module enable\", \"module\": \"dashboard\"}]: dispatch", 
+      "channel": "audit"
+    }, 
+    {
+      "name": "mon.controller", 
+      "seq": 1895, 
+      "stamp": "2018-12-28 08:18:39.117953", 
+      "who": "mon.0 192.168.2.191:6789/0", 
+      "priority": "[INF]", 
+      "message": "from='client.? 192.168.2.191:0/4247453953' entity='client.admin' cmd='[{\"prefix\": \"mgr module disable\", \"module\": \"dashboard\"}]': finished", 
+      "channel": "audit"
+    }, 
+    {
+      "name": "mon.controller", 
+      "seq": 1894, 
+      "stamp": "2018-12-28 08:18:38.208597", 
+      "who": "mon.0 192.168.2.191:6789/0", 
+      "priority": "[INF]", 
+      "message": "from='client.? 192.168.2.191:0/4247453953' entity='client.admin' cmd=[{\"prefix\": \"mgr module disable\", \"module\": \"dashboard\"}]: dispatch", 
+      "channel": "audit"
+    }, 
+    {
+      "name": "mon.controller", 
+      "seq": 1882, 
+      "stamp": "2018-12-28 08:18:05.907505", 
+      "who": "mon.0 192.168.2.191:6789/0", 
+      "priority": "[INF]", 
+      "message": "from='client.? 192.168.2.191:0/934090915' entity='client.admin' cmd='[{\"prefix\": \"mgr module enable\", \"module\": \"dashboard\"}]': finished", 
+      "channel": "audit"
+    }, 
+    {
+      "name": "mon.controller", 
+      "seq": 1881, 
+      "stamp": "2018-12-28 08:18:04.949482", 
+      "who": "mon.0 192.168.2.191:6789/0", 
+      "priority": "[INF]", 
+      "message": "from='client.? 192.168.2.191:0/934090915' entity='client.admin' cmd=[{\"prefix\": \"mgr module enable\", \"module\": \"dashboard\"}]: dispatch", 
+      "channel": "audit"
+    }
+  ]
+};
+
+            rivets.formatters.mon_summary = function(mon_status) {
+                var result = mon_status.monmap.mons.length.toString() + " (quorum ";
+                result += mon_status.quorum.join(", ");
+                result += ")";
+
+                return result;
+            };
+
+            rivets.formatters.mds_summary = function(fs_map) {
+                var standbys = 0;
+                var active = 0;
+                var standby_replay = 0;
+                $.each(fs_map.standbys, function(i, s) {
+                    standbys += 1;
+                });
+
+                if (fs_map.standbys && !fs_map.filesystems) {
+                    return standbys + ", no filesystems"
+                } else if (fs_map.filesystems.length == 0) {
+                    return "no filesystems";
+                } else {
+                    $.each(fs_map.filesystems, function(i, fs) {
+                        $.each(fs.mdsmap.info, function(j, mds) {
+                            if (mds.state == "up:standby-replay") {
+                                standby_replay += 1;
+                            } else {
+                                active += 1;
+                            }
+                        });
+                    });
+
+                    return active + " active, " + (standbys + standby_replay) + " standby";
+                }
+            };
+
+            rivets.formatters.mgr_summary = function(mgr_map) {
+                var result = "";
+                result += "active: " + mgr_map.active_name;
+                if (mgr_map.standbys.length) {
+                    result += ", " + mgr_map.standbys.length + " standbys";
+                }
+
+                return result;
+            };
+
+            rivets.formatters.log_color = function(log_line) {
+                if (log_line.priority == "[INF]") {
+                    return "";  // Inherit
+                } else if (log_line.priority == "[WRN]") {
+                    return "color: #FFC200";
+                } else if (log_line.priority == "[ERR]") {
+                    return "color: #FF2222";
+                } else {
+                    return "";
+                }
+            };
+
+            rivets.formatters.osd_summary = function(osd_map) {
+                var in_count = 0;
+                var up_count = 0;
+                $.each(osd_map.osds, function(i, osd) {
+                    if (osd.in) {
+                        in_count++;
+                    }
+                    if (osd.up) {
+                        up_count++;
+                    }
+                });
+
+                return osd_map.osds.length + " (" + up_count + " up, " + in_count + " in)";
+            };
+
+            rivets.formatters.pg_status_style = function(pg_status) {
+                var warning = false;
+                var error = false;
+
+                $.each(pg_status, function(state, count) {
+                    if (state.includes("inconsistent") ||
+                        state.includes("incomplete") ||
+                        !state.includes("active")
+                    ) {
+                        error = true;
+                    }
+
+                    if (state != "active+clean"
+                     && state != "active+clean+scrubbing"
+                     && state != "active+clean+scrubbing+deep") {
+                        warning = true;
+                    }
+                });
+
+                if (error) {
+                    return "color: #FF0000";
+                }
+
+                if (warning) {
+                    return "color: #FFC200";
+                }
+
+                return "color: #00BB00";
+            };
+
+            rivets.formatters.pg_status = function(pg_status) {
+                var strings = [];
+                $.each(pg_status, function(state, count) {
+                    strings.push(count + " " + state);
+                });
+
+                return strings.join(", ");
+            };
+
+            // An extension to Chart.js to enable rendering some
+            // text in the middle of a doughnut
+            Chart.pluginService.register({
+              beforeDraw: function(chart) {
+                if (!chart.options.center_text) {
+                    return;
+                }
+                var width = chart.chart.width,
+                    height = chart.chart.height,
+                    ctx = chart.chart.ctx;
+
+                ctx.restore();
+                var fontSize = (height / 114).toFixed(2);
+                ctx.font = fontSize + "em sans-serif";
+                ctx.fillStyle = "#ddd";
+                ctx.textBaseline = "middle";
+
+
+                var text = chart.options.center_text,
+                    textX = Math.round((width - ctx.measureText(text).width) / 2),
+                    textY = height / 2;
+
+                ctx.fillText(text, textX, textY);
+                ctx.save();
+              }
+            });
+
+            var draw_usage_charts = function() {
+                var raw_usage_text = Math.round(100*(
+                    content_data.df.stats.total_used_bytes
+                    / content_data.df.stats.total_bytes)) + "%";
+                var raw_usage_canvas = $("#raw_usage_chart").get(0).getContext("2d");
+                var raw_usage_chart = new Chart(raw_usage_canvas, {
+                    type: 'doughnut',
+                    data: {
+                        labels:[
+                            "Raw Used",
+                            "Raw Available"
+                        ],
+                        datasets: [
+                            {
+                            'label': null,
+                            borderWidth: 0,
+                            data:[
+                                content_data.df.stats.total_used_bytes,
+                                content_data.df.stats.total_avail_bytes
+                            ],
+                            backgroundColor: ["#424d52", "#222d32"]
+                            }
+                        ]
+                    },
+                    options: {
+                        center_text: raw_usage_text,
+                        responsive: true,
+                        legend: {display: false},
+                        animation: {duration: 0}
+                    }
+                });
+
+                var colors = ['#3366CC','#DC3912','#FF9900','#109618','#990099',
+                    '#3B3EAC','#0099C6','#DD4477','#66AA00','#B82E2E','#316395',
+                    '#994499','#22AA99','#AAAA11','#6633CC','#E67300','#8B0707',
+                    '#329262','#5574A6','#3B3EAC'];
+
+                var pool_usage_canvas = $("#pool_usage_chart").get(0).getContext("2d");
+                var pool_labels = [];
+                var pool_data = [];
+
+                $.each(content_data.df.pools, function(i, pool) {
+                    pool_labels.push(pool['name']);
+                    pool_data.push(pool['stats']['bytes_used']);
+                });
+
+                var pool_usage_chart = new Chart(pool_usage_canvas, {
+                    type: 'doughnut',
+                    data: {
+                        labels:pool_labels,
+                        datasets: [
+                            {
+                            'label': null,
+                            borderWidth: 0,
+                            data:pool_data,
+                            backgroundColor: colors
+                            }
+                        ]
+                    },
+                    options: {
+                        responsive: true,
+                        legend: {display: false},
+                        animation: {duration: 0}
+                    }
+                });
+            }
+
+            draw_usage_charts();
+            rivets.bind($("#content"), content_data);
+
+            var refresh = function() {
+                $.get("/health_data", function(data) {
+                    _.extend(content_data, data);
+                    draw_usage_charts();
+                    setTimeout(refresh, 5000);
+                });
+            };
+            setTimeout(refresh, 5000);
+        });
+    </script>
+
+    <!-- Main content -->
+    <section class="content">
+        <div class="row">
+            <div class="col-sm-6">
+                <div class="box">
+                    <div class="box-header">
+                        Health
+                    </div>
+                    <div class="box-body">
+                        Overall status: <span
+                            rv-style="health.status | health_color">{health.status}</span>
+
+                        <ul>
+                            <li rv-each-check="health.checks">
+                                <span rv-style="check.severity | health_color">{check.type}</span>:
+                                {check.summary.message}
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            <div class="col-sm-3">
+                <div class="info-box">
+                    <span class="info-box-icon bg-grey"><i
+                            class="fa fa-database"></i></span>
+
+                    <div class="info-box-content">
+                        <span class="info-box-text">Monitors</span>
+                        <span class="info-box-number">{mon_status | mon_summary}</span>
+                    </div>
+                </div>
+                <div class="info-box">
+                    <span class="info-box-icon bg-grey"><i
+                            class="fa fa-hdd-o"></i></span>
+
+                    <div class="info-box-content">
+                        <span class="info-box-text">OSDs</span>
+                        <span class="info-box-number">{osd_map | osd_summary}</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-sm-3">
+                <div class="info-box">
+                    <span class="info-box-icon bg-grey"><i
+                            class="fa fa-folder"></i></span>
+
+                    <div class="info-box-content">
+                        <span class="info-box-text">Metadata servers</span>
+                        <span class="info-box-number">{fs_map | mds_summary}</span>
+                    </div>
+                </div>
+                <div class="info-box">
+                    <span class="info-box-icon bg-grey"><i
+                            class="fa fa-cog"></i></span>
+
+                    <div class="info-box-content">
+                        <span class="info-box-text">Manager daemons</span>
+                        <span class="info-box-number">{mgr_map | mgr_summary}</span>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+        <div class="row">
+            <div class="col-sm-6">
+                <div class="box">
+                    <div class="box-header">
+                        Usage
+                    </div>
+                    <div class="box-body" style="text-align:center;">
+                        <table class="ceph-chartbox">
+                            <tr>
+                                <td>
+                                    <span style="font-size: 45px;">{df.stats.total_objects | dimless}</span>
+                                </td>
+                                <td >
+                                    <div style="height:120px; width: 120px;">
+                                        <canvas id="raw_usage_chart"></canvas>
+                                    </div>
+                                </td>
+                                <td>
+                                    <div style="height:120px; width: 120px;">
+                                        <canvas id="pool_usage_chart"></canvas>
+                                    </div>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>Objects</td>
+                                <td>Raw capacity<br>({df.stats.total_used_bytes | dimless_binary} used)</td>
+                                <td>Usage by pool</td>
+                            </tr>
+                        </table>
+
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-sm-6">
+                <div class="box">
+                    <div class="box-header">
+                        Pools
+                    </div>
+                    <div class="box-body">
+                        <table class="table table-condensed">
+                            <thead>
+                            <th>Name</th>
+                            <th>PG status</th>
+                            <th>Usage</th>
+                            <th>Activity</th>
+                            </thead>
+                            <tbody>
+                            <tr rv-each-pool="pools">
+                                <td style="text-align: right;">
+                                    {pool.pool_name}
+                                </td>
+                                <td rv-style="pool.pg_status | pg_status_style">
+                                    {pool.pg_status | pg_status}
+                                </td>
+                                <td>
+                                    {pool.stats.bytes_used.latest | dimless} /
+                                    {pool.stats.max_avail.latest | dimless }
+                                </td>
+                                <td>
+                                    {pool.stats.rd_bytes.rate | dimless } rd, {
+                                    pool.stats.wr_bytes.rate | dimless } wr
+                                </td>
+                            </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="box">
+            <div class="box-body">
+                <ul class="nav nav-tabs">
+                  <li class="active"><a data-toggle="tab" href="#clog">Cluster log</a></li>
+                  <li><a data-toggle="tab" href="#audit_log">Audit log</a></li>
+                </ul>
+                <div class="tab-content ceph-log">
+                    <div id="clog" class="tab-pane fade in active">
+                        <span>
+                            <span rv-each-line="clog">
+                                { line.stamp }&nbsp;{line.priority}&nbsp;
+                                <span  rv-style="line | log_color">
+                                        { line.message }
+                                    <br>
+                                </span>
+                            </span>
+                        </span>
+                    </div>
+                    <div id="audit_log" class="tab-pane fade in">
+                        <span>
+                            <span rv-each-line="audit_log">
+                                { line.stamp }&nbsp;{line.priority}&nbsp;
+                                <span  rv-style="line | log_color">
+                                    <span style="font-weight: bold;">
+                                        { line.message }
+                                    </span><br>
+                                </span>
+                            </span>
+                        </span>
+
+                    </div>
+                </div>
+
+            </div>
+
+        </div>
+    </section>
+
+
+
+  </div>
+  <!-- /.content-wrapper -->
+
+  <!-- Main Footer -->
+  <footer class="main-footer">
+    <!-- To the right -->
+    <div class="pull-right hidden-xs">
+      ceph version 12.2.4 (52085d5249a80c5f5121a76d6288429f35e4e77b) luminous (stable)
+    </div>
+    <!-- Default to the left -->
+    <strong>Copyright &copy; 2016 by Ceph Contributors.</strong> Free software (LGPL 2.1)
+  </footer>
+
+</div>
+
+<!--
+<pre>
+
+</pre>
+-->
+
+<!-- Bootstrap 3.3.6 -->
+
+<!-- AdminLTE App -->
+
+
+</body>
+</html>

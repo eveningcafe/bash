@@ -1,0 +1,10 @@
+---
+
+- name: Install prerequisite
+  hosts: current_controller
+  roles:
+    - role: utils
+      become: true
+  environment:
+    http_proxy: http://192.168.5.8:3128
+    https_proxy: http://192.168.5.8:3128

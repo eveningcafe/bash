@@ -1,0 +1,7 @@
+---
+
+- name: Remove rabbitmq 
+  docker_container:
+    name: rabbitmq 
+    state: absent
+  ignore_errors: yes

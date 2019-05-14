@@ -1,0 +1,17 @@
+---
+
+- import_playbook: openstack-client.yml
+- import_playbook: keystone.yml
+- import_playbook: glance.yml
+- import_playbook: nova.yml
+- import_playbook: neutron.yml
+- import_playbook: cinder.yml
+- import_playbook: cinder-volume.yml
+- import_playbook: heat.yml
+- import_playbook: heat-update-endpoint.yml
+- import_playbook: horizon.yml
+- import_playbook: masakari.yml
+- import_playbook: cluster.yml
+- import_playbook: gnocchi.yml
+- import_playbook: ceilometer.yml
+- import_playbook: aodh.yml

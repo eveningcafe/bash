@@ -1,0 +1,56 @@
+totem {
+        version: 2
+
+        cluster_name: {{ cluster_name }}
+
+        token: 3000
+        token_retransmits_before_loss_const: 10
+
+        clear_node_high_bit: yes
+
+        crypto_cipher: none
+        crypto_hash: none
+
+        rrp_mode: active
+
+{% for ring in rings %}
+        interface {
+                ringnumber: {{ ring.ringnum }}
+                bindnetaddr: {{ ring.bindnetaddr }}
+                broadcast: {{ ring.broadcast }}
+                mcastport: {{ ring.mcastport }}
+                ttl: {{ ring.ttl }}
+        }
+{% endfor %}
+        transport: udpu
+}
+logging {
+        fileline: off
+        to_stderr: no
+        to_logfile: yes
+        to_syslog: yes
+        logfile: /var/log/corosync/corosync.log
+        syslog_facility: daemon
+        debug: off
+        timestamp: on
+        logger_subsys {
+                subsys: QUORUM
+                debug: off
+        }
+}
+nodelist {
+{% for node in nodes %}
+        node {
+    {% for addr in node.addrs %}
+            ring{{ addr.ringnum }}_addr: {{ addr.value }}
+    {% endfor %}
+            name: {{ node.hostname }}
+            	nodeid: {{ node.node_id }}
+        }
+{% endfor %}
+}
+quorum {
+        provider: corosync_votequorum
+        expected_votes: {{ groups['current_controller'] | length }}
+}
+

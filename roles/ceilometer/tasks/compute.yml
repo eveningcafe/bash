@@ -1,0 +1,28 @@
+---
+
+- name: Remove ceilometer services
+  docker_container:
+    name: ceilometer-agent-compute 
+    state: absent
+  ignore_errors: yes
+
+- include_role:
+    name: ceilometer
+    tasks_from: config
+
+- name: Start ceilometer-agent-compute 
+  docker_container:
+    name: ceilometer-agent-compute 
+    image: "{{ docker_reg_host }}:{{ docker_host_port }}/ceilometer-agent-compute:{{ docker_images_tag }}"
+    pull: yes
+    restart_policy: unless-stopped
+    state: started
+    user: ceilometer 
+    volumes:
+      - "{{ docker_shared_conf_dir }}/ceilometer/:{{ docker_shared_conf_dir }}/ceilometer/"
+      - /var/log/ceilometer:/var/log/ceilometer 
+      - /var/lib/ceilometer:/var/lib/ceilometer 
+      - /var/run/libvirt/libvirt-sock-ro:/var/run/libvirt/libvirt-sock-ro
+      - /etc/localtime:/etc/localtime
+    env: "{{ data_collection_env | merge({ 'CEILOMETER_START': 'START_CEILOMETER_AGENT_COMPUTE' }) }}"
+    network_mode: host

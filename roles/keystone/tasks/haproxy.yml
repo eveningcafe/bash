@@ -1,0 +1,43 @@
+---
+
+- name: Check ha config for service
+  shell: |
+    cat {{ docker_shared_conf_dir }}/haproxy/haproxy/haproxy.cfg | grep keystone 
+  register: service_cfg
+  ignore_errors: yes
+  
+- include_role:
+    name: haproxy
+    tasks_from: update
+  vars:
+    services:
+      - name: keystone_internal
+        port: 5000
+        bind_ips:
+        options:
+          - "http-request del-header X-Forwarded-Proto"
+      - name: keystone_admin
+        port: 35357
+        bind_ips:
+        options:
+          - "http-request del-header X-Forwarded-Proto"
+  when: (service_cfg.rc == 1) and (keystone_env.SSL_ENABLED == 0)
+
+- include_role:
+    name: haproxy
+    tasks_from: update
+  vars:
+    services:
+      - name: keystone_internal
+        port: 5000
+        bind_ips:
+        options:
+          - "mode tcp"
+          - "option ssl-hello-chk"
+      - name: keystone_admin
+        port: 35357
+        bind_ips:
+        options:
+          - "mode tcp"
+          - "option ssl-hello-chk"
+  when: (service_cfg.rc == 1) and (keystone_env.SSL_ENABLED == 1)

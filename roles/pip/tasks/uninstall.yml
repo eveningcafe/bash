@@ -1,0 +1,7 @@
+---
+
+- name: Uninstall pip module
+  pip:
+    name: "{{ module_name }}"
+    state: absent
+  ignore_errors: yes

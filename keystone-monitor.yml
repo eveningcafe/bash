@@ -1,0 +1,9 @@
+---
+
+- name: Update keystone config
+  hosts: controller
+  tasks:
+    - include_role:
+        name: keystone
+        tasks_from: config-gnocchi
+  become: true

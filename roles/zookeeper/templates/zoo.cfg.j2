@@ -1,0 +1,11 @@
+tickTime=2000
+initLimit=10
+syncLimit=5
+dataDir=/opt/bitnami/zookeeper/data
+clientPort=2181
+maxClientCnxns=60
+server.1=0.0.0.0:2888:3888
+server.2=zookeeper2:2888:3888
+server.3=zookeeper3:2888:3888
+authProvider.1=org.apache.zookeeper.server.auth.SASLAuthenticationProvider
+requireClientAuthScheme=sasl

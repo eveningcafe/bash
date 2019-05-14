@@ -1,0 +1,9 @@
+- include: check_vars.yml
+  tags: ["pxc","pxc:install"]
+
+- include: pxc.yml
+  tags: ["pxc","pxc:install"]
+
+- include: backup.yml
+  tags: ["pxc","pcx:backup","backup"]
+  when: pxc_backup is defined and pxc_backup

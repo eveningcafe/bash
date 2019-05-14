@@ -1,0 +1,15 @@
+---
+
+- name: Create masakari-segment
+  shell: |
+    docker exec -i openstack-client masakari segment-create --name {{ COMPUTE_CLUSTER_NAME }} --description "Cloud Compute Cluster" --recovery-method auto --service-type compute
+
+- name: 
+  shell: |
+    docker exec -i openstack-client masakari segment-list | grep {{ COMPUTE_CLUSTER_NAME }} | awk '{ print $2 }'
+  register: segment_id
+
+- name: Add Compute Host to HA cluster
+  shell: |
+    docker exec -i openstack-client masakari host-create --segment-id {{ segment_id.stdout }} --name {{ item }} --type hypervisor --control-attributes kvm --reserved False --on-maintenance False
+  with_items: "{{ groups['compute'] }}"

@@ -1,0 +1,41 @@
+#check mon
+- name: check all mon is up
+  shell: "timeout 5 docker exec {{mon_name}} ceph -s | grep 'mon:'" 
+  changed_when: false
+  register: check_mon
+  failed_when: false
+  until: check_mon.rc == 0 and mon_max == (check_mon.stdout | regex_search('[0-9]')| int)
+  retries: "{{retries_mon}}"
+  delay: "{{delay_retries_mon}}"
+- name: end execution
+  fail:
+    msg: "mon_max: {{mon_max}} is not fully up, manually verify "
+  when: check_mon.stdout is defined and mon_max != (check_mon.stdout | regex_search('[0-9]')| int)
+  
+#check osd
+- name: check all osd is up
+  shell: "timeout 5 docker exec {{mon_name}} ceph -s | grep 'osd:'" 
+  changed_when: false
+  register: check_osd
+  failed_when: false
+  until: check_osd.rc == 0 and osd_max == (check_osd.stdout | regex_search('\\d+')| int)
+  retries: "{{retries_osd}}"
+  delay: "{{delay_retries_osd}}"
+- name: end execution
+  fail:
+    msg: "osd_max: {{osd_max}} is not fully up, manually verify "
+  when: check_osd.stdout is defined and osd_max != (check_osd.stdout | regex_search('\\d+')| int)
+  
+#check mgr
+- name: check has active mgr
+  shell: "timeout 5 docker exec {{mon_name}} ceph -s | grep 'mgr:'" 
+  changed_when: false
+  register: check_mgr
+  failed_when: false
+  until: check_mgr.rc == 0 and not (check_mgr.stdout is search('no daemons active'))
+  retries: "{{retries_mgr}}"
+  delay: "{{delay_retries_mgr}}"
+- name: end execution
+  fail:
+    msg: "mgr is not active, manually verify "
+  when: check_mgr.stdout is defined and (check_mgr.stdout is search('no daemons active'))

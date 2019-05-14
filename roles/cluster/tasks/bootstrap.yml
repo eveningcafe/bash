@@ -1,0 +1,72 @@
+---
+
+- name: Remove cluster bootstrap container
+  docker_container:
+    name: cluster-bootstrap
+    state: absent
+  when: inventory_hostname in groups['hub']
+
+- include_role:
+    name: cluster
+    tasks_from: config
+
+- name: Bootstrap cluster 
+  docker_container:
+    name: cluster-bootstrap 
+    image: "{{ docker_reg_host }}:{{ docker_host_port }}/cluster:{{ docker_images_tag }}"
+    pull: yes
+    state: started
+    user: root 
+    volumes:
+      - "{{ docker_shared_conf_dir }}/cluster/:{{ docker_shared_conf_dir }}/cluster/"
+      - /var/log/pacemaker:/var/log/pacemaker
+      - /var/log/corosync:/var/log/corosync
+      - /var/lib/pacemaker:/var/lib/pacemaker
+      - /var/lib/corosync:/var/lib/corosync
+      - /etc/localtime:/etc/localtime
+    env: "{{ ha_compute_env | merge({ 'CLUSTER_START': 'BOOTSTRAP' }) }}"
+    network_mode: host
+  when: inventory_hostname in groups['hub']
+
+- name: Waiting for cluster bootstrap done 
+  shell: |
+    docker wait cluster-bootstrap 
+  when: inventory_hostname in groups['hub']
+
+# SYNCHRONIZE BOOTSTRAP CONFIGURATION
+
+- name: Remove temporary config dirs 
+  local_action: file path="{{ item }}" state=absent
+  with_items:
+    - /usr/share/corosync/
+    - /usr/share/pacemaker/
+  ignore_errors: yes
+
+- name: Create temporary config dirs 
+  local_action: file path="{{ item }}" state=directory
+  with_items:
+    - /usr/share/corosync/
+    - /usr/share/pacemaker/
+  ignore_errors: yes
+
+- name: Fetch corosync config  
+  fetch: src="{{ docker_shared_conf_dir }}/cluster/corosync/{{ item }}" dest="/usr/share/corosync/{{ item }}" flat=yes
+  with_items:
+    - corosync.conf
+    - authkey 
+  when: inventory_hostname in groups['hub']
+
+- name: Fetch pacemaker config  
+  fetch: src="{{ docker_shared_conf_dir }}/cluster/pacemaker/authkey" dest=/usr/share/pacemaker/authkey flat=yes
+  when: inventory_hostname in groups['hub']
+
+- name: Distribute corosync config to controllers not in hub group
+  copy: src="/usr/share/corosync/{{ item }}" dest="{{ docker_shared_conf_dir }}/cluster/corosync/{{ item }}"
+  with_items:
+    - corosync.conf
+    - authkey
+  when: (inventory_hostname in groups['pcmk_cluster']) and (inventory_hostname not in groups['hub'])
+
+- name: Distribute pacemaker config to controllers not in hub group
+  copy: src=/usr/share/pacemaker/authkey dest="{{ docker_shared_conf_dir }}/cluster/pacemaker/authkey"
+  when: (inventory_hostname in groups['pcmk_cluster']) and (inventory_hostname not in groups['hub'])

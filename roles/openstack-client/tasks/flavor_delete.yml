@@ -1,0 +1,7 @@
+---
+
+- name: Delete flavor 
+  shell: |
+    {{ docker_openstack_client }} flavor delete {{ flavor.name }}
+  environment: "{{ ops_client_env }}"
+  ignore_errors: yes 

@@ -1,0 +1,21 @@
+---
+
+- name: Build docker images
+  hosts: docker-registry
+  tasks:
+    - include_role:
+        name: "{{ item }}" 
+        tasks_from: images
+      with_items:
+        #- base
+        #- cinder 
+        #- glance 
+        #- horizon 
+        #- keystone 
+        #- nova 
+        #- heat
+        #- masakari
+        #- neutron 
+        #- aodh 
+         - openstack-client
+  become: true

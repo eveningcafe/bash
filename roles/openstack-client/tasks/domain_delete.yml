@@ -1,0 +1,8 @@
+---
+
+- name: Delete domain
+  shell: |
+    {{ docker_openstack_client }} domain set --disable {{ domain.name }}
+    {{ docker_openstack_client }} domain delete {{ domain.name }} 
+  environment: "{{ ops_client_env }}"
+  ignore_errors: yes

@@ -1,0 +1,8 @@
+---
+
+- name: Add security group rules
+  shell: |
+    {{ docker_openstack_client }} security group rule create {{ item }} {{ security_group.name }}
+  with_items: "{{ security_group.rules }}"
+  environment: "{{ ops_client_env }}"
+  ignore_errors: yes 

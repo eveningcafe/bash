@@ -1,0 +1,25 @@
+---
+
+- name: Remove Horizon container
+  docker_container:
+    name: horizon
+    state: absent
+
+- include_role:
+    name: horizon
+    tasks_from: otp.config
+
+- name: Start Horizon 
+  docker_container:
+    name: horizon
+    image: "{{ docker_reg_host }}:{{ docker_host_port }}/horizon:{{ docker_images_tag }}"
+    pull: yes
+    restart_policy: unless-stopped
+    state: started
+    user: root
+    volumes:
+      - "{{ docker_shared_conf_dir }}/horizon/:{{ docker_shared_conf_dir }}/horizon/"
+      - /var/log/apache2:/var/log/apache2 
+      - /etc/localtime:/etc/localtime
+    env: "{{ horizon_env | merge({ 'HORIZON_START': 'START_HORIZON' }) }}"
+    network_mode: host

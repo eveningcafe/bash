@@ -1,0 +1,31 @@
+---
+
+- include_role:
+    name: openstack-client
+    tasks_from: user
+  vars:
+    domain:
+      name: default
+    service:
+      user: gnocchi
+      pass: "{{ gnocchi_pass }}"
+
+- include_role:
+    name: openstack-client
+    tasks_from: service
+  vars:
+    domain_id: default
+    region_name: "{{ metric_storage_env.REGION_NAME }}"
+    service:
+      type: metric 
+      name: gnocchi 
+      user: gnocchi
+      pass: "{{ gnocchi_pass }}"
+      description: "Metric Service"
+      endpoints:
+        - scope: public
+          url: "{% raw %}'http://{{ general_env.CONTROLLER_HOST }}:8041'{% endraw %}"
+        - scope: internal
+          url: "{% raw %}'http://{{ general_env.CONTROLLER_HOST }}:8041'{% endraw %}"
+        - scope: admin
+          url: "{% raw %}'http://{{ general_env.CONTROLLER_HOST }}:8041'{% endraw %}"

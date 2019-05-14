@@ -1,0 +1,7 @@
+---
+
+perconar_deb_repo: "https://repo.percona.com/apt/percona-release_0.1-4.{{ ansible_distribution_release }}_all.deb"
+db_update:
+  name: default
+  user: defaullt
+  passwd: secret

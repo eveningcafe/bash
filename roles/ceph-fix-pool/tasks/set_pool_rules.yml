@@ -1,0 +1,7 @@
+- name: create new rules base on change of crush map
+  command: docker exec {{mon_name}} ceph osd crush rule create-replicated {{item.name}} {{item.crush_map}} {{item.failure_domain_type}} {{item.class}}
+  loop: "{{new_rules}}"
+  
+- name: set rules for pool
+  command: docker exec {{mon_name}} ceph osd pool set {{item.name}} crush_rule {{item.rule}}
+  loop: "{{set_rule_of_pools}}"

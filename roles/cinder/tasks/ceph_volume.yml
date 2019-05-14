@@ -1,0 +1,19 @@
+---
+
+- name: Ceph keyring setting 
+  template: src=ceph.keyring.j2 dest="{{ docker_shared_conf_dir }}/cinder-volume/ceph/{{ ceph.cinder.keyring_path }}" backup=yes
+
+- name: Copy ceph base config for cinder 
+  template: src=ceph.base.j2 dest="{{ docker_shared_conf_dir }}/cinder-volume/ceph/ceph.conf" backup=yes
+
+- name: Update ceph config for cinder
+  lineinfile:
+    dest: "{{ docker_shared_conf_dir }}/cinder-volume/ceph/ceph.conf" 
+    regexp: "{{ item.regexp }}"
+    line: "{{ item.line }}"
+  with_items:
+    - { regexp: '^[client.{{ ceph.cinder.user }}]', line: '[client.{{ ceph.cinder.user }}]' }
+    - { regexp: '^keyring', line: 'keyring = /etc/ceph/{{ ceph.cinder.keyring_path }}' }
+
+- name: Config sudoers
+  template: src=ceph_sudoers.j2 dest="{{ docker_shared_conf_dir }}/cinder-volume/sudoers.d/ceph_sudoers" backup=yes

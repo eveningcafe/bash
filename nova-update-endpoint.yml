@@ -1,0 +1,32 @@
+---
+
+- hosts: hub 
+  tasks:
+    - name: Get service endpoints
+      shell: |
+        openstack endpoint list | grep nova | awk '{ print $2 }'
+      register: endpoints_out
+      environment: "{{ ops_client_env_ssl }}"
+    
+    - set_fact: endpoints="{{ endpoints_out.stdout_lines }}"
+    
+    - include_role:
+        name: openstack-client
+        tasks_from: update_endpoint_ssl
+      vars:
+        endpoint:
+          id: "{{ item }}"
+          url: "https://{{ services_controller }}:8774/v2.1"
+      with_items: "{{ endpoints }}"
+      when: nova_env.SSL_ENABLED == 1
+
+    - include_role:
+        name: openstack-client
+        tasks_from: update_endpoint_ssl
+      vars:
+        endpoint:
+          id: "{{ item }}"
+          url: "http://{{ services_controller }}:8774/v2.1"
+      with_items: "{{ endpoints }}"
+      when: nova_env.SSL_ENABLED == 0
+  become: true

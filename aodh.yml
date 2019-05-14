@@ -1,0 +1,28 @@
+---
+
+- name: Bootstrap OpenStack projects
+  hosts: current_controller:&hub
+  tasks:
+    - include_role:
+        name: aodh
+        tasks_from: teardown
+    
+    - include_role:
+        name: aodh
+        tasks_from: init
+    
+    - include_role:
+        name: aodh
+        tasks_from: bootstrap
+  become: true
+
+- name: Start aodh service on OpenStack Controller Nodes
+  hosts: current_controller
+  tasks:
+    - include_role:
+        name: aodh 
+        tasks_from: "{{ item }}" 
+      with_items:
+        - controller
+        - haproxy
+  become: true

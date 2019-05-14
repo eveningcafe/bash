@@ -1,0 +1,26 @@
+---
+
+- name: Install keepalived 
+  apt: name={{ item }} state=present update_cache=no
+  with_items:
+    - keepalived
+
+- name: Update sysctl 
+  lineinfile: path=/etc/sysctl.conf line='net.ipv4.ip_nonlocal_bind = 1'
+
+- name: Check sysctl
+  shell: sysctl -p
+
+- name: Get controllers ip list
+  set_fact: ctl_ips=["{{ groups['controller'] | map('extract', hostvars, ['ansible_ssh_host']) | join('", "') }}"]
+
+- name: Get controllers hostname
+  set_fact: ctl_hostnames="{{ groups['controller'] }}"
+
+- name: Set of controllers
+  set_fact: controllers="{{ ctl_ips | get_hosts(ctl_hostnames) }}"
+
+- name: Update keepalived configuration
+  include_role:
+    name: ha
+    tasks_from: update_keepalived 

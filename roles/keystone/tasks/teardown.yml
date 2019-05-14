@@ -1,0 +1,14 @@
+---
+
+- name: Drop keystone database
+  include_role:
+    name: sql
+    tasks_from: drop 
+  vars:
+    db_update:
+      name: keystone
+
+- name: Remove Keystone container
+  docker_container:
+    name: keystone
+    state: absent

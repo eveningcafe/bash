@@ -1,0 +1,13 @@
+---
+
+- include_role:
+    name: horizon
+    tasks_from: otp.teardown 
+
+- include_role:
+    name: horizon
+    tasks_from: otp.db
+
+- include_role:
+    name: horizon
+    tasks_from: otp.bootstrap 

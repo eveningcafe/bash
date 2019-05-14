@@ -1,0 +1,4 @@
+Defaults:aodh !requiretty
+
+aodh ALL = (root) NOPASSWD: /usr/bin/aodh-rootwrap /etc/aodh/rootwrap.conf *
+aodh ALL=(root) NOPASSWD:SETENV: /usr/local/bin/copy_file.sh

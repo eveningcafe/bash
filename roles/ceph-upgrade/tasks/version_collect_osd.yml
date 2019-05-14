@@ -1,0 +1,10 @@
+- name: "collect version osds"
+  shell: "timeout 5 docker exec {{listitem.name}} ceph version | awk '{ print $3}' " 
+  register: result_osd
+  ignore_errors: yes
+
+- name: "print to file "
+  local_action:
+    module: lineinfile
+    path: "/tmp/ceph_{{inventory_hostname}}_versions"
+    line: "{{listitem.name}} {{result_osd.stdout}} \n"

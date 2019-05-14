@@ -1,0 +1,25 @@
+---
+
+- name: verify inventory
+  fail:
+    msg: "number of host in ceph_conf group must be 1 and that host must has monitor-container!"
+  when: (groups['ceph_conf'] | length > 1) or ('ceph_mon' not in group_names)
+  
+- name: check version ceph
+  shell: |
+    docker exec {{mon_name}} ceph version | awk '{ print $3 }' | awk -F. '{ print $1 }' 
+  register: ceph_version
+  
+  
+- name: enable dashboard with ceph version 12
+  include: enable-dashboard.yml
+  when: (ceph_version.stdout | int ) < 13
+  
+- name: enable dashboard with ceph version lower then 12
+  include: enable-dashboard-13.yml
+  when: (ceph_version.stdout | int ) >= 13
+# - name: enable dashboard
+#   include: enable-dashboard.yml
+  
+- name: create rules, pools, user
+  include: create-replicate-rules-pools-users.yml

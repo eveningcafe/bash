@@ -1,0 +1,16 @@
+---
+# group-var
+# ceph_public_network: 192.168.100.0/24
+# docker_use_local_registry: false
+# ceph_docker_image: ceph/daemon
+# ceph_docker_image_tag: tag-build-master-luminous-ubuntu-16.04
+# # role-var
+# kv_type: etcd
+# kv_endpoint: 192.168.100.195
+# kv_port: 2379
+# # host-var
+# mgr_name: ceph-mgr
+# # task-var make
+# image_address: ceph/daemon
+
+

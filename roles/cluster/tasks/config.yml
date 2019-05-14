@@ -1,0 +1,18 @@
+---
+
+- name: Create shared configuration directory
+  file:
+    path: "{{ docker_shared_conf_dir }}/cluster/"
+    state: directory
+
+- name: Create shared configuration directory
+  file:
+    path: "{{ docker_shared_conf_dir }}/cluster/{{ item }}/"
+    state: directory
+  with_items:
+    - backup
+    - pacemaker 
+    - corosync
+
+- name: Config cluster
+  template: src=corosync.conf.j2 dest="{{ docker_shared_conf_dir }}/cluster/corosync/corosync.conf" backup=yes

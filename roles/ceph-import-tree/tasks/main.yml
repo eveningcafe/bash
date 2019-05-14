@@ -1,0 +1,13 @@
+- name: copy file crush map txt from ansible-host to  remote config-host
+  copy:
+    src: "{{ new_crush_tree_import }}"
+    dest: /tmp/tmpcrush.txt
+    mode: 0666
+
+- name: "copy new tree.txt to docker"
+  command: "docker cp /tmp/tmpcrush.txt {{mon_name}}:/tmp/new-crush.txt"
+
+- name: "decript new crush file"
+  command: "docker exec {{mon_name}} crushtool -c /tmp/new-crush.txt -o /tmp/new-crush.crush"
+- name: "import new crush"
+  command: "docker exec {{mon_name}} ceph osd setcrushmap -i /tmp/new-crush.crush"

@@ -1,0 +1,27 @@
+---
+
+- name: Remove Neutron server 
+  docker_container:
+    name: neutron-server
+    state: absent
+
+- include_role: 
+    name: neutron
+    tasks_from: config
+
+- name: Setup neutron-server
+  docker_container:
+    name: neutron-server 
+    image: "{{ docker_reg_host }}:{{ docker_host_port }}/neutron:{{ docker_images_tag }}"
+    pull: yes
+    privileged: yes
+    restart_policy: unless-stopped
+    state: started
+    user: neutron 
+    volumes:
+      - "{{ docker_shared_conf_dir }}/neutron/:{{ docker_shared_conf_dir }}/neutron/"
+      - /var/log/neutron:/var/log/neutron
+      - /var/lib/neutron:/var/lib/neutron
+      - /etc/localtime:/etc/localtime
+    env: "{{ network_env | merge({ 'NEUTRON_START': 'START_NEUTRON_SERVER' }) }}"
+    network_mode: host

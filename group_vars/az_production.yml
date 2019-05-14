@@ -1,0 +1,13 @@
+---
+
+AZ_NAME: PRODUCTION
+OVERCOMMIT_RATIO:
+  RAM: 1.25
+  CPU: 4
+DPDK:
+  ENABLED: true 
+CEPH:
+  HOST: volume-production 
+  STORAGE_AZ: AZ1
+  RBD_POOL: "{{ ceph.cinder.pool }}" 
+  RBD_USER: "{{ ceph.cinder.user }}" 

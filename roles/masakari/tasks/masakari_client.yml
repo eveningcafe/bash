@@ -1,0 +1,14 @@
+---
+
+- name: Clone masakari client
+  git: 
+    repo: "{{ masakari_client_repo }}"
+    dest: /root/python-masakariclient
+    version: "{{ openstack_branch }}"
+
+- name: Install masakari client
+  shell: |
+    pip install -r requirements.txt
+    python setup.py install
+  args:
+    chdir: /root/python-masakariclient 

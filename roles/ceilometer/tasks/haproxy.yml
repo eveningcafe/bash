@@ -1,0 +1,22 @@
+---
+
+- name: Check ha config for service
+  shell: |
+    cat {{ docker_shared_conf_dir }}/haproxy/haproxy/haproxy.cfg | grep ceilometer 
+  register: service_cfg
+  ignore_errors: yes
+  
+- include_role:
+    name: haproxy
+    tasks_from: update
+  vars:
+    services:
+      - name: ceilometer_api
+        port: 9292
+        bind_ips:
+        options:
+      - name: ceilometer_registry
+        port: 9191
+        bind_ips:
+        options:
+  when: service_cfg.rc == 1

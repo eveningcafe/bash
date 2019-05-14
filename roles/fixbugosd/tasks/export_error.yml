@@ -1,0 +1,24 @@
+
+- name: check osd up
+  command: "docker logs {{listitem.name}}"
+  register: result
+  ignore_errors: yes
+
+- name: print to file
+  local_action:
+    module: lineinfile
+    path: "/tmp/output_{{inventory_hostname}}_osd"
+    line: "{{inventory_hostname}} {{ listitem.name }} {{ listitem.primary_disk }} {{ listitem.wal_disk }} {{ listitem.db_disk }} die"
+  when: (result.stderr.find('log_to_monitors') == -1) and (listitem.wal_disk is defined) and (listitem.db_disk is defined)
+  
+- name: print to file
+  local_action:
+    module: lineinfile
+    path: "/tmp/output_{{inventory_hostname}}_osd"
+    line: "{{inventory_hostname}} {{ listitem.name }} {{ listitem.primary_disk }} no_wal no_db die"
+  when: result.stderr.find('log_to_monitors') == -1 and (listitem.wal_disk is not defined) and (listitem.db_disk is not defined)
+  
+- name:  copying list error osd to remote host
+  copy:
+    src: "/tmp/output_{{inventory_hostname}}_osd"
+    dest: "/tmp/output_{{inventory_hostname}}_osd"

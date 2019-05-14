@@ -1,0 +1,6 @@
+---
+
+- name: Add role for a user in the determined domain
+  shell: |
+    {{ docker_openstack_client }} role add --domain {{ domain.name }} --user-domain {{ domain.user_domain }} --user {{ domain.user }} {{ role }} 
+  environment: "{{ ops_client_env }}"

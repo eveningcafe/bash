@@ -1,0 +1,43 @@
+---
+
+- name: Remove Cinder containers
+  docker_container:
+    name: "{{ item }}" 
+    state: absent
+  with_items:
+    - cinder-api
+    - cinder-scheduler
+
+- include_role:
+    name: cinder
+    tasks_from: config
+
+- name: Start cinder-api 
+  docker_container:
+    name: cinder-api 
+    image: "{{ docker_reg_host }}:{{ docker_host_port }}/cinder:{{ docker_images_tag }}"
+    pull: yes
+    restart_policy: unless-stopped
+    state: started
+    user: root 
+    volumes:
+      - "{{ docker_shared_conf_dir }}/cinder/:{{ docker_shared_conf_dir }}/cinder/"
+      - /var/log/apache2:/var/log/apache2
+      - /etc/localtime:/etc/localtime
+    env: "{{ block_storage_env | merge({ 'CINDER_START': 'START_CINDER_API' }) }}"
+    network_mode: host
+
+- name: Start cinder-scheduler
+  docker_container:
+    name: cinder-scheduler 
+    image: "{{ docker_reg_host }}:{{ docker_host_port }}/cinder:{{ docker_images_tag }}"
+    pull: yes
+    restart_policy: unless-stopped
+    state: started
+    user: cinder 
+    volumes:
+      - "{{ docker_shared_conf_dir }}/cinder/:{{ docker_shared_conf_dir }}/cinder/"
+      - /var/log/cinder:/var/log/cinder 
+      - /etc/localtime:/etc/localtime
+    env: "{{ block_storage_env | merge({ 'CINDER_START': 'START_CINDER_SCHEDULER' }) }}"
+    network_mode: host

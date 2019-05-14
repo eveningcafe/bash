@@ -1,0 +1,10 @@
+- name: rollback mgrs
+  hosts: ceph
+  #sudo: yes
+  serial: 1
+  tasks:
+    - include_role: 
+        name: ceph-rollback
+        tasks_from: rollback-mgrs
+      when: (ceph_new_version is defined) and upgrade_ceph and inventory_hostname in groups.ceph_mgr
+  become: true

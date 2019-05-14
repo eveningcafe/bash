@@ -1,0 +1,7 @@
+- hosts: ceph_conf
+  sudo: yes
+  tasks:
+    - include_role: 
+        name: ceph-fix-pool
+        tasks_from: main
+      when: (fix_crush_map is defined) and fix_crush_map 

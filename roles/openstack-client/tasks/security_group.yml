@@ -1,0 +1,8 @@
+---
+
+- name: Create security group 
+  shell: |
+    {{ docker_openstack_client }} security group create {{ security_group.name }} -c id -f value
+  environment: "{{ ops_client_env }}"
+  register: secgrp_id
+  ignore_errors: yes 

@@ -1,0 +1,30 @@
+---
+
+- name: Remove default index
+  file:
+    path: /var/www/html/index.html
+    state: absent
+
+- name: Disable autoindex module
+  shell: |
+    a2dismod autoindex -f
+
+- name: Config apache2
+  copy: src=apache2.conf dest=/etc/apache2/apache2.conf
+
+- name: Config apache2
+  copy: src=000-default.conf dest=/etc/apache2/sites-available/000-default.conf
+
+- name: Config apache2
+  copy: src=serve-cgi-bin.conf dest=/etc/apache2/conf-available/serve-cgi-bin.conf
+
+- name: Config apache2
+  copy: src=alias.conf dest=/etc/apache2/mods-available/alias.conf
+
+- name: Config apache2
+  copy: src=javascript-common.conf dest=/etc/apache2/conf-available/javascript-common.conf
+
+- name: Restart apache2
+  service:
+    name: apache2
+    state: restarted 

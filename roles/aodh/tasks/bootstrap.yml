@@ -1,0 +1,29 @@
+---
+
+- name: Remove aodh bootstrap container
+  docker_container:
+    name: aodh-bootstrap
+    state: absent
+
+- include_role:
+    name: aodh
+    tasks_from: config 
+
+- name: Bootstrap aodh 
+  docker_container:
+    name: aodh-bootstrap
+    image: "{{ docker_reg_host }}:{{ docker_host_port }}/aodh:{{ docker_images_tag }}"
+    pull: yes
+    state: started
+    user: root 
+    volumes:
+      - "{{ docker_shared_conf_dir }}/aodh/:{{ docker_shared_conf_dir }}/aodh/"
+      - /var/log/aodh:/var/log/aodh
+      - /var/lib/aodh:/var/lib/aodh 
+      - /etc/localtime:/etc/localtime
+    env: "{{ alert_env | merge({ 'AODH_START': 'BOOTSTRAP' }) }}"
+    network_mode: host
+
+- name: Waiting for aodh bootstrap done 
+  shell: |
+    docker wait aodh-bootstrap

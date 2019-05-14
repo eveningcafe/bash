@@ -1,0 +1,5 @@
+---
+
+- name: Rename root 
+  shell: |
+    {{ sql_cli }} 'RENAME USER root TO {{ mysql.root_new_name }};'

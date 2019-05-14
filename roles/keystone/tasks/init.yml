@@ -1,0 +1,11 @@
+---
+
+- name: Create keystone database
+  include_role:
+    name: sql
+    tasks_from: update
+  vars:
+    db_update:
+      name: keystone
+      user: keystone
+      passwd: "{{ keystone_env.KEYSTONE_DBPASS }}"

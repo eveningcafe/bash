@@ -1,0 +1,13 @@
+- template:
+    src: check_result.sh
+    dest: /tmp/check_result.sh
+    owner: root
+    group: root
+    mode: '0755'
+    backup: yes
+- name: check current state
+  shell: |
+    /tmp/check_result.sh
+  register: current_state
+- debug: msg="{{current_state.stdout_lines}}"
+  

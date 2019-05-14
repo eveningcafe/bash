@@ -1,0 +1,32 @@
+-
+    # libvirt-bin
+    process_name: /usr/sbin/libvirtd
+    start_command: systemctl start libvirt-bin
+    pre_start_command:
+    post_start_command:
+    restart_command: systemctl restart libvirt-bin
+    pre_restart_command:
+    post_restart_command:
+    run_as_root: True
+
+-
+    # nova-compute
+    process_name: /usr/bin/nova-compute
+    start_command: systemctl start nova-compute
+    pre_start_command:
+    post_start_command:
+    restart_command: systemctl restart nova-compute
+    pre_restart_command:
+    post_restart_command:
+    run_as_root: True
+
+-
+    # sshd
+    process_name: /usr/sbin/sshd
+    start_command: systemctl start ssh
+    pre_start_command:
+    post_start_command:
+    restart_command: systemctl restart ssh
+    pre_restart_command:
+    post_restart_command:
+    run_as_root: True

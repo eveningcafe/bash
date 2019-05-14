@@ -1,0 +1,12 @@
+---
+
+- name: Create service
+  shell: |
+    {{ docker_openstack_client }} service create --name {{ service.name }} --description "{{ service.description }}" {{ service.type }}
+  environment: "{{ ops_client_env }}"
+
+- name: Create service endpoints
+  shell: |
+    {{ docker_openstack_client }} endpoint create --region {{ region_name }} {{ service.type }} {{ item.scope }} {{ item.url }}
+  with_items: "{{ service.endpoints }}"
+  environment: "{{ ops_client_env }}"

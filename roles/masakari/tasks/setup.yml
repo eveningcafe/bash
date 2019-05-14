@@ -1,0 +1,13 @@
+---
+
+- include_role:
+    name: masakari
+    tasks_from: teardown
+
+- include_role:
+    name: masakari
+    tasks_from: init
+
+- include_role:
+    name: masakari
+    tasks_from: bootstrap

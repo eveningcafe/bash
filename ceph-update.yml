@@ -1,0 +1,68 @@
+---
+
+- hosts: current_controller
+  tasks:
+    - include_role:
+        name: glance
+        tasks_from: ceph
+    - name: restart glance 
+      docker_container:
+        name: "{{ item }}"
+        state: started 
+        restart: yes
+      with_items:
+        - glance-api
+        - glance-registry
+  become: true
+
+- hosts: prodcloudserver04:prodcloudserver06:prodcloudserver07:prodcloudserver08:prodcloudserver09
+  tasks:
+    - include_role:
+        name: cinder
+        tasks_from: compute
+    - include_role:
+        name: nova
+        tasks_from: "{{ item }}" 
+      with_items:
+        - config_compute
+        - ceph
+    - name: Restart compute services 
+      service: name={{ item }} state=restarted
+      with_items:
+        - libvirtd
+        - nova-compute
+  become: true
+
+- hosts: current_controller
+  tasks:
+    - include_role:
+        name: cinder
+        tasks_from: "{{ item }}"
+      with_items:
+        - ceph 
+        - ceph_volume
+    - name: restart cinder 
+      docker_container:
+        name: "{{ item }}"
+        state: started
+        restart: yes
+      with_items:
+        - cinder-api
+        - cinder-scheduler
+        - cinder-volume
+  become: true
+
+- hosts: current_controller
+  tasks:
+    - include_role:
+        name: gnocchi
+        tasks_from: ceph
+    - name: restart gnocchi 
+      docker_container:
+        name: "{{ item }}"
+        state: started
+        restart: yes
+      with_items:
+        - gnocchi-api
+        - gnocchi-metricd
+  become: true

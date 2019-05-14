@@ -1,0 +1,61 @@
+[DEFAULT]
+debug = true
+use_syslog = false
+use_stderr = false 
+#log_dir = /var/log/gnocchi
+transport_url = {{ metric_storage_env.TRANSPORT_URL }}
+coordination_url = zookeeper://{% for zknode in groups['zkcluster'] %}{{ zookeeper.user }}:{{ zookeeper.password }}@{{ zknode }}:2181{% if not loop.last %},{% endif %}{% endfor %}
+
+#coordination_url = redis://{{ redis.redis_user }}:{{ redis.redis_password }}@{{ groups['redis-master'][0] }}:{{ redis.redis_sentinel_port }}?sentinel={{ redis.redis_master_set }}{% for host in groups['redis-slave'] %}&sentinel_fallback={{ host }}:{{ redis.redis_sentinel_port }}{% endfor %}
+
+[archive_policy]
+default_aggregation_methods = mean,min,max,sum,std,median,count,last,95pct
+
+[indexer]
+driver = sqlalchemy
+{% if gnocchi_env.GNOCCHI_INDEXER == "mysql" %}
+url = mysql+pymysql://gnocchi:{{ metric_storage_env.GNOCCHI_DBPASS }}@{{ mysql_env.gnocchi.MYSQL_HOST }}:{{ mysql_env.gnocchi.MYSQL_PORT }}/gnocchi
+{% elif gnocchi_env.GNOCCHI_INDEXER == "postgresql" %}
+url = postgresql://gnocchi:{{ metric_storage_env.GNOCCHI_DBPASS }}@{{ postgres_host }}/gnocchi
+{% endif %}
+
+[storage]
+driver = ceph
+ceph_pool = {{ ceph.gnocchi.pool }} 
+ceph_username = {{ ceph.gnocchi.user }} 
+ceph_keyring = /etc/ceph/ceph.client.gnocchi.keyring
+ceph_conffile = /etc/ceph/ceph.conf
+
+[incoming]
+driver = redis
+redis_url = redis://{{ redis.redis_user }}:{{ redis.redis_password }}@{{ groups['redis-master'][0] }}:{{ redis.redis_sentinel_port }}?sentinel={{ redis.redis_master_set }}{% for host in groups['redis-slave'] %}&sentinel_fallback={{ host }}:{{ redis.redis_sentinel_port }}{% endfor %}
+
+#redis_url = redis://{{ redis.redis_user }}:{{ redis.redis_password }}@{{ services_controller }}:6379/
+
+[metricd]
+workers = 6
+metric_processing_delay = 5
+
+[api]
+auth_mode = keystone
+paste_config = /etc/gnocchi/api-paste.ini
+port = 8041
+
+[keystone_authtoken]
+auth_type = password
+auth_uri = https://{{ services_controller }}:5000/v3
+auth_url = https://{{ services_controller }}:35357/v3
+cafile = /etc/gnocchi/ssl/openstack.crt
+project_domain_name = Default
+user_domain_name = Default
+project_name = service
+username = gnocchi
+password = {{ metric_storage_env.GNOCCHI_PASS }}
+region_name = {{ metric_storage_env.REGION_NAME }} 
+memcached_servers = {{ metric_storage_env.MEMCACHED_SERVERS }}
+interface = internalURL
+
+[cors]
+allowed_origin = {{ grafana.fqdn }}
+allow_methods = GET,PUT,POST,DELETE,PATCH
+allow_headers = X-Auth-Token,X-Openstack-Request-Id,X-Subject-Token,X-Project-Id,X-Project-Name,X-Project-Domain-Id,X-Project-Domain-Name,X-Domain-Id,X-Domain-Name

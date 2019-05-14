@@ -1,0 +1,42 @@
+---
+
+- name: Remove octavia bootstrap container
+  docker_container:
+    name: octavia-bootstrap
+    state: absent
+
+- include_role:
+    name: octavia
+    tasks_from: resources_preparation
+
+- include_role:
+    name: octavia
+    tasks_from: config 
+
+- name: Bootstrap octavia 
+  docker_container:
+    name: octavia-bootstrap
+    image: "{{ docker_reg_host }}:{{ docker_host_port }}/octavia:{{ docker_images_tag }}.multivip"
+    pull: yes
+    privileged: yes
+    state: started
+    user: octavia 
+    volumes:
+      - "{{ docker_shared_conf_dir }}/octavia/:{{ docker_shared_conf_dir }}/octavia/"
+      - /var/log/octavia:/var/log/octavia
+      - /var/lib/octavia:/var/lib/octavia 
+      - /etc/localtime:/etc/localtime
+    env: "{{ loadbalancer_env | merge({ 'OCTAVIA_START': 'BOOTSTRAP' }) }}"
+    network_mode: host
+
+- name: Waiting for octavia bootstrap done 
+  shell: |
+    docker wait octavia-bootstrap
+
+- name: Update octavia database
+  shell: |
+    {{ sql_cli_dbhandler }} "ALTER TABLE load_balancer ADD COLUMN transparent BOOLEAN DEFAULT False;"
+    {{ sql_cli_dbhandler }} "ALTER TABLE load_balancer ADD COLUMN external_vip_enabled BOOLEAN DEFAULT False;"
+    {{ sql_cli_dbhandler }} "CREATE TABLE external_vip(id varchar(36) NOT NULL PRIMARY KEY, load_balancer_id varchar(36) NOT NULL, ip_address varchar(64), port_id varchar(36), status varchar(20) NOT NULL, FOREIGN KEY (load_balancer_id) REFERENCES load_balancer(id));"
+  vars:
+    database_name: octavia

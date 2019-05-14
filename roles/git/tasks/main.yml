@@ -1,0 +1,35 @@
+---
+
+- name: Clean local data 
+  local_action: file path="{{ item }}" state=absent
+  with_items:
+    - /tmp/openstack-utils/
+    - "{{ ops_dk_files_path }}"
+  ignore_errors: yes
+
+- name: Clean remote host data
+  file:
+    path: "{{ ops_dk_files_path }}"
+    state: absent
+  ignore_errors: yes
+
+- name: Create remote host Dockerfiles directory 
+  file:
+    path: "{{ ops_dk_files_path }}"
+    state: directory
+
+- name: Synchornize 
+  local_action: shell cp -R {{ playbook_dir }} /tmp/openstack-utils/
+
+- name: Checkout dockerfile/pike branch 
+  local_action: "shell cd /tmp/openstack-utils/ && git checkout -f {{ ops_dk_repo_branch }}"
+  ignore_errors: yes
+
+- name: Change docker env on local ansible host
+  local_action: shell "/tmp/openstack-utils/genpw.sh"
+
+- name: Set env for ansible usage
+  local_action: copy src="/tmp/openstack-utils/run_vars/{{ item }}.yml" dest="{{ playbook_dir }}/group_vars/{{ item }}" backup=yes
+  with_items:
+    - all
+    - controller

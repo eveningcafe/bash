@@ -1,0 +1,10 @@
+---
+
+- name: Config keystone for gnocchi
+  template: src=keystone.conf.gnocchi.j2 dest="{{ docker_shared_conf_dir }}/keystone/keystone/keystone.conf" backup=yes
+
+- name: Restart container
+  docker_container:
+    name: keystone
+    state: started 
+    restart: yes

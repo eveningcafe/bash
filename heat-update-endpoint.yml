@@ -1,0 +1,10 @@
+---
+
+- hosts: hub 
+  tasks:
+    - include_role: 
+        name: heat 
+        tasks_from: update-endpoint 
+      vars:
+        new_endpoint: "'http://{{ vip.haproxy.ip }}:8004/v1/%(tenant_id)s'"
+  become: true
