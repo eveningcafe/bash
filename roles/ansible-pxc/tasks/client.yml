@@ -1,8 +1,0 @@
-- name: Installs percona client libs
-  apt: pkg={{ item }} state=installed
-  with_items:
-    - libperconaserverclient18.1
-    - percona-server-client
-    - libperconaserverclient18.1-dev
-
-

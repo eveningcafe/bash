@@ -1,8 +1,0 @@
----
-
-- name: Add compute host to failover cluster
-  shell: |
-    docker exec -i cluster bash -c 'crm configure primitive {{ item }} ocf:pacemaker:remote params server={{ item }} reconnect_interval={{ remote_params.reconnect_interval }} op monitor interval={{ remote_params.monitor_interval }}'
-  with_items:
-    - "{{ groups['pcmk_remote'] }}" 
-  ignore_errors: yes

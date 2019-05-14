@@ -1,7 +1,0 @@
----
-
-- name: Remove etcd
-  docker_container:
-    name: etcd
-    state: absent
-  ignore_errors: yes

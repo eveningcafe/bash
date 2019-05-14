@@ -1,7 +1,0 @@
----
-
-- name: Remove haproxy 
-  docker_container:
-    name: haproxy 
-    state: absent
-  ignore_errors: yes

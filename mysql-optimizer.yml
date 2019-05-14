@@ -1,7 +1,7 @@
 ---
 
 #- hosts: mysql
-- hosts: prodcloudserver01 
+- hosts: server01 
   tasks:
     - name: Optimize mysql configuration
       template:

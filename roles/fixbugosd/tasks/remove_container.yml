@@ -1,5 +1,0 @@
-# - debug: msg={{listcontainer}}
-- name: clean docker osd
-  docker_container:
-    name: "{{listcontainer}}"
-    state: absent

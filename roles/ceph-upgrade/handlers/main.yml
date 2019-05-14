@@ -1,4 +1,0 @@
----
-# handlers file for ceph-upgrade
-- name: rollback_all
-  debug: msg="hello rollback all"
