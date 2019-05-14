@@ -1,8 +1,0 @@
----
-
-- hosts: keepalived 
-  tasks:
-    - include_role:
-        name: keepalived 
-        tasks_from: setup
-  become: true

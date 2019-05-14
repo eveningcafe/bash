@@ -1,8 +1,0 @@
----
-
-- hosts: hub:&pcmk_cluster
-  tasks:
-    - include_role:
-        name: cluster 
-        tasks_from: add_remote
-  become: true

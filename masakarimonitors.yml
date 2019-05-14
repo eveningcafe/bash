@@ -1,8 +1,0 @@
----
-
-- hosts: pcmk_remote 
-  tasks:
-    - include_role:
-        name: masakari
-        tasks_from: masakari_monitors 
-  become: true

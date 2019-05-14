@@ -1,8 +1,0 @@
----
-
-- hosts: ceph_conf 
-  tasks:
-    - include_role: 
-        name: ceph-conf
-        tasks_from: get-ceph-parameters
-  become: true

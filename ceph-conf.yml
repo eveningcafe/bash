@@ -1,6 +1,0 @@
----
-- hosts: ceph_conf
-  sudo: yes
-  roles:
-     - ceph-conf
-

@@ -1,6 +1,0 @@
----
-- import_playbook: ceph-rollback-mons.yml
-- import_playbook: ceph-rollback-osds.yml
-- import_playbook: ceph-rollback-mgrs.yml
-- import_playbook: ceph-rollback-mdss.yml
-

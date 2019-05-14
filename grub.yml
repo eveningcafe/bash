@@ -1,8 +1,0 @@
----
-
-- hosts: ovs-dpdk
-  tasks:
-    - include_role:
-        name: nova 
-        tasks_from: config_grub 
-  become: true
