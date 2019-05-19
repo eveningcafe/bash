@@ -6,10 +6,6 @@ transport_url = rabbit://{% for controller in groups['controller'] %}openstack:{
 [api]
 [collector]
 [compute]
-[coordination]
-backend_url = zookeeper://{% for zknode in groups['zkcluster'] %}{{ zookeeper.user }}:{{ zookeeper.password }}@{{ zknode }}:2181{% if not loop.last %},{% endif %}{% endfor %}
-
-check_watchers = 10.0
 [cors]
 [cors.subdomain]
 [database]

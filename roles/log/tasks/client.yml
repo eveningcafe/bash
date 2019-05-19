@@ -1,5 +1,0 @@
----
-
-- include_role:
-    name: filebeat
-    tasks_from: client

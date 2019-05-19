@@ -1,2 +1,0 @@
-- name: mgr module enable dashboard
-  command: docker exec {{mon_name}} ceph mgr module enable dashboard

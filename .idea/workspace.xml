@@ -2,11 +2,252 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="5a24ceab-6d22-416e-8f3e-7305d6ac3fb3" name="Default" comment="">
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/README.md" beforeDir="false" afterPath="$PROJECT_DIR$/README.md" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/ansible.cfg" beforeDir="false" afterPath="$PROJECT_DIR$/ansible.cfg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/group_vars/compute.yml" beforeDir="false" afterPath="$PROJECT_DIR$/group_vars/compute.yml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/group_vars/all.yml" beforeDir="false" afterPath="$PROJECT_DIR$/group_vars/all.yml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/group_vars/az_lab.yml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/group_vars/az_production.yml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/group_vars/az_rnd.yml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/group_vars/ceph.yml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/group_vars/ceph_account.yml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/group_vars/ceph_conf.yml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/group_vars/ceph_mds.yml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/group_vars/ceph_mgr.yml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/group_vars/ceph_mon.yml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/group_vars/ceph_osd.yml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/group_vars/common.yml" beforeDir="false" afterPath="$PROJECT_DIR$/group_vars/common.yml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/group_vars/controller.yml" beforeDir="false" afterPath="$PROJECT_DIR$/group_vars/controller.yml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/group_vars/ovs-dpdk.yml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/group_vars/pcmk_cluster.yml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/host_vars/prodcloudserver01.yml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/host_vars/prodcloudserver02.yml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/host_vars/prodcloudserver03.yml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/host_vars/prodcloudserver04.yml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/host_vars/prodcloudserver05.yml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/host_vars/prodcloudserver06.yml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/host_vars/prodcloudserver07.yml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/host_vars/prodcloudserver08.yml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/host_vars/prodcloudserver09.yml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/interfaces.yml" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/inventory/hosts" beforeDir="false" afterPath="$PROJECT_DIR$/inventory/hosts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/postgresql.yml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/postgresql_bdr.yml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/roles/ceilometer/templates/ceilometer.conf.j2" beforeDir="false" afterPath="$PROJECT_DIR$/roles/ceilometer/templates/ceilometer.conf.j2" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/roles/ceph-conf/defaults/main.yml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/roles/ceph-conf/handlers/main.yml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/roles/ceph-conf/tasks/create-replicate-rules-pools-users.yml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/roles/ceph-conf/tasks/enable-dashboard-13.yml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/roles/ceph-conf/tasks/enable-dashboard.yml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/roles/ceph-conf/tasks/get-ceph-conf.yml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/roles/ceph-conf/tasks/get-ceph-parameters.yml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/roles/ceph-conf/tasks/main.yml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/roles/ceph-conf/tasks/monitor.yml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/roles/ceph-conf/templates/ceph.client.keyring.j2" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/roles/ceph-conf/templates/ceph_account.yml.j2" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/roles/ceph-conf/vars/main.yml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/roles/gnocchi/tasks/config.yml" beforeDir="false" afterPath="$PROJECT_DIR$/roles/gnocchi/tasks/config.yml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/roles/gnocchi/templates/gnocchi.conf.ceph.j2" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/roles/gnocchi/templates/gnocchi.logrotate.j2" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/roles/gnocchi/templates/ssl.gnocchi.conf.ceph.j2" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/roles/gnocchi/templates/ssl.gnocchi.conf.fs.j2" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/roles/keepalived/README.md" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/roles/keepalived/defaults/main.yml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/roles/keepalived/handlers/main.yml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/roles/keepalived/meta/main.yml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/roles/keepalived/tasks/config.yml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/roles/keepalived/tasks/setup.yml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/roles/keepalived/tasks/teardown.yml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/roles/keepalived/tasks/up.yml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/roles/keepalived/tasks/update.yml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/roles/keepalived/templates/keepalived.conf.base.j2" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/roles/keepalived/templates/keepalived.conf.update.j2" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/roles/keepalived/tests/inventory" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/roles/keepalived/tests/test.yml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/roles/keepalived/vars/main.yml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/roles/kibana/README.md" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/roles/kibana/defaults/main.yml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/roles/kibana/handlers/main.yml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/roles/kibana/meta/main.yml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/roles/kibana/tasks/main.yml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/roles/kibana/tests/inventory" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/roles/kibana/tests/test.yml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/roles/kibana/vars/main.yml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/roles/live_migration-ssh-cfg/README.md" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/roles/live_migration-ssh-cfg/defaults/main.yml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/roles/live_migration-ssh-cfg/files/authorized_keys" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/roles/live_migration-ssh-cfg/files/config" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/roles/live_migration-ssh-cfg/files/id_rsa" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/roles/live_migration-ssh-cfg/files/id_rsa.pub" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/roles/live_migration-ssh-cfg/handlers/main.yml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/roles/live_migration-ssh-cfg/meta/main.yml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/roles/live_migration-ssh-cfg/tasks/current.yml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/roles/live_migration-ssh-cfg/tasks/main.yml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/roles/live_migration-ssh-cfg/tasks/nova_keypair.yml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/roles/live_migration-ssh-cfg/tests/inventory" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/roles/live_migration-ssh-cfg/tests/test.yml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/roles/live_migration-ssh-cfg/vars/main.yml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/roles/log/README.md" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/roles/log/defaults/main.yml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/roles/log/handlers/main.yml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/roles/log/meta/main.yml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/roles/log/tasks/client.yml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/roles/log/tasks/server.yml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/roles/log/tests/inventory" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/roles/log/tests/test.yml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/roles/log/vars/main.yml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/roles/logstash/README.md" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/roles/logstash/defaults/main.yml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/roles/logstash/handlers/main.yml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/roles/logstash/meta/main.yml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/roles/logstash/tasks/main.yml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/roles/logstash/tests/inventory" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/roles/logstash/tests/test.yml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/roles/logstash/vars/main.yml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/roles/masakari/README.md" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/roles/masakari/defaults/main.yml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/roles/masakari/files/masakari-screenrc" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/roles/masakari/handlers/main.yml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/roles/masakari/meta/main.yml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/roles/masakari/tasks/bootstrap.yml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/roles/masakari/tasks/config.yml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/roles/masakari/tasks/config_compute.yml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/roles/masakari/tasks/controller.yml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/roles/masakari/tasks/create_ha_cluster.yml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/roles/masakari/tasks/haproxy.yml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/roles/masakari/tasks/images.yml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/roles/masakari/tasks/init.yml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/roles/masakari/tasks/masakari_client.yml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/roles/masakari/tasks/masakari_monitors.yml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/roles/masakari/tasks/setup.yml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/roles/masakari/tasks/teardown.yml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/roles/masakari/templates/get_cluster_iface.sh" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/roles/masakari/templates/haproxy.cfg.j2" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/roles/masakari/templates/masakari.conf.j2" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/roles/masakari/templates/masakari_sudoers.j2" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/roles/masakari/templates/masakarimonitors.conf.j2" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/roles/masakari/templates/process_list.yaml.j2" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/roles/masakari/templates/ssl.masakari.conf.j2" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/roles/masakari/templates/ssl.masakarimonitors.conf.j2" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/roles/masakari/tests/inventory" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/roles/masakari/tests/test.yml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/roles/masakari/vars/main.yml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/roles/nova/README.md" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/roles/nova/defaults/main.yml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/roles/nova/handlers/main.yml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/roles/nova/meta/main.yml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/roles/nova/tasks/bootstrap.yml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/roles/nova/tasks/ceph.yml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/roles/nova/tasks/compute.yml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/roles/nova/tasks/compute_docker.yml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/roles/nova/tasks/config.yml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/roles/nova/tasks/config_compute.yml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/roles/nova/tasks/config_grub.yml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/roles/nova/tasks/controller.yml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/roles/nova/tasks/haproxy.yml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/roles/nova/tasks/images.yml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/roles/nova/tasks/init.yml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/roles/nova/tasks/setup.yml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/roles/nova/tasks/teardown.yml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/roles/nova/templates/ceph.base.j2" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/roles/nova/templates/ceph.j2" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/roles/nova/templates/ceph.keyring.j2" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/roles/nova/templates/client.key.j2" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/roles/nova/templates/libvirtd.conf.j2" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/roles/nova/templates/libvirtd.j2" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/roles/nova/templates/nova-placement-api.conf.j2" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/roles/nova/templates/nova.conf.ceph.j2" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/roles/nova/templates/nova.conf.ctl.j2" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/roles/nova/templates/nova.conf.j2" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/roles/nova/templates/ssl.nova.conf.ceph.j2" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/roles/nova/templates/ssl.nova.conf.ctl.j2" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/roles/nova/templates/ssl.nova.conf.j2" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/roles/nova/tests/inventory" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/roles/nova/tests/test.yml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/roles/nova/vars/main.yml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/roles/octavia/README.md" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/roles/octavia/defaults/main.yml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/roles/octavia/handlers/main.yml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/roles/octavia/meta/main.yml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/roles/octavia/tasks/bootstrap.yml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/roles/octavia/tasks/ceph.yml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/roles/octavia/tasks/config.yml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/roles/octavia/tasks/controller.yml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/roles/octavia/tasks/haproxy.yml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/roles/octavia/tasks/images.yml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/roles/octavia/tasks/init.yml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/roles/octavia/tasks/main.yml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/roles/octavia/tasks/resources_preparation.yml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/roles/octavia/tasks/setup.yml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/roles/octavia/tasks/teardown.yml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/roles/octavia/templates/certs/ca_01.pem" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/roles/octavia/templates/certs/client-.pem" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/roles/octavia/templates/certs/client.csr" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/roles/octavia/templates/certs/client.key" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/roles/octavia/templates/certs/client.pem" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/roles/octavia/templates/certs/index.txt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/roles/octavia/templates/certs/index.txt.attr" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/roles/octavia/templates/certs/index.txt.old" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/roles/octavia/templates/certs/newcerts/01.pem" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/roles/octavia/templates/certs/private/cakey.pem" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/roles/octavia/templates/certs/serial" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/roles/octavia/templates/certs/serial.old" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/roles/octavia/templates/octavia.conf.j2" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/roles/octavia/templates/ssl.octavia.conf.j2" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/roles/octavia/tests/inventory" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/roles/octavia/tests/test.yml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/roles/octavia/vars/main.yml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/roles/postgres/README.md" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/roles/postgres/defaults/main.yml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/roles/postgres/files/check_postgres.sh" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/roles/postgres/handlers/main.yml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/roles/postgres/meta/main.yml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/roles/postgres/tasks/_master.yml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/roles/postgres/tasks/_slave.yml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/roles/postgres/tasks/bdr_dropdb.yml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/roles/postgres/tasks/bdr_postgres.yml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/roles/postgres/tasks/bdr_replica.yml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/roles/postgres/tasks/dropdb.yml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/roles/postgres/tasks/dropuser.yml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/roles/postgres/tasks/initdb.yml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/roles/postgres/tasks/inituser.yml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/roles/postgres/tasks/keepalived.yml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/roles/postgres/tasks/master.yml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/roles/postgres/tasks/slave.yml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/roles/postgres/tasks/update.yml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/roles/postgres/tasks/update_bdr.yml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/roles/postgres/tests/inventory" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/roles/postgres/tests/test.yml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/roles/postgres/vars/main.yml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/roles/update-monmap/tasks/main.yml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/roles/util_ifaces/README.md" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/roles/util_ifaces/defaults/main.yml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/roles/util_ifaces/files/get_ifaces.sh" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/roles/util_ifaces/handlers/main.yml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/roles/util_ifaces/meta/main.yml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/roles/util_ifaces/tasks/interfaces.yml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/roles/util_ifaces/tasks/interfaces_2_NICs.yml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/roles/util_ifaces/tasks/main.yml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/roles/util_ifaces/tasks/ovs_bridges_cnf.yml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/roles/util_ifaces/tasks/ovs_bridges_cnf_2_NICs.yml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/roles/util_ifaces/tasks/test.yml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/roles/util_ifaces/templates/interfaces.j2" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/roles/util_ifaces/templates/interfaces_2_NICs.j2" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/roles/util_ifaces/tests/inventory" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/roles/util_ifaces/tests/test.yml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/roles/util_ifaces/vars/main.yml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/roles/verify/tasks/main.yml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/roles/zookeeper/README.md" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/roles/zookeeper/defaults/main.yml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/roles/zookeeper/handlers/main.yml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/roles/zookeeper/meta/main.yml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/roles/zookeeper/tasks/config.yml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/roles/zookeeper/tasks/crontab.yml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/roles/zookeeper/tasks/main.yml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/roles/zookeeper/templates/log4j.properties.j2" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/roles/zookeeper/templates/zoo.cfg.j2" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/roles/zookeeper/tests/inventory" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/roles/zookeeper/tests/test.yml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/roles/zookeeper/vars/main.yml" beforeDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
@@ -19,57 +260,21 @@
   </component>
   <component name="FileEditorManager">
     <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
-      <file pinned="false" current-in-tab="true">
+      <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/inventory/hosts">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="272">
-              <caret line="16" column="8" lean-forward="true" selection-start-line="16" selection-start-column="8" selection-end-line="16" selection-end-column="8" />
+            <state>
+              <caret column="5" lean-forward="true" selection-start-column="5" selection-end-column="5" />
             </state>
           </provider>
         </entry>
       </file>
-      <file pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/group_vars/controller.yml">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="17">
-              <caret line="1" column="24" selection-start-line="1" selection-start-column="24" selection-end-line="1" selection-end-column="24" />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/group_vars/compute.yml">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="17">
-              <caret line="1" column="24" selection-start-line="1" selection-start-column="24" selection-end-line="1" selection-end-column="24" />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/group_vars/all.yml">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="153">
-              <caret line="9" column="16" lean-forward="true" selection-start-line="9" selection-start-column="16" selection-end-line="9" selection-end-column="16" />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/ansible.cfg">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="51">
-              <caret line="3" column="25" lean-forward="true" selection-start-line="3" selection-start-column="25" selection-end-line="3" selection-end-column="25" />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file pinned="false" current-in-tab="false">
+      <file pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/README.md">
           <provider selected="true" editor-type-id="split-provider[text-editor;markdown-preview-editor]">
             <state split_layout="SPLIT">
-              <first_editor relative-caret-position="119">
-                <caret line="8" column="23" selection-start-line="8" selection-start-column="23" selection-end-line="8" selection-end-column="23" />
+              <first_editor relative-caret-position="391">
+                <caret line="24" column="5" lean-forward="true" selection-start-line="24" selection-start-column="5" selection-end-line="24" selection-end-column="40" />
                 <folding>
                   <element signature="e#0#9#0" />
                 </folding>
@@ -84,6 +289,7 @@
   <component name="FindInProjectRecents">
     <findStrings>
       <find>prodcloudserver01</find>
+      <find>TODxgoJpXNLxuP5iqoKjsc6U2uiQLoj8</find>
     </findStrings>
     <replaceStrings>
       <replace>server01</replace>
@@ -96,11 +302,17 @@
     <option name="CHANGED_PATHS">
       <list>
         <option value="$PROJECT_DIR$/mysql-optimizer.yml" />
-        <option value="$PROJECT_DIR$/README.md" />
         <option value="$PROJECT_DIR$/ansible.cfg" />
-        <option value="$PROJECT_DIR$/group_vars/controller.yml" />
         <option value="$PROJECT_DIR$/group_vars/compute.yml" />
         <option value="$PROJECT_DIR$/inventory/hosts" />
+        <option value="$PROJECT_DIR$/group_vars/az_production.yml" />
+        <option value="$PROJECT_DIR$/group_vars/common.yml" />
+        <option value="$PROJECT_DIR$/group_vars/controller.yml" />
+        <option value="$PROJECT_DIR$/roles/ceilometer/templates/ceilometer.conf.j2" />
+        <option value="$PROJECT_DIR$/roles/gnocchi/tasks/config.yml" />
+        <option value="$PROJECT_DIR$/host_vars/prodcloudserver01.yml" />
+        <option value="$PROJECT_DIR$/README.md" />
+        <option value="$PROJECT_DIR$/group_vars/all.yml" />
       </list>
     </option>
   </component>
@@ -131,7 +343,37 @@
             <path>
               <item name="bash" type="b2602c69:ProjectViewProjectNode" />
               <item name="bash" type="462c0819:PsiDirectoryNode" />
+              <item name="host_vars" type="462c0819:PsiDirectoryNode" />
+            </path>
+            <path>
+              <item name="bash" type="b2602c69:ProjectViewProjectNode" />
+              <item name="bash" type="462c0819:PsiDirectoryNode" />
               <item name="inventory" type="462c0819:PsiDirectoryNode" />
+            </path>
+            <path>
+              <item name="bash" type="b2602c69:ProjectViewProjectNode" />
+              <item name="bash" type="462c0819:PsiDirectoryNode" />
+              <item name="roles" type="462c0819:PsiDirectoryNode" />
+            </path>
+            <path>
+              <item name="bash" type="b2602c69:ProjectViewProjectNode" />
+              <item name="bash" type="462c0819:PsiDirectoryNode" />
+              <item name="roles" type="462c0819:PsiDirectoryNode" />
+              <item name="gnocchi" type="462c0819:PsiDirectoryNode" />
+            </path>
+            <path>
+              <item name="bash" type="b2602c69:ProjectViewProjectNode" />
+              <item name="bash" type="462c0819:PsiDirectoryNode" />
+              <item name="roles" type="462c0819:PsiDirectoryNode" />
+              <item name="gnocchi" type="462c0819:PsiDirectoryNode" />
+              <item name="tasks" type="462c0819:PsiDirectoryNode" />
+            </path>
+            <path>
+              <item name="bash" type="b2602c69:ProjectViewProjectNode" />
+              <item name="bash" type="462c0819:PsiDirectoryNode" />
+              <item name="roles" type="462c0819:PsiDirectoryNode" />
+              <item name="gnocchi" type="462c0819:PsiDirectoryNode" />
+              <item name="templates" type="462c0819:PsiDirectoryNode" />
             </path>
           </expand>
           <select />
@@ -197,7 +439,7 @@
       <window_info id="Structure" order="1" weight="0.25" />
       <window_info id="Favorites" order="2" side_tool="true" />
       <window_info anchor="bottom" id="Message" order="0" />
-      <window_info anchor="bottom" id="Find" order="1" weight="0.32972974" />
+      <window_info anchor="bottom" id="Find" order="1" weight="0.3289689" />
       <window_info anchor="bottom" id="Run" order="2" />
       <window_info anchor="bottom" id="Debug" order="3" weight="0.4" />
       <window_info anchor="bottom" id="Cvs" order="4" weight="0.25" />
@@ -221,19 +463,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/README.md">
-      <provider selected="true" editor-type-id="split-provider[text-editor;markdown-preview-editor]">
-        <state split_layout="SPLIT">
-          <first_editor relative-caret-position="119">
-            <caret line="8" column="23" selection-start-line="8" selection-start-column="23" selection-end-line="8" selection-end-column="23" />
-            <folding>
-              <element signature="e#0#9#0" />
-            </folding>
-          </first_editor>
-          <second_editor />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/ansible.cfg">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="51">
@@ -241,31 +470,147 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/group_vars/compute.yml">
+    <entry file="file://$PROJECT_DIR$/group_vars/az_production.yml">
+      <provider selected="true" editor-type-id="text-editor" />
+    </entry>
+    <entry file="file://$PROJECT_DIR$/group_vars/az_lab.yml">
+      <provider selected="true" editor-type-id="text-editor" />
+    </entry>
+    <entry file="file://$PROJECT_DIR$/group_vars/az_rnd.yml">
+      <provider selected="true" editor-type-id="text-editor" />
+    </entry>
+    <entry file="file://$PROJECT_DIR$/group_vars/ceph.yml">
+      <provider selected="true" editor-type-id="text-editor" />
+    </entry>
+    <entry file="file://$PROJECT_DIR$/group_vars/ceph_account.yml">
+      <provider selected="true" editor-type-id="text-editor" />
+    </entry>
+    <entry file="file://$PROJECT_DIR$/group_vars/common.yml">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="17">
-          <caret line="1" column="24" selection-start-line="1" selection-start-column="24" selection-end-line="1" selection-end-column="24" />
+        <state relative-caret-position="51">
+          <caret line="3" column="28" selection-start-line="3" selection-start-column="28" selection-end-line="3" selection-end-column="28" />
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/group_vars/all.yml">
+    <entry file="file://$PROJECT_DIR$/group_vars/compute.yml">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="153">
-          <caret line="9" column="16" lean-forward="true" selection-start-line="9" selection-start-column="16" selection-end-line="9" selection-end-column="16" />
+        <state relative-caret-position="34">
+          <caret line="2" column="8" selection-start-line="2" selection-start-column="8" selection-end-line="2" selection-end-column="8" />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/group_vars/controller.yml">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="17">
-          <caret line="1" column="24" selection-start-line="1" selection-start-column="24" selection-end-line="1" selection-end-column="24" />
+        <state relative-caret-position="-131">
+          <caret line="5" selection-start-line="5" selection-end-line="14" selection-end-column="25" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/roles/ceilometer/templates/ceilometer.conf.j2">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="119">
+          <caret line="7" column="9" selection-start-line="7" selection-start-column="9" selection-end-line="7" selection-end-column="9" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/roles/ceilometer/templates/polling.yaml.j2">
+      <provider selected="true" editor-type-id="text-editor" />
+    </entry>
+    <entry file="file://$PROJECT_DIR$/roles/ceilometer/templates/ssl.ceilometer.conf.j2">
+      <provider selected="true" editor-type-id="text-editor" />
+    </entry>
+    <entry file="file://$PROJECT_DIR$/roles/ceilometer/templates/polling.yaml.full.j2">
+      <provider selected="true" editor-type-id="text-editor" />
+    </entry>
+    <entry file="file://$PROJECT_DIR$/roles/gnocchi/templates/gnocchi.conf.ceph.j2">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="-408" />
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/roles/gnocchi/templates/gnocchi.logrotate.j2">
+      <provider selected="true" editor-type-id="text-editor" />
+    </entry>
+    <entry file="file://$PROJECT_DIR$/roles/gnocchi/templates/ssl.gnocchi.conf.fs.j2">
+      <provider selected="true" editor-type-id="text-editor" />
+    </entry>
+    <entry file="file://$PROJECT_DIR$/roles/gnocchi/templates/ssl.gnocchi.conf.ceph.j2">
+      <provider selected="true" editor-type-id="text-editor" />
+    </entry>
+    <entry file="file://$PROJECT_DIR$/host_vars/prodcloudserver01.yml">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="51">
+          <caret line="3" lean-forward="true" selection-start-line="3" selection-end-line="3" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/interfaces.yml">
+      <provider selected="true" editor-type-id="text-editor" />
+    </entry>
+    <entry file="file://$PROJECT_DIR$/roles/gnocchi/templates/gnocchi.conf.fs.j2">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="187">
+          <caret line="35" column="11" selection-start-line="35" selection-start-column="11" selection-end-line="35" selection-end-column="11" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/roles/ceilometer/templates/ceilometer_sudoers.j2">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="68">
+          <caret line="4" selection-start-line="4" selection-end-line="4" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/roles/gnocchi/tasks/init.yml">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="442">
+          <caret line="26" column="63" selection-start-line="26" selection-start-column="48" selection-end-line="26" selection-end-column="63" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/group_vars/all.yml">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="-1938">
+          <caret line="6" column="22" lean-forward="true" selection-start-line="6" selection-start-column="22" selection-end-line="6" selection-end-column="22" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/roles/gnocchi/templates/gnocchi_sudoers.j2">
+      <provider selected="true" editor-type-id="text-editor" />
+    </entry>
+    <entry file="file://$PROJECT_DIR$/roles/gnocchi/templates/gnocchi-api.conf.j2">
+      <provider selected="true" editor-type-id="text-editor" />
+    </entry>
+    <entry file="file://$PROJECT_DIR$/index.html">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="-7837">
+          <caret line="19" column="26" lean-forward="true" selection-start-line="19" selection-start-column="26" selection-end-line="19" selection-end-column="26" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/roles/gnocchi/tasks/config.yml">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="311">
+          <caret line="27" column="42" selection-start-line="27" selection-start-column="42" selection-end-line="27" selection-end-column="42" />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/inventory/hosts">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="272">
-          <caret line="16" column="8" lean-forward="true" selection-start-line="16" selection-start-column="8" selection-end-line="16" selection-end-column="8" />
+        <state>
+          <caret column="5" lean-forward="true" selection-start-column="5" selection-end-column="5" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/README.md">
+      <provider selected="true" editor-type-id="split-provider[text-editor;markdown-preview-editor]">
+        <state split_layout="SPLIT">
+          <first_editor relative-caret-position="391">
+            <caret line="24" column="5" lean-forward="true" selection-start-line="24" selection-start-column="5" selection-end-line="24" selection-end-column="40" />
+            <folding>
+              <element signature="e#0#9#0" />
+            </folding>
+          </first_editor>
+          <second_editor />
         </state>
       </provider>
     </entry>

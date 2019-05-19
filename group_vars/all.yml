@@ -1,113 +1,26 @@
 ---
-
-ops_dk_repo: https://gitlab.visc.com/thaiph5/ops_container_deployment.git
-ops_dk_files_path: /usr/src/openstack-dockerfiles/
-ops_dk_repo_dir: ops_container_deployment
-ops_dk_repo_branch: bash/pike 
 time_zone: Asia/Ho_Chi_Minh
 openstack_release: pike 
 openstack_branch: "stable/{{ openstack_release }}"
-server_delay: 10
-server_time_out: 300 
-ntp_server: 192.168.181.50
 
-proxy_addr:
-proxy: 
-  http_proxy: "{{ proxy_addr }}"
-  https_proxy: "{{ proxy_addr }}"
-
-services_controller: os-controller
-
-vip:
-  haproxy:
-    ip: 10.240.207.159
-    router_id: 159 
-    auth:
-      auth_type: PASS
-      auth_pass: TKY5ub8kpOhhH7mn8xd5F9fMr4BNkpNM
-  gnocchi_indexer:
-    ip: 10.240.207.157
-    router_id: 157 
-    auth:
-      auth_type: PASS
-      auth_pass: Xs3GKvf7U2T0dBJyRuMMBWd2l0eZIjsu 
-  postgres:
-    ip: 10.240.207.207
-    router_id: 207
-    auth:
-      auth_type: PASS
-      auth_pass: 2prR95NTACKwjP7l8OFIjawHRggENiOf
-  mysql:
-    ip: 10.240.207.158
-    router_id: 158 
-    auth:
-      auth_type: PASS
-      auth_pass: vYGwGR1Sa6fFaZ3vsYHNGKDUJfwKqMKR
-  etcd:
-    ip: 192.168.2.195
-    router_id: 159 
-    auth:
-      auth_type: PASS
-      auth_pass: UrN49a0XsnaBf2EKnnlc4OlFB7Mm8Kb0
-
-local_repo_ip: 192.168.2.191
-local_installation: 1
-
-#docker_version: 17.12.0~ce-0~ubuntu
-docker_version: 18.03.1~ce-0~ubuntu
-docker_host_port: 4000
-docker_reg_port: 4000
-docker_reg_host: docker-registry
-docker_reg_ip: "{{ local_repo_ip }}"
-
-docker_images_tag: "{{ openstack_release }}" 
-docker_shared_conf_dir: /usr/share/docker
-
-management_net: 10.240.207.128/26
-management_netaddr: "{{ management_net | net_parser | first }}"
-management_netmask: "{{ management_net | net_parser | last }}"
-
-controlplane_mgmt_ip: "{{ vip.haproxy.ip }}"
+mysql_host: "192.168.1.211"
+mysql_pass: Welcome123
+mysql_port: 3306
 
 influxdb_host: "{{ groups['influxdb'] | map('extract', hostvars, ['ansible_ssh_host']) | first }}"
-influxdb_pass: 8wJgHO9Agk2J7xDcNGnjzP4el6zuRL1q 
+influxdb_pass: 8wJgHO9Agk2J7xDcNGnjzP4el6zuRL1q
 
-logstash_host: "{{ groups['logstash'] | map('extract', hostvars, ['ansible_ssh_host']) | first }}"
-logstash_port: 5044
-
-# services password
 rabbit_user: openstack
 rabbit_passwd: myssUkvSvjRWOIc1ZdaBRxyUt92DdF6C 
 rabbit_port: 5672
-
-horizon_dbpass: Jlrt22OokseSflbn0fe1IfrLWO378jGF
-
-keystone_pass: nECVwjB3iqXLjtKYSRmV22yBcvunz5IG
-keystone_dbpass: RI453R7aqVQN6NvWCshgupeJEGSaI9rF
-
-glance_dbpass: Rd79TBinB6F5SaojIzkwkZEFBK9T1BGU 
-glance_pass: EP1mn2t1y6xmAlfb6JJyDbTdtxmHvNEK 
-
-nova_dbpass: jeFUQETTfaXxsU58HDML2fLPm6wm7cLB 
-nova_pass: GZIm0bfOK3BdGLGVQOwHDLZwyflB8U0t
-placement_pass: TDcAaIBoH8kZ4xMjkxzoQ97Io49kevRk
-
-neutron_dbpass: eIBDY9OZMVVAgKTGkelSAHrpj1c1JCMY
-neutron_pass: PmYgrMGD8wnkdInX56Saa1wwXsNTDy5w
-
-cinder_dbpass: vOOgufBumYQI4aVtuqZzpeexxhOgip1C
-cinder_pass: 1q1ZHG9ZN3zqsHc4Tbin2VTRfzi8lvlH
 
 metadata_secret: z99ebmQf5Q3m9KAQ6dvTOM5JF1K3ikUv
 memcached_pass: bDz6MWsSaBtQtH3LXEsTT8RI6sct5WNM
 memcached_port: 11211
 
-masakari_dbpass: 8Kjl3WeZMeYlWn2udYxo3eF22fSbgSLO
-masakari_pass: xie6NAgc26eYwH1KQL3g97ja8ykIpzEd
-
-heat_dbpass: FeehricA3Jq44UIqnv74t703tuspNRAp 
+heat_dbpass: FeehricA3Jq44UIqnv74t703tuspNRAp
 heat_pass: JSCjPx3OQfhCdCBsN8iGiCbV8QlLnhVp
-heat_domain_admin_pass: VKwS2OQgmBfYJ2az3Nfy3UWMR4EUubAC 
+heat_domain_admin_pass: VKwS2OQgmBfYJ2az3Nfy3UWMR4EUubAC
 
 ceilometer_dbpass: f65cy7CdukuRSzGkRY4UIC9uGSoglO5v
 ceilometer_pass: AzbjP9nkbGunbUMyWdow8RiBb719wsEF
@@ -117,13 +30,6 @@ gnocchi_pass: RUcWrmSVFCRPXzbqwmoRC3zQHSWBILZ3
 
 aodh_dbpass: XXY41zqhAL0Vm3Er07NMXJzUGtIywRCb
 aodh_pass: QVQgmnI3o55N437gjMoo10FKqBP3FYnd
-
-octavia_dbpass: NoXlhVMich1Qet0qyOG2P4vNi099IJL3 
-octavia_pass: BnBOlELVX5lYj6tnyaTXwdErEnIqoDqV
-
-no_proxy_env:
-  http_proxy: ''
-  https_proxy: ''
 
 general_env:
   MY_IP: "{{ ansible_ssh_host }}" 
@@ -182,47 +88,6 @@ keystone_env:
     ORGANIZATION: VSC
     COMMON_NAME: "{{ services_controller }}"
 
-glance_env:
-  GLANCE_DBPASS: "{{ glance_dbpass }}"
-  GLANCE_PASS: "{{ glance_pass }}"
-  SSL_ENABLED: 1
-
-nova_env:
-  NOVA_DBPASS: "{{ nova_dbpass }}"
-  NOVA_PASS: "{{ nova_pass }}"
-  PLACEMENT_PASS: "{{ placement_pass }}"
-  NEUTRON_PASS: "{{ neutron_pass }}"
-  METADATA_PROXY_SHARED_SECRET: "{{ metadata_secret }}"
-  SSL_ENABLED: 1
-
-neutron_env:
-  NEUTRON_DBPASS: "{{ neutron_dbpass }}"
-  NEUTRON_PASS: "{{ neutron_pass }}"
-  NOVA_PASS: "{{ nova_pass }}"
-  METADATA_PROXY_SHARED_SECRET: "{{ metadata_secret }}"
-  SSL_ENABLED: 1
-
-cinder_env:
-  CINDER_DBPASS: "{{ cinder_dbpass }}"
-  CINDER_PASS: "{{ cinder_pass }}"
-  SSL_ENABLED: 1
-
-masakari_env:
-  MASAKARI_DBPASS: "{{ masakari_dbpass }}" 
-  MASAKARI_PASS: "{{ masakari_pass }}"
-  NOVA_PASS: "{{ nova_pass }}"
-  MSQ_PASS: "{{ rabbit_passwd }}" 
-  OS_CACERT: "{{ docker_shared_conf_dir }}/masakari/ssl/openstack.crt"
-  CA_BUNDLE: "{{ docker_shared_conf_dir }}/masakari/ssl/openstack.crt"
-  REQUESTS_CA_BUNDLE: "{{ docker_shared_conf_dir }}/masakari/ssl/openstack.crt"
-  SSL_ENABLED: 1
-
-heat_env:
-  HEAT_DBPASS: "{{ heat_dbpass }}"
-  HEAT_PASS: "{{ heat_pass }}"
-  HEAT_DOMAIN_PASS: "{{ heat_domain_admin_pass }}"
-  SSL_ENABLED: 1
-
 ceilometer_env:
   CEILOMETER_DBPASS: "{{ ceilometer_dbpass }}"
   CEILOMETER_PASS: "{{ ceilometer_pass }}"
@@ -231,153 +96,30 @@ ceilometer_env:
 gnocchi_env:
   GNOCCHI_DBPASS: "{{ gnocchi_dbpass }}"
   GNOCCHI_PASS: "{{ gnocchi_pass }}"
-#  GNOCCHI_INDEXER: postgresql
-  GNOCCHI_INDEXER: mysql 
-#  GNOCCHI_INDEXER_MODE: master_master
-  GNOCCHI_INDEXER_MODE: master_slave
-  SSL_ENABLED: 1
+  GNOCCHI_INDEXER: mysql
 
 aodh_env:
   AODH_DBPASS: "{{ aodh_dbpass }}"
   AODH_PASS: "{{ aodh_pass }}"
   SSL_ENABLED: 1
 
-octavia_env:
-  OCTAVIA_DBPASS: "{{ octavia_dbpass }}"
-  OCTAVIA_PASS: "{{ octavia_pass }}"
-  AMP_IMAGE_TAG: amphora
-  AMP_BOOT_NETWORK_LIST: 73993b45-2dd4-4c2a-87d1-e80c7c4af400
-  SSL_ENABLED: 1
-
-dashboard_env:
-  HORIZON_DBPASS: "{{ horizon_dbpass }}"
-  SSL_ENABLED: 1
-
 identity_env: "{{ general_env | merge(keystone_env) | merge(no_proxy_env) }}"
 
-openstack_client_env: "{{ general_env | merge(ops_client_env) | merge(glance_env) | merge(nova_env) | merge(neutron_env) | merge(cinder_env) | merge(no_proxy_env) }}"
+openstack_client_env: "{{ general_env | merge(ops_client_env) }}"
 
-openstack_client_env_ssl: "{{ general_env | merge(ops_client_env_ssl) | merge(glance_env) | merge(nova_env) | merge(neutron_env) | merge(cinder_env) | merge(no_proxy_env) }}"
-
-image_env: "{{ general_env | merge(glance_env) | merge(no_proxy_env) }}"
-
-compute_env: "{{ general_env | merge(nova_env) | merge(no_proxy_env) }}"
-
-network_env: "{{ general_env | merge(neutron_env) | merge(no_proxy_env) }}"
-
-block_storage_env: "{{ general_env | merge(cinder_env) | merge(no_proxy_env) }}"
-
-horizon_env: "{{ general_env | merge(dashboard_env) | merge(no_proxy_env) }}"
-
-ha_compute_env: "{{ general_env | merge(masakari_env) | merge(no_proxy_env) }}"
+openstack_client_env_ssl: "{{ general_env | merge(ops_client_env_ssl) }}"
 
 orchestration_env: "{{ general_env | merge(heat_env) | merge(no_proxy_env) }}"
 
-data_collection_env: "{{ general_env | merge(ceilometer_env) | merge(no_proxy_env) }}"
+data_collection_env: "{{ general_env | merge(ceilometer_env) }}"
 
-metric_storage_env: "{{ general_env | merge(gnocchi_env) | merge(no_proxy_env) }}"
+metric_storage_env: "{{ general_env | merge(gnocchi_env) }}"
 
-alert_env: "{{ general_env | merge(aodh_env) | merge(no_proxy_env) }}"
-
-loadbalancer_env: "{{ general_env | merge(octavia_env) | merge(no_proxy_env) }}"
+alert_env: "{{ general_env | merge(aodh_env) }}"
 
 grafana:
-  fqdn: "http://10.240.207.50:3000"
+  fqdn: "http://192.168.1.1:3000"
 
-redis:
-  redis_sentinel_port: 26379
-  redis_master_set: mymaster
-  redis_user:
-  redis_password: SEep4ka8k5xO58BKK6Rme4ngv34hFDgh
-  image:
-    server: "{{ docker_reg_host }}:{{ docker_host_port }}/redis:latest"
-    sentinel: "{{ docker_reg_host }}:{{ docker_host_port }}/redis-sentinel:latest"
-  env:
-    master:
-      REDIS_REPLICATION_MODE: master
-      REDIS_PASSWORD: SEep4ka8k5xO58BKK6Rme4ngv34hFDgh
-    slave:
-      REDIS_REPLICATION_MODE: slave
-      REDIS_MASTER_HOST: "{{ groups['redis-master'][0] }}"
-      REDIS_MASTER_PORT_NUMBER: 6379
-      REDIS_MASTER_PASSWORD: SEep4ka8k5xO58BKK6Rme4ngv34hFDgh
-      REDIS_PASSWORD: SEep4ka8k5xO58BKK6Rme4ngv34hFDgh
-    sentinel:
-      REDIS_MASTER_HOST: "{{ groups['redis-master'][0] }}"
-      REDIS_MASTER_SET: mymaster
-      REDIS_SENTINEL_QUORUM: 2
-      REDIS_MASTER_PORT_NUMBER: 6379
-      REDIS_MASTER_PASSWORD: SEep4ka8k5xO58BKK6Rme4ngv34hFDgh
-      REDIS_PASSWORD: SEep4ka8k5xO58BKK6Rme4ngv34hFDgh
-      DOWN_TIMEOUT: 5000
-      FAILOVER_TIMEOUT: 10000
-
-zookeeper:
-  user: gnocchi
-  password: gnocchi
-  image: "{{ docker_reg_host }}:{{ docker_host_port }}/zookeeper:latest"
-  env:
-    ZOO_SERVER_USERS: gnocchi
-    ZOO_SERVER_PASSWORDS: dCAdXSOUeiEGkGJbN4pj3Tf15IUPvIT6
-    ZOO_SERVER_ID: "{{ zk_server.id }}"
-    ZOO_SERVERS: "{{ zk_server.server }}"
-    ZOO_ENABLE_AUTH: "yes"
-    ZOO_TIMEZONE: Asia/Bangkok
-    #ZOO_TIMEZONE: Asia/Saigon
-  
-postgres_host: "{{ vip.postgres.ip }}"
-
-postgres:
-  addr: "{{ postgres_host }}"
-  image: "{{ docker_reg_host }}:{{ docker_host_port }}/postdock:latest"
-  env:
-    master:
-      INITIAL_NODE_TYPE: master
-      NODE_ID: "{{ postgres_hostvars.NODE_ID }}"
-      NODE_NAME: "{{ groups['postgres-master'][0] }}"
-      CLUSTER_NODE_NETWORK_NAME: "{{ groups['postgres-master'][0] }}"
-      PGPASSWORD: AYQRHUB5WttSnAyPQMYVP8xnD6b62gfl 
-      POSTGRES_PASSWORD: AYQRHUB5WttSnAyPQMYVP8xnD6b62gfl 
-      POSTGRES_USER: postgres_user
-      POSTGRES_DB: gnocchi
-      CLUSTER_NODE_REGISTER_DELAY: 5
-      REPLICATION_DAEMON_START_DELAY: 120
-      CLUSTER_NAME: pg_cluster
-      REPLICATION_DB: repl_db
-      REPLICATION_USER: repl_user
-      REPLICATION_PASSWORD: 0OJCZ28Bfpi8JHkfqYD0m30EATjWEChK
-    slave:
-      INITIAL_NODE_TYPE: standby
-      NODE_ID: "{{ postgres_hostvars.NODE_ID }}"
-      NODE_NAME: "{{ inventory_hostname }}"
-      CLUSTER_NODE_NETWORK_NAME: "{{ inventory_hostname }}"
-      PGPASSWORD: AYQRHUB5WttSnAyPQMYVP8xnD6b62gfl 
-      REPLICATION_PRIMARY_HOST: "{{ groups['postgres-master'][0] }}"
-      REPLICATION_DB: repl_db
-      REPLICATION_USER: repl_user
-      REPLICATION_PASSWORD: 0OJCZ28Bfpi8JHkfqYD0m30EATjWEChK
-      REPLICATION_UPSTREAM_NODE_ID: "{{ hostvars[groups['postgres-master'][0]]['postgres_hostvars']['NODE_ID'] }}" 
-
-postgres_bdr:
-  addr: "{{ postgres_host }}"
-  image: "{{ docker_reg_host }}:{{ docker_host_port }}/postgres-bdr:latest"
-  env:
-    POSTGRES_PASSWORD: AYQRHUB5WttSnAyPQMYVP8xnD6b62gfl 
-
-mysql_host: "{{ vip.mysql.ip }}"
-
-haproxy_env:
-  IMAGE: "{{ docker_reg_host }}:{{ docker_host_port }}/haproxy:alpine"
-  SHARED_CONF_DIR: "{{ docker_shared_conf_dir }}"
-  LOG_PATH: /dev/log
-  USER: cloud
-  PASS: kPCjtmDIIktQIfKc3JfnN6mTYa1uSQiD 
-  MAXCONN: 40000
-
-keepalived_env:
-  IMAGE: "{{ docker_reg_host }}:{{ docker_host_port }}/keepalived:alpine"
-  KEEPALIVED_AUTOCONF: false
-  KEEPALIVED_CONF: /etc/keepalived/keepalived.conf
 
 memcached_env:
   IMAGE: "{{ docker_reg_host }}:{{ docker_host_port }}/memcached:alpine"
@@ -400,46 +142,4 @@ rabbitmq_env:
   MEMORY: 16G
   MONITOR:
     USERNAME: telegraf
-    PASSWORD: dPxn8m1TNt9zp5I7I3WOHITiSFU5ioXe 
-
-mysql_env:
-  openstack:
-    IMAGE: "{{ docker_reg_host }}:{{ docker_host_port }}/mariadb-galera:10.2"
-    WSREP_CLUSTER_NAME: openstack
-    WSREP_NODE_NAME: "{{ inventory_hostname }}"
-    WSREP_NODE_ADDRESS: "{{ ansible_ssh_host }}"
-    WSREP_CLUSTER_ADDRESS: "gcomm://{{ groups['mysql'] | map('extract', hostvars, ['ansible_ssh_host']) | join(':4567,') }}:4567"
-    WSREP_PROVIDER_OPTIONS: "gmcast.listen_addr=tcp://0.0.0.0:4567"
-    WSREP_SST_RECEIVE_ADDRESS: "{{ ansible_ssh_host }}:4444"
-    MYSQL_HOST: "{{ vip.mysql.ip }}"
-    MYSQL_PORT: 3306
-    MYSQL_ROOT_PASSWORD: Ej1cPttlOc0gDj411r1gj7TaevtpVHoh 
-    MAX_CONNECTIONS: 10000
-    MAX_CONNECT_ERRORS: 10000
-    MAX_ALLOWED_PACKET: 16777216
-    CONTAINER_NAME: mysql-openstack
-    CONTAINER_DATA_DIR: "{{ docker_shared_conf_dir }}/mysql-openstack/"
-    CONTAINER_LOG_DIR: /var/log/mysql/openstack
-    MONITOR:
-      USERNAME: telegraf
-      PASSWORD: nKpyk6KTxsdI2SrWRI3DVUTfd3I08k80 
-  gnocchi:
-    IMAGE: "{{ docker_reg_host }}:{{ docker_host_port }}/mariadb-galera:10.2"
-    WSREP_CLUSTER_NAME: gnocchi
-    WSREP_NODE_NAME: "{{ inventory_hostname }}"
-    WSREP_NODE_ADDRESS: "{{ ansible_ssh_host }}"
-    WSREP_CLUSTER_ADDRESS: "gcomm://{{ groups['mysql'] | map('extract', hostvars, ['ansible_ssh_host']) | join(':5678,') }}:5678"
-    WSREP_PROVIDER_OPTIONS: "gmcast.listen_addr=tcp://0.0.0.0:5678"
-    WSREP_SST_RECEIVE_ADDRESS: "{{ ansible_ssh_host }}:5555"
-    MYSQL_HOST: "{{ vip.gnocchi_indexer.ip }}"
-    MYSQL_PORT: 3307
-    MYSQL_ROOT_PASSWORD: ylLjvNrdUkcaGvKVhLUkTsA9facGnBSK 
-    MAX_CONNECTIONS: 10000
-    MAX_CONNECT_ERRORS: 10000
-    MAX_ALLOWED_PACKET: 16777216
-    CONTAINER_NAME: mysql-gnocchi
-    CONTAINER_DATA_DIR: "{{ docker_shared_conf_dir }}/mysql-gnocchi/"
-    CONTAINER_LOG_DIR: /var/log/mysql/gnocchi
-    MONITOR:
-      USERNAME: telegraf
-      PASSWORD: TODxgoJpXNLxuP5iqoKjsc6U2uiQLoj8 
+    PASSWORD: dPxn8m1TNt9zp5I7I3WOHITiSFU5ioXe

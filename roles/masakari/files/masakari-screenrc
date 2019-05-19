@@ -1,12 +1,0 @@
-sessionname masakari_monitors 
-hardstatus alwayslastline '%{= .} %-Lw%{= .}%> %n%f %t*%{= .}%+Lw%< %-=%{g}(%{d}%H/%l%{g})'
-setenv PROMPT_COMMAND /bin/true
-setenv DATE $(date '+%d_%m_%Y')
-screen -t masakari-hostmonitor bash
-stuff "masakari-hostmonitor"
-logfile /var/log/masakarimonitors/mskr-host_mon.log
-log on
-screen -t masakari-processmonitor bash
-stuff "masakari-processmonitor"
-logfile /var/log/masakarimonitors/mskr-proc_mon.log
-log on

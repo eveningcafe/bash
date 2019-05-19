@@ -10,23 +10,14 @@ server01
 server02
 server03
 
-[influxdb]
-server02
+[monitor-center]
+server01
+
 
 [telegraf]
 server01
 server02
 server03
 
-[kapacitor]
-server01
 
-[redis]
-server03
-
-[mysql]
-server01
-
-[rabbitmq]
-server01
 
