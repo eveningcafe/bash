@@ -1,18 +1,13 @@
 ### Notes
 - Masakari (api and engine): containerized services (pending)
 
-### Documents
-- Pending
 
-### Playbook structure
-- Pending
-
-### Topology
+### Topology suggest
 - 3 controller nodes, 2 compute nodes - HA configuration for controller nodes
 - Network planning:
-  - 1st - management network: 10.10.0.0/24
-  - 2nd - public network: 192.168.2.0/24
-  - 3rd - data network: 10.10.1.0/24
+  - 1st - management network: 
+  - 2nd - public network: 
+  - 3rd - data network:
 
 ### Usage
 - Ensure ssh connection between `installer server` (server with foreman, ansible installers)and `openstack servers`

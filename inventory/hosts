@@ -1,39 +1,25 @@
-[all:vars]
-ansible_connection=ssh
-ansible_ssh_port=22
-ansible_ssh_user=ubuntu
-ansible_become_pass=123456
-ansible_ssh_private_key_file=/root/.ssh/id_rsa
-
 [all]
-server01 ansible_ssh_host=192.168.2.191
-server02 ansible_ssh_host=192.168.2.192
-server03 ansible_ssh_host=192.168.2.193
+server01 ansible_ssh_host=192.168.1.211
+server02 ansible_ssh_host=192.168.1.212
+server03 ansible_ssh_host=192.168.1.213
 
 [controller]
 server01
-server02
-server03
-
-[hub]
-server01
-
-[current_controller:children]
-controller
 
 [compute]
 server02
 server03
 
-[current_compute:children]
-compute
-
-[current:children]
-current_controller
-current_compute
-
 [influxdb]
 server02
+
+[telegraf]
+server01
+server02
+server03
+
+[kapacitor]
+server01
 
 [redis]
 server03

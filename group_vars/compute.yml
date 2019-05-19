@@ -1,5 +1,5 @@
 ---
-
+ansible_ssh_user: ubuntu
 masakari_monitors_repo: "https://github.com/openstack/masakari-monitors.git"
 masakari_client_repo: "https://github.com/openstack/python-masakariclient.git"
 ops:
