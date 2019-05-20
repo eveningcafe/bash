@@ -1,0 +1,4 @@
+---
+- import_playbook: heat.yml
+- import_playbook: vitrage.yml
+- import_playbook: mistral.yml

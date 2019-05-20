@@ -1,39 +1,19 @@
 ---
 
-- name: Clean gnocchi 
-  hosts: controller
+- name: Bootstrap Heat
+  hosts: "{{groups[['controller'][0]}}"
   tasks:
     - include_role:
         name: gnocchi
-        tasks_from: teardown 
-  become: true
-
-- name: Create indexer databases
-  hosts: controller
-  tasks:
-    - include_role:
-        name: gnocchi 
-        tasks_from: keepalived
-    - include_role:
-        name: gnocchi
-        tasks_from: indexer
-  become: true
-
-- name: Bootstrap OpenStack projects
-  hosts: controller:&hub
-  tasks:
-    - include_role:
-        name: gnocchi 
         tasks_from: setup
   become: true
 
-- name: Setup gnocchi on Controller Nodes 
-  hosts: current_controller 
+- name: Setup heat on Controller Nodes
+  hosts: "{{groups[['controller'][0]}}"
   tasks:
     - include_role:
-        name: gnocchi 
+        name: gnocchi
         tasks_from: "{{ item }}"
       with_items:
-        - controller 
-        - haproxy
+        - controller
   become: true

@@ -1,28 +1,19 @@
 ---
 
-- name: Bootstrap OpenStack projects
-  hosts: current_controller:&hub
+- name: Bootstrap Heat
+  hosts: "{{groups[['controller'][0]}}"
   tasks:
     - include_role:
         name: aodh
-        tasks_from: teardown
-    
-    - include_role:
-        name: aodh
-        tasks_from: init
-    
-    - include_role:
-        name: aodh
-        tasks_from: bootstrap
+        tasks_from: setup
   become: true
 
-- name: Start aodh service on OpenStack Controller Nodes
-  hosts: current_controller
+- name: Setup heat on Controller Nodes
+  hosts: "{{groups[['controller'][0]}}"
   tasks:
     - include_role:
-        name: aodh 
-        tasks_from: "{{ item }}" 
+        name: aodh
+        tasks_from: "{{ item }}"
       with_items:
         - controller
-        - haproxy
   become: true

@@ -1,7 +1,7 @@
 ---
 
 - name: Bootstrap Heat
-  hosts: current_controller:&hub
+  hosts: "{{groups[['controller'][0]}}"
   tasks:
     - include_role:
         name: heat 
@@ -9,12 +9,11 @@
   become: true
 
 - name: Setup heat on Controller Nodes 
-  hosts: current_controller
+  hosts: "{{groups[['controller'][0]}}"
   tasks:
     - include_role:
         name: heat 
         tasks_from: "{{ item }}"
       with_items:
         - controller
-        - haproxy 
   become: true

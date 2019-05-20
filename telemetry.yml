@@ -1,0 +1,6 @@
+---
+- import_playbook: ceilometer.yml
+- import_playbook: ceilometer-compute.yml
+- import_playbook: gnocchi.yml
+- import_playbook: aodh.yml
+- import_playbook: grafana.yml

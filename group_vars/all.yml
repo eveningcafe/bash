@@ -4,6 +4,7 @@ openstack_release: pike
 openstack_branch: "stable/{{ openstack_release }}"
 
 mysql_host: "192.168.1.211"
+mysql_user: openstack
 mysql_pass: Welcome123
 mysql_port: 3306
 
@@ -11,11 +12,12 @@ influxdb_host: "{{ groups['influxdb'] | map('extract', hostvars, ['ansible_ssh_h
 influxdb_pass: 8wJgHO9Agk2J7xDcNGnjzP4el6zuRL1q
 
 rabbit_user: openstack
-rabbit_passwd: myssUkvSvjRWOIc1ZdaBRxyUt92DdF6C 
+rabbit_passwd: myssUkvSvjRWOIc1ZdaBRxyUt92DdF6C
+rabbit_host: "192.168.1.211"
 rabbit_port: 5672
 
-metadata_secret: z99ebmQf5Q3m9KAQ6dvTOM5JF1K3ikUv
 memcached_pass: bDz6MWsSaBtQtH3LXEsTT8RI6sct5WNM
+memchached_host: "192.168.1.211"
 memcached_port: 11211
 
 heat_dbpass: FeehricA3Jq44UIqnv74t703tuspNRAp
@@ -78,9 +80,8 @@ ops_client_env_ssl:
 
 keystone_env:
   ADMIN_PASS: "{{ keystone_pass }}"
-  KEYSTONE_DBPASS: "{{ keystone_dbpass }}"
   TOKEN_EXPIRATION: 7200
-  SSL_ENABLED: 1
+  SSL_ENABLED: 0
   SSL_CERT:
     COUNTRY: VN
     STATE: Hanoi
