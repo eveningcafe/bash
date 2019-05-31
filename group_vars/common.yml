@@ -1,5 +1,5 @@
 #ignore this group var in product enviroment
-use_proxy: true
+use_proxy: false
 http_proxy: "http://192.168.5.8:3128"
 https_proxy: "http://192.168.5.8:3128"
 #remember add vitural ip keepalive in no_proxy

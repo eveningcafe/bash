@@ -1,0 +1,15 @@
+---
+
+- name: Get orchestration public endpoint
+  shell: |
+    {{ docker_openstack_client }} endpoint list | grep orchestration | grep public | awk '{ print $2 }'
+  environment: "{{ ops_client_env }}"
+  register: orchestration_public_endpoint
+
+- include_role:
+    name: openstack-client
+    tasks_from: update_endpoint
+  vars:
+    endpoint:
+      id: "{{ orchestration_public_endpoint.stdout }}"
+      url: "{{ new_endpoint }}"

@@ -1,0 +1,4 @@
+Defaults:heat !requiretty
+
+heat ALL=(root) NOPASSWD:SETENV: /usr/local/bin/copy_file.sh
+heat ALL = (root) NOPASSWD: /usr/bin/heat-rootwrap /etc/heat/rootwrap.conf *

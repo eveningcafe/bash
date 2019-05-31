@@ -1,19 +1,19 @@
 ---
 
-- name: Bootstrap OpenStack projects
-  hosts: controller:&hub
+- name: Bootstrap ceilometer
+  hosts: "{{groups[['controller'][0]}}"
   tasks:
     - include_role:
-        name: ceilometer 
+        name: ceilometer
         tasks_from: setup
   become: true
 
-- name: Setup ceilometer on Controller Nodes 
-  hosts: controller 
+- name: Setup ceilometer on Controller Nodes
+  hosts: "{{groups[['controller'][0]}}"
   tasks:
     - include_role:
-        name: ceilometer 
+        name: ceilometer
         tasks_from: "{{ item }}"
       with_items:
-        - controller 
+        - controller
   become: true

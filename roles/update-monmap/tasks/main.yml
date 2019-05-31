@@ -1,5 +1,0 @@
----
-  
-- name: update mon map
-  command: "docker exec {{mon_name}} ceph mon getmap -o /etc/ceph/monmap-ceph"
-  ignore_errors: yes

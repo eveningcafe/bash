@@ -1,0 +1,30 @@
+---
+
+- name: Check ha config for service
+  shell: |
+    cat {{ docker_shared_conf_dir }}/haproxy/haproxy/haproxy.cfg | grep heat 
+  register: service_cfg
+  ignore_errors: yes
+  
+- include_role:
+    name: haproxy
+    tasks_from: update
+  vars:
+    services:
+      - name: heat_api 
+        port: 8004 
+        bind_ips:
+        options:
+          - "balance  source"
+          - "option  tcpka"
+          - "option  httpchk"
+          - "option  tcplog"
+      - name: heat_api_cfn 
+        port: 8000 
+        bind_ips:
+        options:
+          - "balance  source"
+          - "option  tcpka"
+          - "option  httpchk"
+          - "option  tcplog"
+  when: service_cfg.rc == 1

@@ -1,0 +1,79 @@
+---
+
+networking:
+  dhcp:
+    enabled: false
+    data:
+      - interface: eth0
+  static:
+    enabled: true 
+    data:
+      - interface: bond3.350 
+        address: 192.168.10.172
+        netmask: 255.255.255.0
+        gateway:
+        nameservers:
+        vlan:
+          enabled: true 
+          vlan_raw_device: bond3 
+      - interface: bond3.400 
+        address: 192.168.20.172
+        netmask: 255.255.255.0
+        gateway:
+        nameservers:
+        vlan:
+          enabled: true
+          vlan_raw_device: bond3 
+  promisc:
+    enabled: false 
+    data:
+      - interface: bond1 
+      - interface: bond2 
+  bond:
+    enabled: true 
+    data:
+      manual:
+        enabled: true
+        data:
+          - master: bond3
+            slaves:
+              - ens4f0 
+              - ens4f1 
+      promisc:
+        enabled: true
+        data:
+          - master: bond1
+            slaves:
+              - eno3
+              - eno4
+          - master: bond2
+            slaves:
+              - ens1f0
+              - ens1f1
+
+postgres_hostvars:
+  NODE_ID: 2
+
+zk_server:
+  id: 2
+  server: "{{ groups['zkcluster'][0] }}:2888:3888,0.0.0.0:2888:3888,{{ groups['zkcluster'][2] }}:2888:3888"
+
+system_config:
+  reserved_mem: 16384 
+  cpu_set: 2,3
+  grub:
+    default_hugepagesz: 2M
+    hugepagesz: 2M
+    isolcpus: 2,3
+
+dpdk_config:
+  reserved_mem: 16384
+  cpu_set: 8-11,20-47    
+  grub:
+    default_hugepagesz: 2M
+    hugepagesz: 2M
+    isolcpus: 4-11,16-47
+
+libvirt_config:
+  cpu_mode: custom
+  cpu_model: Broadwell

@@ -1,0 +1,62 @@
+---
+
+- name: Remove Heat containers
+  docker_container:
+    name: "{{ item }}" 
+    state: absent
+  with_items:
+    - heat-api
+    - heat-api-cfn
+    - heat-engine
+
+- include_role:
+    name: heat
+    tasks_from: config
+
+- name: Setup heat-api
+  docker_container:
+    name: heat-api 
+    image: "{{ docker_reg_host }}:{{ docker_host_port }}/heat:{{ docker_images_tag }}"
+    pull: yes
+    restart_policy: unless-stopped
+    state: started
+    user: root 
+    volumes:
+      - "{{ docker_shared_conf_dir }}/heat/:{{ docker_shared_conf_dir }}/heat/"
+      - /var/log/heat:/var/log/heat
+      - /var/lib/heat:/var/lib/heat
+      - /etc/localtime:/etc/localtime
+    env: "{{ orchestration_env | merge({ 'HEAT_START': 'START_HEAT_API' }) }}"
+    network_mode: host
+
+- name: Setup heat-api-cfn
+  docker_container:
+    name: heat-api-cfn
+    image: "{{ docker_reg_host }}:{{ docker_host_port }}/heat:{{ docker_images_tag }}"
+    pull: yes
+    restart_policy: unless-stopped
+    state: started
+    user: root
+    volumes:
+      - "{{ docker_shared_conf_dir }}/heat/:{{ docker_shared_conf_dir }}/heat/"
+      - /var/log/heat:/var/log/heat
+      - /var/lib/heat:/var/lib/heat
+      - /etc/localtime:/etc/localtime
+    env: "{{ orchestration_env | merge({ 'HEAT_START': 'START_HEAT_API_CFN' }) }}"
+    network_mode: host
+
+- name: Setup heat-engine
+  docker_container:
+    name: heat-engine
+    image: "{{ docker_reg_host }}:{{ docker_host_port }}/heat:{{ docker_images_tag }}"
+    pull: yes
+    restart_policy: unless-stopped
+    state: started
+    user: root
+    volumes:
+      - "{{ docker_shared_conf_dir }}/heat/:{{ docker_shared_conf_dir }}/heat/"
+      - /var/log/heat:/var/log/heat
+      - /var/lib/heat:/var/lib/heat
+      - /etc/localtime:/etc/localtime
+    env: "{{ orchestration_env | merge({ 'HEAT_START': 'START_HEAT_ENGINE' }) }}"
+    network_mode: host

@@ -1,7 +1,0 @@
----
-
-- include_role:
-    name: common 
-    tasks_from: crontab
-  vars:
-    crontab_line: '00 3 * * * root docker exec -i zookeeper /opt/bitnami/zookeeper/bin/zkCleanup.sh -n 200'

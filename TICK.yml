@@ -1,0 +1,5 @@
+---
+- import_playbook: telegraf.yml
+- import_playbook: influxdb.yml
+- import_playbook: chronograf.yml
+- import_playbook: kapacitor.yml

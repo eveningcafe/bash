@@ -1,9 +1,2 @@
 ---
-
-- import_playbook: nova-compute.yml
-- import_playbook: ovs-dpdk.yml
-- import_playbook: neutron-agent.yml
-- import_playbook: neutron-agent-dpdk.yml
-- import_playbook: neutron-agent-dpdk-config.yml
-- import_playbook: masakarimonitors.yml
 - import_playbook: ceilometer-compute.yml
