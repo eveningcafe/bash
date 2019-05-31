@@ -1,0 +1,11 @@
+[DEFAULT]
+[agent]
+tunnel_types = vxlan
+l2_population = True
+[network_log]
+[ovs]
+bridge_mappings = provider:br-provider,public:br-public
+local_ip = 125.212.138.94
+[securitygroup]
+firewall_driver = iptables_hybrid
+[xenapi]

@@ -1,0 +1,30 @@
+[DEFAULT]
+debug=True
+transport_url = rabbit://openstack:Welcome123@10.240.207.27:5672/
+log_dir = /var/log/mistral
+[cors]
+[database]
+connection = mysql+pymysql://mistral:Welcome123@10.240.207.27:3306/mistral
+[keystone_authtoken]
+auth_uri = http://10.240.207.27:5000/v3
+auth_url = http://10.240.207.27:35357/v3
+memcached_servers = 10.240.207.27:11211
+auth_type = password
+project_domain_name = default
+user_domain_name = default
+project_name = service
+username = mistral
+password = Welcome123
+interface = internalURL
+region_name = RegionOne
+auth_version = 3
+auth_port = 35357
+[matchmaker_redis]
+[oslo_messaging_amqp]
+[oslo_messaging_kafka]
+[oslo_messaging_notifications]
+[oslo_messaging_rabbit]
+[oslo_messaging_zmq]
+[oslo_policy]
+policy_file = /etc/mistral/policy.json
+[ssl]

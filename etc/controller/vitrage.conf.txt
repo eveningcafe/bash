@@ -1,0 +1,51 @@
+[DEFAULT]
+transport_url = rabbit://openstack:Welcome123@10.240.207.27:5672/
+log_dir = /var/log/vitrage
+debug = false
+notifiers = nova,mistral
+[datasources]
+types = kapacitor,zabbix,nova.host,nova.instance,nova.zone,static,neutron.network,neutron.port,heat.stack,doctor,cinder.volume
+snapshots_interval = 300
+[keystone_authtoken]
+region_name = RegionOne
+www_authenticate_uri = http://conroller:5000
+auth_uri = http://10.240.207.27:5000
+auth_url = http://10.240.207.27:35357
+memcached_servers = 10.240.207.27:11211
+auth_type = password
+project_domain_id = default
+user_domain_id = default
+project_name = service
+username = vitrage
+password = Welcome123
+project_domain_id = default
+user_domain_id = default
+[database]
+connection = mysql+pymysql://vitrage:Welcome123@10.240.207.27/vitrage
+[service_credentials]
+auth_url = http://10.240.207.27:5000/v3
+auth_type = password
+auth_version = v3
+region_name = RegionOne
+project_domain_id = default
+user_domain_id = default
+project_name = admin
+username = vitrage
+password = Welcome123
+interface = internal
+memcached_servers = 10.240.207.27:11211
+[oslo_messaging_notifications]
+driver = messagingv2
+topics = notifications,vitrage_notifications
+[zabbix]
+url = http://10.60.117.159/zabbix
+password = zabbix
+user = Admin
+config_file = /etc/vitrage/zabbix_conf.yaml
+[kapacitor]
+url = http://10.60.117.160:9092/kapacitor/
+config_file = /etc/vitrage/kapacitor_conf.yaml
+[machine_learning]
+plugins = jaccard_correlation
+[jaccard_correlation]
+output_folder = /tmp/vitrage_ml

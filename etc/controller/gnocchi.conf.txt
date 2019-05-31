@@ -1,0 +1,31 @@
+[DEFAULT]
+[api]
+auth_mode = keystone
+[archive_policy]
+[cors]
+[healthcheck]
+[incoming]
+[indexer]
+url = mysql+pymysql://gnocchi:Welcome123@10.240.207.27/gnocchi
+[keystone_authtoken]
+auth_uri = http://10.240.207.27:5000/v3
+auth_url = http://10.240.207.27:35357/v3
+memcached_servers = 10.240.207.27:11211
+auth_type = password
+project_domain_name = default
+user_domain_name = default
+project_name = service
+username = gnocchi
+password = Welcome123
+interface = internalURL
+region_name = RegionOne
+auth_version = 3
+auth_port = 35357
+[metricd]
+[oslo_middleware]
+[oslo_policy]
+[statsd]
+[storage]
+coordination_url = redis://localhost:6379
+file_basepath = /var/lib/gnocchi/db1
+driver = file

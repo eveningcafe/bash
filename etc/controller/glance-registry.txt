@@ -1,0 +1,24 @@
+[DEFAULT]
+[database]
+connection = mysql+pymysql://glance:Welcome123@10.240.207.27/glance
+backend = sqlalchemy
+[keystone_authtoken]
+auth_uri = http://10.240.207.27:5000
+auth_url = http://10.240.207.27:35357
+memcached_servers = 10.240.207.27:11211
+auth_type = password
+project_domain_name = default
+user_domain_name = default
+project_name = service
+username = glance
+password = Welcome123
+[matchmaker_redis]
+[oslo_messaging_amqp]
+[oslo_messaging_kafka]
+[oslo_messaging_notifications]
+[oslo_messaging_rabbit]
+[oslo_messaging_zmq]
+[oslo_policy]
+[paste_deploy]
+flavor = keystone
+[profiler]

@@ -1,0 +1,15 @@
+[DEFAULT]
+interface_driver = openvswitch
+external_network_bridge =
+enable_isolated_metadata = True
+force_metadata = True
+[agent]
+tunnel_types = vxlan
+l2_population = True
+[network_log]
+[ovs]
+local_ip = 125.212.138.99
+bridge_mappings = provider:br-provider,public:br-public
+[securitygroup]
+firewall_driver = iptables_hybrid
+[xenapi]
