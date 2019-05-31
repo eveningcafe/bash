@@ -4,7 +4,7 @@ openstack_release: pike
 openstack_branch: "stable/{{ openstack_release }}"
 
 mysql_host: "192.168.1.211"
-mysql_user: openstack
+mysql_user: root
 mysql_pass: Welcome123
 mysql_port: 3306
 
@@ -144,3 +144,8 @@ rabbitmq_env:
   MONITOR:
     USERNAME: telegraf
     PASSWORD: dPxn8m1TNt9zp5I7I3WOHITiSFU5ioXe
+mysql_env:
+  USER: {{ mysql_user }}
+  PASSWORD: {{ mysql_pass }}
+  PORT: {{ mysql_port }}
+  HOST: {{ mysql_host }}

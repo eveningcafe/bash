@@ -1,18 +1,5 @@
 ---
 
-clean_keepalived: 0
-
-db_params:
-  version: 5.7
-  bind_interface: ens4
-  wsrep_cluster_name: os-cluster
-  sst_user: sst
-  sst_passwd: gtHL5CyKbczWKNTkxvFENi8MGp3w6NmM
-  root_passwd: Ej1cPttlOc0gDj411r1gj7TaevtpVHoh
-  max_connections: 10000
-  max_connect_errors: 10000
-  max_allowed_packet: 16M
-
 dbs:
   - name: keystone
     user: keystone
@@ -36,21 +23,7 @@ dbs:
     user: cinder
     passwd: "{{ cinder_env.CINDER_DBPASS }}"
 
-docker_openstack_client: "docker exec -i openstack-client openstack"
-postgres_cli: "docker exec -i postgres psql -U postgres"
-sql_cli: "docker exec -i {{ mysql_env.openstack.CONTAINER_NAME }} mysql -uroot -p{{ mysql_env.openstack.MYSQL_ROOT_PASSWORD }} -e"
-sql_cli_dbhandler: "docker exec -i {{ mysql_env.openstack.CONTAINER_NAME }} mysql -uroot -p{{ mysql_env.openstack.MYSQL_ROOT_PASSWORD }} {{ database_name }} -e"
-sql_cli_gnocchi: "docker exec -i {{ mysql_env.gnocchi.CONTAINER_NAME }} mysql -uroot -p{{ mysql_env.gnocchi.MYSQL_ROOT_PASSWORD }} -e" 
-sql_cli_dbhandler_gnocchi: "docker exec -i {{ mysql_env.gnocchi.CONTAINER_NAME }} mysql -uroot -p{{ mysql_env.gnocchi.MYSQL_ROOT_PASSWORD }} {{ database_name }} -e"
-
 # BAREMETAL
-#sql_cli: "docker exec -i mysql mysql -uroot -p{{ mysql_env.openstack.MYSQL_ROOT_PASSWORD }} -e"
-#sql_cli_dbhandler: "docker exec -i mysql mysql -uroot -p{{ mysql_env.openstack.MYSQL_ROOT_PASSWORD }} {{ database_name }} -e"
-#sql_cli: "mysql -uroot -p{{ mysql_env.openstack.MYSQL_ROOT_PASSWORD }} -e"
-#sql_cli_dbhandler: "mysql -uroot -p{{ mysql_env.openstack.MYSQL_ROOT_PASSWORD }} {{ database_name }} -e"
+sql_cli: "mysql -uroot -p{{ mysql_env.openstack.MYSQL_ROOT_PASSWORD }} -e"
+sql_cli_dbhandler: "mysql -uroot -p{{ mysql_env.openstack.MYSQL_ROOT_PASSWORD }} {{ database_name }} -e"
 
-# TEST
-#sql_cli: "docker exec -i mysql3 mysql -uroot -p{{ mysql_env.openstack.MYSQL_ROOT_PASSWORD }} -e"
-#sql_cli_dbhandler: "docker exec -i mysql3 mysql -uroot -p{{ mysql_env.openstack.MYSQL_ROOT_PASSWORD }} {{ database_name }} -e"
-#sql_cli_gnocchi: "docker exec -i mysql4 mysql -uroot -p{{ mysql_env.gnocchi.MYSQL_ROOT_PASSWORD }} -e"
-#sql_cli_dbhandler_gnocchi: "docker exec -i mysql4 mysql -uroot -p{{ mysql_env.gnocchi.MYSQL_ROOT_PASSWORD }} {{ database_name }} -e"

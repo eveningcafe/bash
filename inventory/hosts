@@ -1,7 +1,7 @@
 [all]
-server01 ansible_ssh_host=192.168.1.211
-server02 ansible_ssh_host=192.168.1.212
-server03 ansible_ssh_host=192.168.1.213
+server01 ansible_ssh_host=node1 ansible_ssh_user=hoanq13
+server02 ansible_ssh_host=node1 ansible_ssh_user=hoanq13
+server03 ansible_ssh_host=node1 ansible_ssh_user=hoanq13
 
 [controller]
 server01
@@ -19,5 +19,6 @@ server01
 server02
 server03
 
-
+[mysql]
+server01
 
