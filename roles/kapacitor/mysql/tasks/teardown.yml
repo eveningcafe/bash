@@ -1,8 +1,0 @@
----
-
-- name: Remove mysql 
-  apt:
-    pkg: mariadb-server
-    state: absent
-    autoremove: yes
-    purge: yes

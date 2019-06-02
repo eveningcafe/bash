@@ -1,7 +1,0 @@
----
-
-- name: Basic setup for mysql connections 
-  shell: |
-    {{ sql_cli }} "SET GLOBAL max_connections = {{ MYSQL_MAX_CONNECTIONS }};"
-    {{ sql_cli }} "SET GLOBAL max_connect_errors = {{ MYSQL_MAX_CONNECT_ERRORS }};"
-    {{ sql_cli }} "SET GLOBAL max_allowed_packet = {{ MYSQL_MAX_ALLOWED_PACKET }};"
