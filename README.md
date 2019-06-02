@@ -1,7 +1,27 @@
+
 ### Notes
-- Masakari (api and engine): containerized services (pending)
+### Setup ansible
 
+```
+sudo apt-add-repository ppa:ansible/ansible
+sudo apt-get update
+sudo apt-get install ansible
+curl https://bootstrap.pypa.io/get-pip.py -o get-pip.py
+python get-pip.py
+```
 
+- Make sure ssh to host:
+
+```
+ssh-keygen -t rsa
+ssh-copy-id <remote_host>
+ansible -m ping all
+```
+- Enable Passwordless Sudo
+
+```
+echo "ubuntu ALL=(ALL) NOPASSWD: ALL" | sudo tee /etc/sudoers.d/ubuntu
+```
 ### Topology suggest
 - 3 controller nodes, 2 compute nodes - HA configuration for controller nodes
 - Network planning:

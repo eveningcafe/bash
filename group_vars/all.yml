@@ -1,6 +1,6 @@
 ---
 time_zone: Asia/Ho_Chi_Minh
-openstack_release: pike 
+openstack_release: queens
 openstack_branch: "stable/{{ openstack_release }}"
 
 mysql_host: "192.168.1.211"
@@ -145,7 +145,7 @@ rabbitmq_env:
     USERNAME: telegraf
     PASSWORD: dPxn8m1TNt9zp5I7I3WOHITiSFU5ioXe
 mysql_env:
-  USER: {{ mysql_user }}
-  PASSWORD: {{ mysql_pass }}
-  PORT: {{ mysql_port }}
-  HOST: {{ mysql_host }}
+  USER: "{{ mysql_user }}"
+  PASSWORD: "{{ mysql_pass }}"
+  PORT: "{{ mysql_port }}"
+  HOST: "{{ mysql_host }}"

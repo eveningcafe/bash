@@ -1,24 +1,24 @@
 [all]
-server01 ansible_ssh_host=node1 ansible_ssh_user=hoanq13
-server02 ansible_ssh_host=node1 ansible_ssh_user=hoanq13
-server03 ansible_ssh_host=node1 ansible_ssh_user=hoanq13
-
+#server01 ansible_ssh_host=node1 ansible_ssh_user=hoanq13
+#server02 ansible_ssh_host=node1 ansible_ssh_user=hoanq13
+#server03 ansible_ssh_host=node1 ansible_ssh_user=hoanq13
+server04 ansible_ssh_host=node4 ansible_ssh_user=ubuntu
 [controller]
-server01
+server04
 
 [compute]
-server02
-server03
+server04
+
 
 [monitor-center]
-server01
+server04
 
 
 [telegraf]
-server01
-server02
-server03
+server04
+#server02
+#server03
 
 [mysql]
-server01
+server04
 

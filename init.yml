@@ -1,0 +1,9 @@
+- hosts: all
+  tasks:
+  - include_role:
+      name: init
+      tasks_from: "{{ item }}"
+    with_items:
+      - basic #update upgrade, basic package
+      - openstack #add repo,
+  become: true
