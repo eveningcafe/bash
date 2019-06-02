@@ -1,0 +1,6 @@
+---
+
+- name: Create service database
+  shell: |
+    {{ sql_cli }} "GRANT ALL PRIVILEGES ON {{ db_update.name }}.* TO '{{ db_update.user }}'@'localhost' IDENTIFIED BY '{{ db_update.passwd }}'; GRANT ALL PRIVILEGES ON {{ db_update.name }}.* TO '{{ db_update.user }}'@'%' IDENTIFIED BY '{{ db_update.passwd }}';"
+

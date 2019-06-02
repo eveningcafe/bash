@@ -2,25 +2,11 @@
 
 - hosts: rabbitmq
   tasks:
-    - include_role:
-        name: rabbitmq
-        tasks_from: setup
-
-    - name: Waiting for rabbitmq-service up
-      shell: |
-        sleep 30
-  become: true
-
-- hosts: rabbitmq-follower
-  tasks:
-    - include_role:
-        name: rabbitmq
-        tasks_from: setup_cluster 
-  become: true
-
-- hosts: rabbitmq-bootstrap
-  tasks:
-    - include_role:
-        name: rabbitmq
-        tasks_from: post_config 
+  - include_role:
+      name: rabbitmq
+      tasks_from: "{{ item }}"
+    with_items:
+      - teardown #uninstall
+      - package #install
+      - add_openstack_user
   become: true

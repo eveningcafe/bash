@@ -1,0 +1,10 @@
+---
+  - name: Install Rabbitmq
+    apt: name={{ item }} cache_valid_time=3600 state=present
+    with_items:
+    - rabbitmq-server
+  - name: Start the Rabbitmq service
+    service:
+      name: rabbitmq-server
+      state: started
+      enabled: true

@@ -1,7 +1,0 @@
----
-
-- name: Copy rabbitmq shell setup for openstack to hub controllers
-  template: src=rabbit_ops_setup.sh dest=/tmp/rabbit_ops_setup.sh mode=0755 backup=yes
-
-- name: Setup rabbitmq for openstack
-  shell: /tmp/rabbit_ops_setup.sh

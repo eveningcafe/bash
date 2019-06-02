@@ -1,9 +1,0 @@
----
-
-- name: Setup monitor account for rabbitmq
-  shell: |
-    docker exec -i rabbitmq rabbitmqctl delete_user {{ rabbitmq_env.MONITOR.USERNAME }};
-    docker exec -i rabbitmq rabbitmqctl add_user {{ rabbitmq_env.MONITOR.USERNAME }} {{ rabbitmq_env.MONITOR.PASSWORD }};
-    docker exec -i rabbitmq rabbitmqctl set_user_tags {{ rabbitmq_env.MONITOR.USERNAME }} administrator;
-    docker exec -i rabbitmq rabbitmqctl set_permissions -p / {{ rabbitmq_env.MONITOR.USERNAME }} ".*" ".*" ".*";
-  ignore_errors: yes

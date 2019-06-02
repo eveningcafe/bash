@@ -1,0 +1,5 @@
+- name: add openstack user
+  shell: rabbitmqctl add_user {{rabbitmq_env.USER}} {{rabbitmq_env.PASSWORD}}
+
+- name: set permission openstack
+  shell: rabbitmqctl set_permissions openstack ".*" ".*" ".*"

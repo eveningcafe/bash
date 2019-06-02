@@ -1,0 +1,11 @@
+---
+
+- name: Create monitor account for MySQL (OpenStack Services databases)
+  shell: |
+    {{ sql_cli }} "GRANT ALL PRIVILEGES ON *.* TO '{{ mysql_env.openstack.MONITOR.USERNAME }}'@'%' IDENTIFIED BY '{{ mysql_env.openstack.MONITOR.PASSWORD }}';"
+  ignore_errors: yes
+
+- name: Create monitor account for MySQL (Metrics database)
+  shell: |
+    {{ sql_cli_gnocchi }} "GRANT ALL PRIVILEGES ON *.* TO '{{ mysql_env.gnocchi.MONITOR.USERNAME }}'@'%' IDENTIFIED BY '{{ mysql_env.gnocchi.MONITOR.PASSWORD }}';"
+  ignore_errors: yes

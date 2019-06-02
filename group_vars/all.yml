@@ -3,7 +3,7 @@ time_zone: Asia/Ho_Chi_Minh
 openstack_release: queens
 openstack_branch: "stable/{{ openstack_release }}"
 
-mysql_host: "192.168.1.211"
+mysql_host: "192.168.1.214"
 mysql_user: root
 mysql_pass: Welcome123
 mysql_port: 3306
@@ -12,8 +12,8 @@ influxdb_host: "{{ groups['influxdb'] | map('extract', hostvars, ['ansible_ssh_h
 influxdb_pass: 8wJgHO9Agk2J7xDcNGnjzP4el6zuRL1q
 
 rabbit_user: openstack
-rabbit_passwd: myssUkvSvjRWOIc1ZdaBRxyUt92DdF6C
-rabbit_host: "192.168.1.211"
+rabbit_passwd: Welcome123
+rabbit_host: "192.168.1.214"
 rabbit_port: 5672
 
 memcached_pass: bDz6MWsSaBtQtH3LXEsTT8RI6sct5WNM
@@ -133,14 +133,8 @@ memcached_env:
   MEMCACHED_REQUESTS_PER_EVENT: 20
 
 rabbitmq_env:
-  IMAGE: "{{ docker_reg_host }}:{{ docker_host_port }}/rabbitmq:3-management"
-  RABBITMQ_NODE_IP_ADDRESS: "{{ ansible_ssh_host }}"
-  ERL_EPMD_ADDRESS: "{{ ansible_ssh_host }}"
-  RABBITMQ_ERLANG_COOKIE: E1f4HFAiAOjqTSVxHXHr2KFhnJRUb9bo 
-  RABBITMQ_VM_MEMORY_HIGH_WATERMARK: 12288m
-  RABBITMQ_LOGS: /var/log/rabbitmq/rabbitmq.log
-  LOG_DIR: /var/log/rabbitmq/
-  MEMORY: 16G
+  USER: "{{ rabbit_user }}"
+  PASSWORD: "{{ rabbit_passwd }}"
   MONITOR:
     USERNAME: telegraf
     PASSWORD: dPxn8m1TNt9zp5I7I3WOHITiSFU5ioXe

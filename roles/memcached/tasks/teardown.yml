@@ -1,7 +1,10 @@
----
 
-- name: Remove memcached 
-  docker_container:
-    name: memcached 
+- name: Remove memcache
+  apt:
+    pkg: "{{ item }}"
     state: absent
-  ignore_errors: yes
+    autoremove: yes
+    purge: yes
+  with-item:
+    - memcached
+    - python-memcache

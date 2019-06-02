@@ -1,0 +1,39 @@
+---
+
+- name: Prepare keepalived track scripts for mysql
+  template: src=check_mysql.sh.j2 dest="{{ docker_shared_conf_dir }}/keepalived/hosts/scripts/check_mysql.sh" mode=0755 backup=yes
+
+- include_role:
+    name: keepalived 
+    tasks_from: update
+  vars:
+    keepalived_conf: mysql.conf
+    keep_vrrp_scripts:
+      - name: check_mysql
+        commands:
+          - script "/etc/keepalived/hosts/scripts/check_mysql.sh"
+          - interval 2
+          - weight -30
+
+    keep_vrrp_instances:
+      - name: PRIVATE_MYSQL
+        auth:
+          auth_type: "{{ vip.mysql.auth.auth_type }}"
+          auth_pass: "{{ vip.mysql.auth.auth_pass }}"
+        virtual_ipaddrs:
+          - "{{ vip.mysql.ip }}"
+        cnf_params:
+          - param: state
+            val: "{{ keepalived.mysql.state }}"
+          - param: priority
+            val: "{{ keepalived.mysql.vrrp_prior }}"
+          - param: advert_int
+            val: 1
+          - param: interface
+            val: "{{ keepalived.mysql.iface }}"
+          - param: virtual_router_id
+            val: "{{ vip.mysql.router_id }}"
+    keep_vrrp_sync_grp:
+      name: VG_MYSQL
+      mems:
+        - PRIVATE_MYSQL 

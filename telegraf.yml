@@ -1,0 +1,12 @@
+---
+
+- hosts: telegraf
+  tasks:
+  - include_role:
+      name: telegraf
+      tasks_from: "{{ item }}"
+    with_items:
+      - teardown #uninstall
+      - package #install
+      - connect_db 
+  become: true

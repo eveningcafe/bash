@@ -1,0 +1,12 @@
+---
+
+- hosts: monitor-center
+  tasks:
+  - include_role:
+      name: influxdb
+      tasks_from: "{{ item }}"
+    with_items:
+      - teardown #uninstall
+      - package #install
+      - setup_user
+  become: true

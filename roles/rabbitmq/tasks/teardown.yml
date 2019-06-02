@@ -1,7 +1,9 @@
 ---
 
 - name: Remove rabbitmq 
-  docker_container:
-    name: rabbitmq 
+  apt:
+    pkg: rabbitmq-server
     state: absent
-  ignore_errors: yes
+    autoremove: yes
+    purge: yes
+

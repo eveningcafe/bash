@@ -1,0 +1,5 @@
+---
+
+- name: Drop service database
+  shell: |
+    {{ sql_cli }} "DROP DATABASE IF EXISTS {{ db_update.name }};"

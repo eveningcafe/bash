@@ -1,8 +1,12 @@
 ---
 
-- hosts: current_controller
+- hosts: memcached
   tasks:
-    - include_role:
-        name: memcached
-        tasks_from: setup
+  - include_role:
+      name: memcached
+      tasks_from: "{{ item }}"
+    with_items:
+      - teardown #uninstall
+      #- package #install
+      #- add_openstack_user
   become: true

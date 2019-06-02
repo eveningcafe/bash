@@ -1,0 +1,6 @@
+- name: add repo
+  shell: add-apt-repository "cloud-archive:{{ openstack_release }}" -y
+- apt:
+    update_cache: yes
+- apt:
+    name: python-openstackclient

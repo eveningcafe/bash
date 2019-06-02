@@ -4,5 +4,8 @@
     update_cache: yes
 - name: install basic package
   apt:
-    name: software-properties-common
+    name: "{{ item}}
     state: latest
+  with_items:
+    - software-properties-common
+    - python-pymysql
