@@ -1,0 +1,34 @@
+---
+- name: use image_address from local registry
+  set_fact:
+    image_address: "{{docker_reg_host}}:{{docker_reg_port}}/{{ etcd_docker_image }}:{{ etcd_docker_image_tag }}"
+  when: docker_use_local_registry
+- name: Generate useful facts for current node 1
+  set_fact:
+    ip_addr: "{{ hostvars[inventory_hostname]['ansible_' + keepalived.etcd.iface]['ipv4']['address'] }}"
+    etcd_name: "etcd{{ ansible_play_hosts.index(inventory_hostname) }}"
+- debug: msg="{{ ip_addr }}"
+- name: Generate useful facts for current node 2
+  set_fact:
+    etcd_uri: "{{ etcd_name }}=http://{{ ip_addr }}:2380"
+- name: Generate useful facts for current node 3
+  set_fact:
+    etcd_command: "/usr/local/bin/etcd --data-dir=/var/lib/etcd --name {{ etcd_name }} --advertise-client-urls http://{{ ip_addr }}:2379 --listen-client-urls http://0.0.0.0:2379 --initial-advertise-peer-urls http://{{ ip_addr }}:2380 --initial-cluster {{ ansible_play_hosts | map('extract',hostvars,'etcd_uri') | list | join(',') }} --initial-cluster-token etcd-cluster --listen-peer-urls http://0.0.0.0:2380 --initial-cluster-state new"
+- name: run etcd cluster
+  docker_container:
+    name: etcd
+    state: started
+    command: "{{ etcd_command }}"
+    network_mode: host
+    restart_policy: unless-stopped
+    volumes:
+      - /var/lib/etcd:/var/lib/etcd
+    image: "{{image_address}}"
+
+- name: check etcd up
+  command: "docker exec etcd /bin/sh -c '/usr/local/bin/etcdctl member list'"
+  register: result_etcd
+  until: "{{result_etcd.stdout_lines| length}} == {{groups['keepalived'] | length }}"
+  retries: 5
+  delay: 2
+- debug: msg="{{result_etcd.stdout}}"

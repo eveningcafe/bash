@@ -1,0 +1,37 @@
+---
+- name: Prepare keepalived track scripts for etcd
+  copy: src=check_etcd.sh dest="{{ docker_shared_conf_dir }}/keepalived/hosts/scripts/check_etcd.sh" mode=0755 backup=yes
+- include_role:
+    name: keepalived
+    tasks_from: update
+  vars:
+    keepalived_conf: etcd.conf
+    keep_vrrp_scripts:
+      - name: check_etcd
+        commands:
+          - script "/etc/keepalived/hosts/scripts/check_etcd.sh"
+          - interval 2
+          - weight -30
+    
+    keep_vrrp_instances:
+      - name: PRIVATE_ETCD
+        auth:
+          auth_type: "{{ vip.etcd.auth.auth_type }}"
+          auth_pass: "{{ vip.etcd.auth.auth_pass }}"
+        virtual_ipaddrs:
+          - "{{ vip.etcd.ip }}"
+        cnf_params:
+          - param: state
+            val: "{{ keepalived.etcd.state }}"
+          - param: priority
+            val: "{{ keepalived.etcd.vrrp_prior }}"
+          - param: advert_int
+            val: 1
+          - param: interface
+            val: "{{ keepalived.etcd.iface }}"
+          - param: virtual_router_id
+            val: "{{ vip.etcd.router_id }}"
+    keep_vrrp_sync_grp:
+      name: VG_1
+      mems:
+        - PRIVATE_ETCD

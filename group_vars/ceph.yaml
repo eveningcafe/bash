@@ -1,0 +1,8 @@
+docker_use_local_registry: true
+docker_reg_host: docker-registry
+docker_reg_port: 4000
+ceph_docker_image: ceph/daemon
+#ceph_docker_image_tag: 13.2.1
+ceph_docker_image_tag: 12.2.8
+etcd_docker_image: etcd
+etcd_docker_image_tag: v3.3.13

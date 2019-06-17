@@ -1,0 +1,10 @@
+---
+
+- name: setup etcd cluster
+  hosts: ceph
+  tasks:
+    - include_role:
+        name: etcd
+        tasks_from: main
+  become: true
+

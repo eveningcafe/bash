@@ -1,4 +1,6 @@
 ---
+
+
 time_zone: Asia/Ho_Chi_Minh
 openstack_release: queens
 openstack_branch: "stable/{{ openstack_release }}"

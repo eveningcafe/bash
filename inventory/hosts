@@ -1,29 +1,33 @@
 [all]
-server01 ansible_ssh_host=node1 ansible_ssh_user=hoanq13
-server02 ansible_ssh_host=node1 ansible_ssh_user=hoanq13
-server03 ansible_ssh_host=node1 ansible_ssh_user=hoanq13
-#server04 ansible_ssh_host=node4 ansible_ssh_user=ubuntu
+server01 ansible_ssh_host=controller ansible_ssh_user=ubuntu
+server02 ansible_ssh_host=compute01 ansible_ssh_user=ubuntu
+server03 ansible_ssh_host=compute02 ansible_ssh_user=ubuntu
 [controller]
 server01
 
 [compute]
-server01
-
-
-[monitor-center]
-server01
-
-
-[telegraf]
-server01
 server02
 server03
 
-#[mysql]
+#[monitor-center]
 #server01
 
-#[rabbitmq]
-#server01
 
-#[memcached]
+#[telegraf]
 #server01
+#server02
+#server03
+
+[mysql]
+server01
+
+[rabbitmq]
+server01
+
+[memcached]
+server01
+
+[ceph]
+server01
+server02
+server03
